@@ -10,13 +10,13 @@ CXXFLAGS=$(shell root-config --ldflags) -pg -I$(INCDIR) -I$(ROOTINCDIR)	\
 $(DFLAGS) $(WFLAGS) -ansi
 
 .PHONY: all clean 
-all: runAnalysis
+all: run-analysis
 
-runAnalysis: analysis.o runAnalysis.o
+run-analysis: cut-flow-studies.o run-analysis.o
 	$(CC) $? -o runAnalysis $(LDFLAGS) 
-runAnalysis.o: ./bin/main.C
+run-analysis.o: ./bin/main.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@
-analysis.o: ./src/analysis.C
+%.o: ./src/%.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@
 clean:
 	-rm *.o runAnalysis

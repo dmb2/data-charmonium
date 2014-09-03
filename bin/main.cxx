@@ -1,6 +1,6 @@
 #include <cstdlib>
 #include <iostream>
-#include "analysis.h"
+#include "cut-flow-studies.hh"
 #include <vector>
 #include <string>
 
@@ -9,13 +9,10 @@ int main(const int argc, const char* argv[]){
   std::vector<std::string> arg_list;
   for(int i=0; i < argc; i++){
     arg_list.push_back(std::string(argv[i]));
-    std::cout<<"Got argument: "<<argv[i]<<std::endl;
+    // std::cout<<"Got argument: "<<argv[i]<<std::endl;
   }
-  //Initialize any objects required for the analysis
+  TTree* tree=NULL;
+  process_tree(tree);
   
-  //Call the analysis drivers
-  doAnalysis();
-  
-  //Clean up and exit
   return 0;
 }
