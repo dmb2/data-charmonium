@@ -13,10 +13,10 @@ $(DFLAGS) $(WFLAGS) -ansi
 all: run-analysis
 
 run-analysis: cut-flow-studies.o run-analysis.o
-	$(CC) $? -o runAnalysis $(LDFLAGS) 
+	$(CC) $? -o run-analysis $(LDFLAGS) 
 run-analysis.o: ./bin/main.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@
 %.o: ./src/%.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@
 clean:
-	-rm *.o runAnalysis
+	-rm *.o run-analysis
