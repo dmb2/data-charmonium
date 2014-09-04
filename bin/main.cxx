@@ -17,10 +17,19 @@ int main(const int argc, const char* argv[]){
     arg_list.push_back(std::string(argv[i]));
   }
   TFile* file = new TFile("ntuple.root");
-  TTree* tree=static_cast<TTree*>(file->Get("AUX"));
-  if(!tree){
-    printf("ERROR: could not retrieve tree: %s","AUX");
-    return 1;
+  // TTree* tree=dynamic_cast<TTree*>(file->Get("AUX"));
+  // if(!tree){
+  //   printf("ERROR: could not retrieve tree: %s","AUX");
+  //   return 1;
+  // }
+  tree_collection Forest; 
+  const char* treeNames[] = {"AUX","JET",/*"JPSI","MUONS",
+			    "PRIVX","SEL_TRACKS",
+			    "TRIG",*/"TRUTH_JET"};
+
+  for(size_t i=0; i < sizeof(treeNames)/sizeof(*(treeNames)); i++){
+    printf("Added %s to the forest. \n",treeNames[i]);
+    Forest[std::string(treeNames[i])]=dynamic_cast<TTree*>(file->Get(treeNames[i]));
   }
   real_cuts CutDefReals;
   category_cuts CutDefCats;
@@ -34,18 +43,12 @@ int main(const int argc, const char* argv[]){
   CutDefReals["JetEta"]=cut<double>(2.5);
   CutDefCats["NumCharmJet"]=cut<int>(1);
   
-  const char* tree_names[] = {"JET","JPSI","MUONS",
-			    "PRIVX","SEL_TRACKS",
-			    "TRIG","TRUTH_JET"};
-
-  for(size_t i=0; i < sizeof(tree_names)/sizeof(*(tree_names)); i++){
-    printf("Adding %s to tree named %s\n",tree_names[i],tree->GetName());
-    tree->AddFriend(tree_names[i]);
+  process_tree(Forest,CutDefReals,CutDefCats);
+  //Chop down the forest...
+  for(tree_collection::iterator it=Forest.begin(); it != Forest.end(); ++it){
+    if(it->second) delete it->second;
   }
-
-  process_tree(tree,CutDefReals,CutDefCats);
   file->Close();
   if(file) delete file;
-  if(tree) delete tree;
   return 0;
 }

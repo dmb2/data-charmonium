@@ -30,6 +30,6 @@ private:
 };
 typedef std::map<std::string, cut<double> > real_cuts;
 typedef std::map<std::string, cut<int> > category_cuts;
-
-int process_tree(TTree* tree, real_cuts CutDefReal, 
+typedef std::map<std::string,TTree*> tree_collection;
+int process_tree(tree_collection Forest, real_cuts CutDefReal, 
 		 category_cuts CutDefCat);

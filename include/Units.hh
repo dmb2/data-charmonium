@@ -25,11 +25,11 @@ namespace Units {
   // Energy [E]
   //
   static const double megaelectronvolt = 1.;
-  static const double     electronvolt = 1.e-6*megaelectronvolt;
-  static const double kiloelectronvolt = 1.e-3*megaelectronvolt;
-  static const double gigaelectronvolt = 1.e3*megaelectronvolt;
-  static const double teraelectronvolt = 1.e+6*megaelectronvolt;
-  static const double petaelectronvolt = 1.e+9*megaelectronvolt;
+  static const double     electronvolt = 1.e+6*megaelectronvolt;
+  static const double kiloelectronvolt = 1.e+3*megaelectronvolt;
+  static const double gigaelectronvolt = 1.e-3*megaelectronvolt;
+  static const double teraelectronvolt = 1.e-6*megaelectronvolt;
+  static const double petaelectronvolt = 1.e-9*megaelectronvolt;
 
   // symbols
   static const double  eV = electronvolt;
