@@ -16,7 +16,7 @@ public:
     m_weight(weight){};
   ~cut(){};
   void pass(double w=1.){
-    count++;
+    m_count++;
     m_weight+=w;
   }
   cut_type cut_value() const {return m_cut_val;}
