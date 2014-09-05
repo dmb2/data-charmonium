@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 // Local Includes
+#include "Cut.hh"
 #include "cut-flow-studies.hh"
 #include "Units.hh"
 // Root Includes
@@ -15,7 +16,6 @@ using namespace Units;
 using std::cout;
 using std::endl;
 int main(const int argc, const char* argv[]){
-  //Parse command line arguments
   std::vector<std::string> arg_list;
   for(int i=0; i < argc; i++){
     arg_list.push_back(std::string(argv[i]));
@@ -37,15 +37,14 @@ int main(const int argc, const char* argv[]){
   // CutDefCats["NumMuons"]=cut<int>(2);
   // CutDefCats["JPsiCand"]=cut<int>(1);
   CutDefCats["NumJets"]=cut<int>(1);
-  CutDefReals["JPsiPt"]=cut<double>(20*GeV);
-  CutDefReals["JetPt"]=cut<double>(45*GeV);
+  CutDefReals["JPsiPt"]=cut<double>(20);
   CutDefReals["JPsiEta"]=cut<double>(2.5);
   CutDefReals["JetEta"]=cut<double>(2.5);
-  CutDefCats["NumCharmJet"]=cut<int>(1);
-  const char* CutNames[]={ "Nominal", "NumMuons", "JPsiCand", 
-			   "NumJets", "JPsiPt", "JetPt",
-			   "JPsiEta","JetEta"};
-
+  CutDefReals["DeltaR"]=cut<double>(0.4);
+  CutDefReals["JetPt"]=cut<double>(45);
+  const char* CutNames[]={ "Nominal",/* "NumMuons", "JPsiCand", */
+			   "NumJets", "JPsiPt", "JPsiEta",
+			   "JetEta","DeltaR","JetPt"}; 
   process_tree(Forest,CutDefReals,CutDefCats);
 
   real_cuts::iterator rCutHandle;
@@ -63,7 +62,6 @@ int main(const int argc, const char* argv[]){
     }
   }
 
-  //Chop down the forest...
   for(tree_collection::iterator it=Forest.begin(); it != Forest.end(); ++it){
     if(it->second) delete it->second;
   }
