@@ -15,6 +15,35 @@ public:
     m_count(count),
     m_weight(weight){};
   ~cut(){};
+  bool operator==(const cut &other) const {
+    return (m_cut_val == other.m_cut_val);
+  }
+  bool operator!=(const cut &other) const {
+    return !(*this == other);
+  }
+  template<typename cType>
+  friend bool operator> (const cType& obs, const cut<cType>& Cut);
+  template<typename cType>
+  friend bool operator<= (const cType& obs, const cut<cType>& Cut);
+
+  template<typename cType>
+  friend bool operator> (const cut<cType>& Cut,const cType& obs);
+  template<typename cType>
+  friend bool operator<= (const cut<cType>& Cut,const cType& obs);
+
+  template<typename cType>
+  friend bool operator< (const cType& obs, const cut<cType>& Cut);
+  template<typename cType>
+  friend bool operator>= (const cType& obs, const cut<cType>& Cut);
+  
+  template<typename cType>
+  friend bool operator< (const cut<cType>& Cut,const cType& obs);
+  template<typename cType>
+  friend bool operator>= (const cut<cType>& Cut,const cType& obs);
+  
+  // friend bool operator< (const cut& a, const cut& b);
+  // friend bool operator>= (const cut& a, const cut& b);
+
   void pass(double w=1.){
     m_count++;
     m_weight+=w;
@@ -28,6 +57,40 @@ private:
   unsigned int m_count;
   double m_weight;
 };
+template<typename cType>
+bool operator> (const cType& obs, const cut<cType>& Cut){
+  return (obs > Cut.m_cut_val);
+}
+template<typename cType>
+bool operator<= (const cType& obs, const cut<cType>& Cut){
+  return !(obs > Cut);
+}
+template<typename cType>
+bool operator> (const cut<cType>& Cut,const cType& obs){
+  return (Cut.m_cut_val > obs);
+}
+template<typename cType>
+bool operator<= (const cut<cType>& Cut,const cType& obs){
+  return !(Cut > obs);
+}
+
+template<typename cType>
+bool operator< (const cType& obs, const cut<cType>& Cut){
+  return (obs < Cut.m_cut_val);
+}
+template<typename cType>
+bool operator>= (const cType& obs, const cut<cType>& Cut){
+  return !(obs < Cut);
+}
+template<typename cType>
+bool operator< (const cut<cType>& Cut,const cType& obs){
+  return (Cut.m_cut_val < obs);
+}
+template<typename cType>
+bool operator>= (const cut<cType>& Cut,const cType& obs){
+  return !(Cut < obs);
+}
+
 typedef std::map<std::string, cut<double> > real_cuts;
 typedef std::map<std::string, cut<int> > category_cuts;
 typedef std::map<std::string,TTree*> tree_collection;

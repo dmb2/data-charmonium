@@ -23,7 +23,7 @@ int main(const int argc, const char* argv[]){
   TFile* file = new TFile("ntuple.root");
 
   tree_collection Forest; 
-  const char* treeNames[] = {"AUX","JET","MUONS","JPSI",
+  const char* treeNames[] = {"AUX","JET","MU","JPSI",
 			    "PRIVX","SEL_TRACKS",
 			    "TRIG","TRUTH_JET"};
   for(size_t i=0; i < sizeof(treeNames)/sizeof(*(treeNames)); i++){
@@ -34,8 +34,8 @@ int main(const int argc, const char* argv[]){
   real_cuts CutDefReals;
   category_cuts CutDefCats;
   CutDefCats["Nominal"]=cut<int>();
-  CutDefCats["NumMuons"]=cut<int>(2);
-  CutDefCats["JPsiCand"]=cut<int>(1);
+  // CutDefCats["NumMuons"]=cut<int>(2);
+  // CutDefCats["JPsiCand"]=cut<int>(1);
   CutDefCats["NumJets"]=cut<int>(1);
   CutDefReals["JPsiPt"]=cut<double>(20*GeV);
   CutDefReals["JetPt"]=cut<double>(45*GeV);
