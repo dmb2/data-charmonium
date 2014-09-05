@@ -1,5 +1,6 @@
-#ifndef UNITS_HH
-#define UNITS_HH
+#pragma once
+// #ifndef UNITS_HH
+// #define UNITS_HH
 //Inspired by Rivet Units.hh, renormalized to MeV (the standard ATLAS unit)
 //http://rivet.hepforge.org/code/dev/a00793_source.html
 namespace Units {
@@ -54,4 +55,4 @@ namespace Units {
   static const unsigned int MB=megabyte;
   static const unsigned int GB=gigabyte;
 }
-#endif
+//#endif

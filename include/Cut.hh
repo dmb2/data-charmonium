@@ -1,5 +1,6 @@
-#ifndef CUT_HH
-#define CUT_HH
+// #ifndef CUT_HH
+// #define CUT_HH
+#pragma once
 #include <string>
 template<class cut_type>
 class cut{
@@ -116,10 +117,4 @@ bool greater_than_eq(T obs_val, cut<T> Cut){
   return !(obs_val < Cut);
 }
 
-void print_cut_summary(std::string CutName, cut<int> Cut){
-  printf("| %-8s | %8d | %6d | \n",CutName.c_str(),Cut.cut_value(),Cut.count());
-}
-void print_cut_summary(std::string CutName, cut<double> Cut){
-  printf("| %-8s | %.2e | %6d | \n",CutName.c_str(),Cut.cut_value(),Cut.count());
-}
-#endif
+
