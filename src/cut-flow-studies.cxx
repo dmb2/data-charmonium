@@ -17,10 +17,9 @@ using std::cerr;
 using std::endl;
 
 
-int process_tree(tree_collection Forest, real_cuts CutDefReal, 
-		 category_cuts CutDefCat){
+int process_tree(tree_collection& Forest, real_cuts& CutDefReal, 
+		 category_cuts& CutDefCat){
   bool verbose=true;
-  CutDefCat["Nominal"].pass();
   unsigned int squawk_every = 1000;
   double z(0.), DeltaR(0.);
   double jpsi_pt(0.), jpsi_eta(0.), jpsi_phi(0.), jpsi_E(0.);
@@ -45,7 +44,7 @@ int process_tree(tree_collection Forest, real_cuts CutDefReal,
     it->second->SetCacheLearnEntries(5);
   }
 
-
+  /*
   Forest["AUX"]->SetBranchAddress("jpsi_e",&jpsi_E);
   Forest["AUX"]->SetBranchAddress("jpsi_pt",&jpsi_pt);
   Forest["AUX"]->SetBranchAddress("jpsi_eta",&jpsi_eta);
@@ -65,17 +64,28 @@ int process_tree(tree_collection Forest, real_cuts CutDefReal,
   Forest["TRUTH_JET"]->SetBranchAddress("JET_pt",&t_jet_pt);
   Forest["TRUTH_JET"]->SetBranchAddress("JET_eta",&t_jet_eta);
   Forest["TRUTH_JET"]->SetBranchAddress("JET_phi",&t_jet_phi);
+  */
   Long64_t nEntries = Forest["AUX"]->GetEntries();
-  cout<<"Got "<<nEntries<< " in input tree"<<endl;
+  if(verbose) {
+    cout<<"Got "<<nEntries<< " in input tree"<<endl;
+  }
   for(Long64_t i=0; i < nEntries; i++){
-    for(tree_collection::iterator it=Forest.begin(); it != Forest.end(); ++it){
-      it->second->GetEntry(i);
-    }
-
+    CutDefCat["Nominal"].pass();
     if(i%squawk_every==0 && verbose){
       cout <<"Processing record "<<i<<endl;
     }
+    for(tree_collection::iterator it=Forest.begin(); it != Forest.end(); ++it){
+      cout <<"Getting entry "<<i<< " from "<<it->first<<endl;
+      it->second->GetEntry(i);
+    }
+    
     
   }
   return 0;
+}
+void print_cut_summary(std::string CutName, cut<int> Cut){
+  printf("| %-8s | %8d | %6d | \n",CutName.c_str(),Cut.cut_value(),Cut.count());
+}
+void print_cut_summary(std::string CutName, cut<double> Cut){
+  printf("| %-8s | %.2e | %6d | \n",CutName.c_str(),Cut.cut_value(),Cut.count());
 }

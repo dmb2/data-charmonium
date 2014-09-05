@@ -12,8 +12,10 @@ $(DFLAGS) $(WFLAGS) -ansi
 .PHONY: all clean 
 all: run-analysis
 
+tree-bug: ./bin/tree-bug.C
+	$(CC) $(CXXFLAGS) $? -o $@ $(LDFLAGS)
 run-analysis: cut-flow-studies.o run-analysis.o
-	$(CC) $? -o run-analysis $(LDFLAGS) 
+	$(CC) $? -o $@ $(LDFLAGS) 
 run-analysis.o: ./bin/main.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@
 %.o: ./src/%.cxx
