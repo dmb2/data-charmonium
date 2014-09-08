@@ -1,5 +1,3 @@
-// #ifndef CUT_HH
-// #define CUT_HH
 #pragma once
 #include <string>
 template<class cut_type>
@@ -116,5 +114,3 @@ template<typename T>
 bool greater_than_eq(T obs_val, cut<T> Cut){
   return !(obs_val < Cut);
 }
-
-

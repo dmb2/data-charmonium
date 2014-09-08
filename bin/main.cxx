@@ -43,23 +43,8 @@ int main(const int argc, const char* argv[]){
   OutFile.cd();
   TTree OutTree("mini","mini");
   process_tree(Forest,CutDefReals,CutDefCats,OutTree);
-
-  real_cuts::iterator rCutHandle;
-  category_cuts::iterator cCutHandle;
-  for(size_t i=0; i < sizeof(CutNames)/sizeof(*CutNames); i++){
-    cCutHandle=CutDefCats.find(CutNames[i]);
-    if(cCutHandle!=CutDefCats.end()){
-      print_cut_summary(cCutHandle->first, cCutHandle->second);
-    }
-    else{
-      rCutHandle=CutDefReals.find(CutNames[i]);
-      if(rCutHandle!=CutDefReals.end()){
-	print_cut_summary(rCutHandle->first,rCutHandle->second);
-      }
-    }
-  }
-
-  // OutTree.Write();
+  print_cut_table(CutDefReals,CutDefCats,CutNames,
+		  sizeof(CutNames)/sizeof(*CutNames));
   for(tree_collection::iterator it=Forest.begin(); it != Forest.end(); ++it){
     if(it->second) delete it->second;
   }
