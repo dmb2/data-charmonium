@@ -17,6 +17,34 @@ using std::cerr;
 using std::endl;
 bool verbose=true;
 
+void print_cut_summary(std::string CutName, cut<int> Cut){
+  printf("| %-8s | %8d | %6d | \n",CutName.c_str(),Cut.cut_value(),Cut.count());
+}
+void print_cut_summary(std::string CutName, cut<double> Cut){
+  printf("| %-8s | %8.2g | %6d | \n",CutName.c_str(),Cut.cut_value(),Cut.count());
+}
+void print_cut_table(real_cuts& CutDefReals,category_cuts& CutDefCats,
+		     const char* CutNames[],size_t nCuts){
+  real_cuts::iterator rCutHandle;
+  category_cuts::iterator cCutHandle;
+  printf("|----------+----------+--------|\n");
+  printf("| Cut Name | Cut Val  |  Count |\n");
+  printf("|----------+----------+--------|\n");
+  for(size_t i=0; i < nCuts; i++){
+    cCutHandle=CutDefCats.find(CutNames[i]);
+    if(cCutHandle!=CutDefCats.end()){
+      print_cut_summary(cCutHandle->first, cCutHandle->second);
+    }
+    else{
+      rCutHandle=CutDefReals.find(CutNames[i]);
+      if(rCutHandle!=CutDefReals.end()){
+	print_cut_summary(rCutHandle->first,rCutHandle->second);
+      }
+    }
+  }
+  printf("|----------+----------+--------|\n");
+}
+
 void retrieve_values(tree_collection& forest, Long64_t entry){
   for(tree_collection::iterator it=forest.begin(); it != forest.end(); ++it){
     it->second->GetEntry(entry);
@@ -133,19 +161,22 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     }
     DeltaR=-1.;
     z=-1.;
-
+    jpsi_E*=GeV;
+    jpsi_pt*=GeV;
+    t_jpsi_E*=GeV;
+    t_jpsi_pt*=GeV;
     CutDefCat["Nominal"].pass();
     has_num_jets=pass_cut(greater_than_eq, int(jet_pt->size()), CutDefCat["NumJets"]);
-    has_jpsi_pt=pass_cut(greater_than, jpsi_pt*GeV, CutDefReal["JPsiPt"]);
+    has_jpsi_pt=pass_cut(greater_than, jpsi_pt, CutDefReal["JPsiPt"]);
     has_jpsi_eta=pass_cut(less_than, fabs(jpsi_eta),CutDefReal["JPsiEta"]);
-    candJPsi.SetPtEtaPhiE(jpsi_pt*GeV, jpsi_eta, 
-			  jpsi_phi, jpsi_E*GeV);
+    candJPsi.SetPtEtaPhiE(jpsi_pt, jpsi_eta, 
+			  jpsi_phi, jpsi_E);
     DeltaR=find_closest(*jet_pt,*jet_eta,*jet_phi,*jet_E, candJet, candJPsi);
     has_delta_r=pass_cut(less_than, DeltaR, CutDefReal["DeltaR"]);
     has_jet_eta=pass_cut(less_than, candJet.Eta(), CutDefReal["JetEta"]);
     has_jet_pt=pass_cut(greater_than, candJet.Pt(), CutDefReal["JetPt"]);
 
-    z=jpsi_pt/(candJet.Pt()+jpsi_pt);
+    z=(jpsi_pt)/(candJet.Pt()+jpsi_pt);
 
     cand_jet_pt=candJet.Pt();
     cand_jet_eta=candJet.Eta();
@@ -163,31 +194,4 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     OutTree.Fill();
   }
   return 0;
-}
-void print_cut_summary(std::string CutName, cut<int> Cut){
-  printf("| %-8s | %8d | %6d | \n",CutName.c_str(),Cut.cut_value(),Cut.count());
-}
-void print_cut_summary(std::string CutName, cut<double> Cut){
-  printf("| %-8s | %8.2g | %6d | \n",CutName.c_str(),Cut.cut_value(),Cut.count());
-}
-void print_cut_table(real_cuts& CutDefReals,category_cuts& CutDefCats,
-		     const char* CutNames[],size_t nCuts){
-  real_cuts::iterator rCutHandle;
-  category_cuts::iterator cCutHandle;
-  printf("|----------+----------+--------|\n");
-  printf("| Cut Name | Cut Val  |  Count |\n");
-  printf("|----------+----------+--------|\n");
-  for(size_t i=0; i < nCuts; i++){
-    cCutHandle=CutDefCats.find(CutNames[i]);
-    if(cCutHandle!=CutDefCats.end()){
-      print_cut_summary(cCutHandle->first, cCutHandle->second);
-    }
-    else{
-      rCutHandle=CutDefReals.find(CutNames[i]);
-      if(rCutHandle!=CutDefReals.end()){
-	print_cut_summary(rCutHandle->first,rCutHandle->second);
-      }
-    }
-  }
-  printf("|----------+----------+--------|\n");
 }

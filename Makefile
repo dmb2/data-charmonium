@@ -5,20 +5,24 @@ LIBDIR:=$(shell root-config --libdir)
 ROOTINCDIR:=$(shell root-config --incdir)
 LDFLAGS:=$(shell root-config --libs) #-L ./lib #-lgcov
 WFLAGS= -Wextra -Wall 
-DFLAGS=-O2 #-fprofile-arcs -ftest-coverage 
+DFLAGS=-O3 #-fprofile-arcs -ftest-coverage 
 CXXFLAGS=$(shell root-config --ldflags) -pg -I$(INCDIR) -I$(ROOTINCDIR)	\
 $(DFLAGS) $(WFLAGS) -ansi
 
 .PHONY: all clean 
-all: run-analysis
+all: skim-tree cut-flow-plots
 
-tree-bug: ./bin/tree-bug.C
+tree-bug: ./bin/tree-bug.cxx
 	$(CC) $(CXXFLAGS) $? -o $@ $(LDFLAGS)
-run-analysis: cut-flow-studies.o run-analysis.o
+skim-tree: cut-flow-studies.o skim-tree.o
 	$(CC) $? -o $@ $(LDFLAGS) 
-run-analysis.o: ./bin/main.cxx
+skim-tree.o: ./bin/skim-tree.cxx
+	$(CC) $(CXXFLAGS) -c $< -o $@
+cut-flow-plots: AtlasStyle.o cut-flow-plots.o 
+	$(CC) AtlasStyle.o cut-flow-plots.o  -o $@ $(LDFLAGS) 
+cut-flow-plots.o: ./bin/cut-flow-plots.cxx 
 	$(CC) $(CXXFLAGS) -c $< -o $@
 %.o: ./src/%.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@
 clean:
-	-rm *.o run-analysis
+	-rm *.o skim-tree
