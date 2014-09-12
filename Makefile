@@ -14,7 +14,7 @@ all: skim-tree cut-flow-plots
 
 tree-bug: ./bin/tree-bug.cxx
 	$(CC) $(CXXFLAGS) $? -o $@ $(LDFLAGS)
-skim-tree: cut-flow-studies.o skim-tree.o
+skim-tree: cut-flow-studies.o skim-tree.o 
 	$(CC) $? -o $@ $(LDFLAGS) 
 skim-tree.o: ./bin/skim-tree.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@
