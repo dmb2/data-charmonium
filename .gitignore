@@ -15,7 +15,14 @@
 *.a
 *.lib
 
-# Executables
-*.exe
+# images
+*.pdf 
+*.png
+
+# ROOT
+*.root
+
+# Log files
+*.log
+*.aux
 *.out
-*.app
