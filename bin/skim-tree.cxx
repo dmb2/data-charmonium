@@ -19,7 +19,7 @@ int main(const int argc, const char* argv[]){
   for(int i=0; i < argc; i++){
     arg_list.push_back(std::string(argv[i]));
   }
-  TFile* file = new TFile("ntuple.root");
+  TFile* file = new TFile("ntuple.root");//ntuple.root
   tree_collection Forest; 
   const char* treeNames[] = {"AUX","JET","MU","JPSI",
 			    "PRIVX","SEL_TRACKS",
@@ -30,6 +30,7 @@ int main(const int argc, const char* argv[]){
 
   real_cuts CutDefReals;
   category_cuts CutDefCats;
+  CutDefCats["Trigger"]=cut<int>(1);
   CutDefCats["Nominal"]=cut<int>();
   CutDefCats["NumJets"]=cut<int>(1);
   CutDefReals["JPsiPt"]=cut<double>(20);
@@ -37,7 +38,7 @@ int main(const int argc, const char* argv[]){
   CutDefReals["JetEta"]=cut<double>(2.5);
   CutDefReals["DeltaR"]=cut<double>(0.4);
   CutDefReals["JetPt"]=cut<double>(45);
-  const char* CutNames[]={ "Nominal", "NumJets", "JPsiPt", "JPsiEta",
+  const char* CutNames[]={ "Nominal", "Trigger","NumJets", "JPsiPt", "JPsiEta",
 			   "JetEta","DeltaR","JetPt"}; 
   TFile OutFile("cut_tree.root","RECREATE");
   OutFile.cd();

@@ -148,7 +148,7 @@ void print_cut_hist(TTree* tree,const char* cut_branches[],size_t nCuts,
   for(size_t i = 0; i < nCuts; i++){
     set_pad_margins(canv.cd(i+1),i+1);
     TH1* hist = make_hist(base_hist,tree, cut_branches, i,plot);
-    hist->Draw("H");
+    hist->Draw("BOX");
     if( i < 3){ //top row
       remove_axis(hist->GetXaxis());
     }
@@ -174,8 +174,8 @@ int main(const int argc, const char* argv[]){
   }
   TFile InFile("cut_tree.root");
   TTree* CutTree = dynamic_cast<TTree*>(InFile.Get("mini"));
-  const char* cut_branches[]={"num_jets_p", "jpsi_pt_p",    
-			      "jpsi_eta_p", "delta_r_p",    
+  const char* cut_branches[]={"num_jets_p", "mu_trigger_p", "jpsi_pt_p",    
+			      /*"jpsi_eta_p",*/ "delta_r_p",    
 			      "jet_eta_p", "jet_pt_p"};
   size_t nCuts=sizeof(cut_branches)/sizeof(*cut_branches);
   map<string,string> pretty_cNames;
@@ -185,7 +185,9 @@ int main(const int argc, const char* argv[]){
   pretty_cNames["delta_r_p"]="#Delta R(Jet;J/#psi) < 0.4";    
   pretty_cNames["jet_eta_p"]="|#eta(jet)| < 2.5"; 
   pretty_cNames["jet_pt_p"]="p_{T}(jet) > 45 GeV";
+  pretty_cNames["mu_trigger_p"]="1 #mu Trigger, 2012"
   map<string,TH1D*> HistBook;
+  HistBook["pileup"]=new TH1D("pileup","Average Interactions per Xing; #mu; evts/binwidth",41,-0.5,40.5);
   HistBook["jet_pt"]=new TH1D("jet_pt","Jet p_{T};p_{T} [GeV];evts/binwidth",50,0,250);
   HistBook["jet_eta"]=new TH1D("jet_eta","Jet #eta;#eta;evts/binwidth",50,-2.6,2.6);
   HistBook["jet_e"]=new TH1D("jet_e","Jet E;E [GeV]; evts/binwidth",50,0,500);
@@ -197,7 +199,6 @@ int main(const int argc, const char* argv[]){
   vector<string> plots = map_keys(HistBook);
   map<string,TH2D*> HistBook2D;
   TColor* color = new TColor(1756,0.0,0.0,0.0,"tran_black",0.75);
-  // color->SetAlpha(0.5);
   for(map<string,TH1D*>::iterator item=HistBook.begin(); 
       item != HistBook.end(); ++item){
     const std::string& plot = item->first;

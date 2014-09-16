@@ -15,6 +15,7 @@ using namespace Units;
 using std::cout;
 using std::cerr;
 using std::endl;
+using namespace std;
 bool verbose=true;
 
 void print_cut_summary(std::string CutName, cut<int> Cut){
@@ -62,7 +63,7 @@ void initialize_forest(tree_collection& forest){
 }
 
 template<typename T>
-void setup_four_vector(TTree*& tree, T& pt, T& eta, T& phi, T& E,const char* key){
+void setup_four_vector(TTree* tree, T& pt, T& eta, T& phi, T& E,const char* key){
   char branch_name[50];
   snprintf(branch_name, 50,"%s_pt",key);
   tree->SetBranchAddress(branch_name, &pt);
@@ -95,6 +96,9 @@ double find_closest(const std::vector<double>& pt,
   double DeltaR(99.);
   TLorentzVector ptcl(0,0,0,0);
   for(size_t i=0; i < pt.size(); i++){
+    if(pt.at(i)*GeV < 20 || fabs(eta.at(i)) > 4.5){
+      continue;
+    }
     ptcl.SetPtEtaPhiE(pt.at(i)*GeV, eta.at(i), phi.at(i), E.at(i)*GeV);
     dR=axis.DeltaR(ptcl);
     if(dR < DeltaR){
@@ -104,10 +108,20 @@ double find_closest(const std::vector<double>& pt,
   }
   return DeltaR;
 }
-
+int passed_trigger(std::vector<std::string>& trigger_names){
+  //cf https://twiki.cern.ch/twiki/bin/view/Atlas/MuonTriggerPhysicsTriggerRecommendations2012
+  for(std::vector<std::string>::const_iterator name=trigger_names.begin();
+      name!=trigger_names.end(); ++name){
+    if(*name == "EF_mu36_tight" || *name == "EF_mu24i_tight"){
+      return 1;
+    }
+  }
+  return 0; 
+}
 int process_tree(tree_collection& Forest, real_cuts& CutDefReal, 
 		 category_cuts& CutDefCat, TTree& OutTree){
   unsigned int squawk_every = 1000;
+  double pileup(0.);
   double z(0.), DeltaR(999.);
   double jpsi_pt(0.), jpsi_eta(0.), jpsi_phi(0.), jpsi_E(0.);
   std::vector<double> *jet_pt=NULL, *jet_eta=NULL, *jet_phi=NULL, *jet_E=NULL;
@@ -116,11 +130,14 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double t_jpsi_pt(0.), t_jpsi_eta(0.),t_jpsi_phi(0.), t_jpsi_E(0.);
   std::vector<double> *t_jet_pt=NULL, *t_jet_eta=NULL, 
     *t_jet_phi=NULL, *t_jet_E=NULL;
+  std::vector<std::string>* EF_trigger_names=NULL;
 
   setup_four_vector(Forest["AUX"], jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
   setup_four_vector(Forest["AUX"], t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
   setup_four_vector(Forest["JET"], jet_pt, jet_eta, jet_phi, jet_E, "JET");
   setup_four_vector(Forest["TRUTH_JET"], t_jet_pt, t_jet_eta, t_jet_phi, t_jet_E, "JET");
+  Forest["AUX"]->SetBranchAddress("AvgIntPerXing",&pileup);
+  Forest["TRIG"]->SetBranchAddress("TRIG_EF_trigger_name",&EF_trigger_names);
 
   double cand_jet_pt(0.), cand_jet_eta(0.),cand_jet_phi(0.), cand_jet_E(0.);
   double cand_t_jet_pt(0.), cand_t_jet_eta(0.), cand_t_jet_phi(0.), cand_t_jet_E(0.);
@@ -132,14 +149,15 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 
   setup_four_vector_output(OutTree,t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
   setup_four_vector_output(OutTree,jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
-
+  OutTree.Branch("pileup",&pileup);
   OutTree.Branch("jet_z",&z);
   OutTree.Branch("delta_r",&DeltaR);
   OutTree.Branch("truth_jet_z",&t_z);
   OutTree.Branch("truth_delta_r",&t_DeltaR);
 
-  int has_num_jets=0, has_jpsi_pt=0, has_jpsi_eta=0, 
+  int has_trigger=0, has_num_jets=0, has_jpsi_pt=0, has_jpsi_eta=0, 
     has_jet_eta=0, has_delta_r=0, has_jet_pt=0;
+  OutTree.Branch("mu_trigger_p",&has_trigger);
   OutTree.Branch("num_jets_p",&has_num_jets);
   OutTree.Branch("jpsi_pt_p",&has_jpsi_pt);
   OutTree.Branch("jpsi_eta_p",&has_jpsi_eta);
@@ -156,6 +174,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   TLorentzVector candJPsi(0,0,0,0);
   for(Long64_t entry=0; entry < nEntries; entry++){
     retrieve_values(Forest,entry);
+    has_trigger=pass_cut(eq,passed_trigger(*EF_trigger_names),CutDefCat["Trigger"]);
     if(entry%squawk_every==0 && verbose){
       cout <<"Processing entry "<<entry<<endl;
     }
