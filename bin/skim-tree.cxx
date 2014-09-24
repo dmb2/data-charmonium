@@ -30,16 +30,16 @@ int main(const int argc, const char* argv[]){
 
   real_cuts CutDefReals;
   category_cuts CutDefCats;
-  CutDefCats["Trigger"]=cut<int>(1);
-  CutDefCats["Nominal"]=cut<int>();
-  CutDefCats["NumJets"]=cut<int>(1);
-  CutDefReals["JPsiPt"]=cut<double>(20);
-  CutDefReals["JPsiEta"]=cut<double>(2.5);
-  CutDefReals["JetEta"]=cut<double>(2.5);
-  CutDefReals["DeltaR"]=cut<double>(0.4);
-  CutDefReals["JetPt"]=cut<double>(45);
-  const char* CutNames[]={ "Nominal", "Trigger","NumJets", "JPsiPt", "JPsiEta",
-			   "JetEta","DeltaR","JetPt"}; 
+  CutDefCats["mu_trigger"]=cut<int>(1);
+  CutDefCats["nominal"]=cut<int>();
+  CutDefCats["num_jets"]=cut<int>(1);
+  CutDefReals["jpsi_pt"]=cut<double>(20);
+  CutDefReals["jpsi_eta"]=cut<double>(2.5);
+  CutDefReals["jet_eta"]=cut<double>(2.5);
+  CutDefReals["delta_r"]=cut<double>(0.4);
+  CutDefReals["jet_pt"]=cut<double>(45);
+  const char* CutNames[]={ "nominal", "mu_trigger","num_jets", "jpsi_pt", "jpsi_eta",
+			   "jet_eta","delta_r","jet_pt"}; 
   TFile OutFile("cut_tree.root","RECREATE");
   OutFile.cd();
   TTree OutTree("mini","mini");

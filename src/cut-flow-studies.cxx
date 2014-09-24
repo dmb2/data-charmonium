@@ -174,7 +174,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   TLorentzVector candJPsi(0,0,0,0);
   for(Long64_t entry=0; entry < nEntries; entry++){
     retrieve_values(Forest,entry);
-    has_trigger=pass_cut(eq,passed_trigger(*EF_trigger_names),CutDefCat["Trigger"]);
     if(entry%squawk_every==0 && verbose){
       cout <<"Processing entry "<<entry<<endl;
     }
@@ -184,16 +183,17 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     jpsi_pt*=GeV;
     t_jpsi_E*=GeV;
     t_jpsi_pt*=GeV;
-    CutDefCat["Nominal"].pass();
-    has_num_jets=pass_cut(greater_than_eq, int(jet_pt->size()), CutDefCat["NumJets"]);
-    has_jpsi_pt=pass_cut(greater_than, jpsi_pt, CutDefReal["JPsiPt"]);
-    has_jpsi_eta=pass_cut(less_than, fabs(jpsi_eta),CutDefReal["JPsiEta"]);
+    CutDefCat["nominal"].pass();
+    has_trigger=pass_cut(eq,passed_trigger(*EF_trigger_names),CutDefCat["mu_trigger"]);
+    has_num_jets=pass_cut(greater_than_eq, int(jet_pt->size()), CutDefCat["num_jets"]);
+    has_jpsi_pt=pass_cut(greater_than, jpsi_pt, CutDefReal["jpsi_pt"]);
+    has_jpsi_eta=pass_cut(less_than, fabs(jpsi_eta),CutDefReal["jpsi_eta"]);
     candJPsi.SetPtEtaPhiE(jpsi_pt, jpsi_eta, 
 			  jpsi_phi, jpsi_E);
     DeltaR=find_closest(*jet_pt,*jet_eta,*jet_phi,*jet_E, candJet, candJPsi);
-    has_delta_r=pass_cut(less_than, DeltaR, CutDefReal["DeltaR"]);
-    has_jet_eta=pass_cut(less_than, candJet.Eta(), CutDefReal["JetEta"]);
-    has_jet_pt=pass_cut(greater_than, candJet.Pt(), CutDefReal["JetPt"]);
+    has_delta_r=pass_cut(less_than, DeltaR, CutDefReal["delta_r"]);
+    has_jet_eta=pass_cut(less_than, candJet.Eta(), CutDefReal["jet_eta"]);
+    has_jet_pt=pass_cut(greater_than, candJet.Pt(), CutDefReal["jet_pt"]);
 
     z=(jpsi_pt)/(candJet.Pt()+jpsi_pt);
 

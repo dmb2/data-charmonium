@@ -61,26 +61,22 @@ int parse_line(const std::string& line, std::vector<std::string>& options,const 
   options.push_back(line.substr(delim_pos+1));
   return 0;
 }
-int parse_file(std::ifstream& file/*,std::vector<std::vector<std::string > >& options*/){
+int parse_file(std::ifstream& file,std::vector<std::vector<std::string > >& options){
   std::string line;
   size_t line_n=0;
   while(std::getline(file,line)){
     line_n++;
-    std::vector<std::string> options;
-    options.reserve(3);
+    std::vector<std::string> line_opts;
+    line_opts.reserve(3);
     line = strip_whitespace(line);
     if(line[0]=='#') {
       continue;
     }
     line = strip_comment(line);
-    if(parse_line(line,options,line_n)){
+    if(parse_line(line,line_opts,line_n)){
       break;
     };
-    for(std::vector<std::string>::const_iterator it=options.begin(); 
-    	it!=options.end(); ++it){
-      std::cout << *it << " ";
-    }
-    std::cout << std::endl;
+    options.push_back(line_opts);
   }
   return 0;
 }
