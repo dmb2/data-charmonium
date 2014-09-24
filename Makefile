@@ -10,12 +10,16 @@ CXXFLAGS=$(shell root-config --ldflags) -pg -I$(INCDIR) -I$(ROOTINCDIR)	\
 $(DFLAGS) $(WFLAGS) -ansi
 
 .PHONY: all clean 
-all: skim-tree cut-flow-plots
+all: skim-tree cut-flow-plots simple-parser-test
 
 tree-bug: ./bin/tree-bug.cxx
 	$(CC) $(CXXFLAGS) $? -o $@ $(LDFLAGS)
+simple-parser-test: simple-parser-test.o simple-parser.o
+	$(CC) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
+simple-parser-test.o: ./bin/simple-parser-test.cxx
+	$(CC) $(CXXFLAGS) -c $< -o $@
 skim-tree: cut-flow-studies.o skim-tree.o 
-	$(CC) $? -o $@ $(LDFLAGS) 
+	$(CC) $^ -o $@ $(LDFLAGS) 
 skim-tree.o: ./bin/skim-tree.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@
 cut-flow-plots: AtlasStyle.o cut-flow-plots.o 

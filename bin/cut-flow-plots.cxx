@@ -185,7 +185,7 @@ int main(const int argc, const char* argv[]){
   pretty_cNames["delta_r_p"]="#Delta R(Jet;J/#psi) < 0.4";    
   pretty_cNames["jet_eta_p"]="|#eta(jet)| < 2.5"; 
   pretty_cNames["jet_pt_p"]="p_{T}(jet) > 45 GeV";
-  pretty_cNames["mu_trigger_p"]="1 #mu Trigger, 2012"
+  pretty_cNames["mu_trigger_p"]="1 #mu Trigger, 2012";
   map<string,TH1D*> HistBook;
   HistBook["pileup"]=new TH1D("pileup","Average Interactions per Xing; #mu; evts/binwidth",41,-0.5,40.5);
   HistBook["jet_pt"]=new TH1D("jet_pt","Jet p_{T};p_{T} [GeV];evts/binwidth",50,0,250);
