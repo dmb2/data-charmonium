@@ -87,11 +87,11 @@ void setup_four_vector_output(TTree& tree, T& pt, T& eta, T& phi, T& E,const cha
   tree.Branch(branch_name, &E);
 }
 double find_closest(const std::vector<double>& pt,
-		  const std::vector<double>& eta,
-		  const std::vector<double>& phi,
-		  const std::vector<double>& E,
-		  TLorentzVector& closest,
-		  TLorentzVector& axis){
+		    const std::vector<double>& eta,
+		    const std::vector<double>& phi,
+		    const std::vector<double>& E,
+		    TLorentzVector& closest,
+		    TLorentzVector& axis, size_t& idx){
   double dR(0.);
   double DeltaR(99.);
   TLorentzVector ptcl(0,0,0,0);
@@ -104,6 +104,7 @@ double find_closest(const std::vector<double>& pt,
     if(dR < DeltaR){
       DeltaR = dR;
       closest=ptcl;
+      idx=i;
     }
   }
   return DeltaR;
@@ -122,12 +123,16 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 		 category_cuts& CutDefCat, TTree& OutTree){
   unsigned int squawk_every = 1000;
   double pileup(0.);
+  double tau1(0),tau2(0),tau3(0),tau21(0),tau32(0);
+  double t_tau1(0),t_tau2(0),t_tau3(0),t_tau21(0),t_tau32(0);
   double z(0.), DeltaR(999.);
   double jpsi_pt(0.), jpsi_eta(0.), jpsi_phi(0.), jpsi_E(0.);
+  std::vector<double> *jet_tau1=NULL, *jet_tau2=NULL, *jet_tau3=NULL;
   std::vector<double> *jet_pt=NULL, *jet_eta=NULL, *jet_phi=NULL, *jet_E=NULL;
 
   double t_z(0.), t_DeltaR(0.);
   double t_jpsi_pt(0.), t_jpsi_eta(0.),t_jpsi_phi(0.), t_jpsi_E(0.);
+  std::vector<double> *t_jet_tau1=NULL, *t_jet_tau2=NULL, *t_jet_tau3=NULL;
   std::vector<double> *t_jet_pt=NULL, *t_jet_eta=NULL, 
     *t_jet_phi=NULL, *t_jet_E=NULL;
   std::vector<std::string>* EF_trigger_names=NULL;
@@ -138,6 +143,14 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   setup_four_vector(Forest["TRUTH_JET"], t_jet_pt, t_jet_eta, t_jet_phi, t_jet_E, "JET");
   Forest["AUX"]->SetBranchAddress("AvgIntPerXing",&pileup);
   Forest["TRIG"]->SetBranchAddress("TRIG_EF_trigger_name",&EF_trigger_names);
+  Forest["JET"]->SetBranchAddress("JET_tau1",&jet_tau1);
+  Forest["JET"]->SetBranchAddress("JET_tau2",&jet_tau2);
+  Forest["JET"]->SetBranchAddress("JET_tau3",&jet_tau3);
+
+  Forest["TRUTH_JET"]->SetBranchAddress("JET_tau1",&t_jet_tau1);
+  Forest["TRUTH_JET"]->SetBranchAddress("JET_tau2",&t_jet_tau2);
+  Forest["TRUTH_JET"]->SetBranchAddress("JET_tau3",&t_jet_tau3);
+
 
   double cand_jet_pt(0.), cand_jet_eta(0.),cand_jet_phi(0.), cand_jet_E(0.);
   double cand_t_jet_pt(0.), cand_t_jet_eta(0.), cand_t_jet_phi(0.), cand_t_jet_E(0.);
@@ -152,6 +165,18 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   OutTree.Branch("pileup",&pileup);
   OutTree.Branch("jet_z",&z);
   OutTree.Branch("delta_r",&DeltaR);
+  OutTree.Branch("tau1",&tau1);
+  OutTree.Branch("tau2",&tau2);
+  OutTree.Branch("tau3",&tau3);
+  OutTree.Branch("tau21",&tau21);
+  OutTree.Branch("tau32",&tau32);
+
+  OutTree.Branch("truth_tau1",&t_tau1);
+  OutTree.Branch("truth_tau2",&t_tau2);
+  OutTree.Branch("truth_tau3",&t_tau3);
+  OutTree.Branch("truth_tau21",&t_tau21);
+  OutTree.Branch("truth_tau32",&t_tau32);
+
   OutTree.Branch("truth_jet_z",&t_z);
   OutTree.Branch("truth_delta_r",&t_DeltaR);
 
@@ -172,6 +197,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   TLorentzVector candJet(0,0,0,0);
   TLorentzVector candTruthJet(0,0,0,0);
   TLorentzVector candJPsi(0,0,0,0);
+  size_t idx=0;
   for(Long64_t entry=0; entry < nEntries; entry++){
     retrieve_values(Forest,entry);
     if(entry%squawk_every==0 && verbose){
@@ -190,25 +216,36 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     has_jpsi_eta=pass_cut(less_than, fabs(jpsi_eta),CutDefReal["jpsi_eta"]);
     candJPsi.SetPtEtaPhiE(jpsi_pt, jpsi_eta, 
 			  jpsi_phi, jpsi_E);
-    DeltaR=find_closest(*jet_pt,*jet_eta,*jet_phi,*jet_E, candJet, candJPsi);
+    DeltaR=find_closest(*jet_pt,*jet_eta,*jet_phi,*jet_E, candJet, candJPsi,idx);
     has_delta_r=pass_cut(less_than, DeltaR, CutDefReal["delta_r"]);
     has_jet_eta=pass_cut(less_than, candJet.Eta(), CutDefReal["jet_eta"]);
     has_jet_pt=pass_cut(greater_than, candJet.Pt(), CutDefReal["jet_pt"]);
 
     z=(jpsi_pt)/(candJet.Pt()+jpsi_pt);
-
+    tau1=jet_tau1->at(idx);
+    tau2=jet_tau2->at(idx);
+    tau3=jet_tau3->at(idx);
+    tau32= (tau3*tau2 > 0) ? tau3/tau2 : -1.;
+    tau21= (tau2*tau1 > 0) ? tau2/tau1 : -1.;
     cand_jet_pt=candJet.Pt();
     cand_jet_eta=candJet.Eta();
     cand_jet_phi=candJet.Phi();
     cand_jet_E=candJet.E();
-
+    idx=0;
     t_DeltaR=find_closest(*t_jet_pt,*t_jet_eta,*t_jet_phi,*t_jet_E, 
-			  candTruthJet, candJet);
+			  candTruthJet, candJet,idx);
     t_z=t_jpsi_pt/(candTruthJet.Pt()+t_jpsi_pt);
     cand_t_jet_pt=candTruthJet.Pt();
     cand_t_jet_eta=candTruthJet.Eta();
     cand_t_jet_phi=candTruthJet.Phi();
     cand_t_jet_E=candTruthJet.E();
+
+    t_tau1=t_jet_tau1->at(idx);
+    t_tau2=t_jet_tau2->at(idx);
+    t_tau3=t_jet_tau3->at(idx);
+    t_tau32=t_tau3/t_tau2;
+    t_tau21=t_tau2/t_tau1;
+
 
     OutTree.Fill();
   }

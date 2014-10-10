@@ -19,7 +19,7 @@ int main(const int argc, const char* argv[]){
   for(int i=0; i < argc; i++){
     arg_list.push_back(std::string(argv[i]));
   }
-  TFile* file = new TFile("ntuple.root");//ntuple.root
+  TFile* file = new TFile("ntuple-nsj.root");//ntuple.root
   tree_collection Forest; 
   const char* treeNames[] = {"AUX","JET","MU","JPSI",
 			    "PRIVX","SEL_TRACKS",
