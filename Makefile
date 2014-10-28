@@ -15,24 +15,22 @@ BINOBJ:=$(BINSRC:.cxx=.o)
 
 .PHONY: all clean 
 all: $(BINS)
-
-debug:
+debug: 
 	@echo $(BINSRC)
-	@echo $(BINS)
 	@echo $(BINOBJ)
-	@echo $(CXXFLAGS)
-simple-parser-test: bin/simple-parser-test.o AtlasStyle.o simple-parser.o
+# KISS
+simple-parser-test: bin/simple-parser-test.o src/simple-parser.o
 	$(CC) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
-skim-tree: cut-flow-studies.o tree-utils.o AtlasStyle.o bin/skim-tree.o 
+skim-tree: src/cut-flow-studies.o src/tree-utils.o bin/skim-tree.o 
 	$(CC) $^ -o $@ $(LDFLAGS) 
-skim-truth-tree: truth-studies.o tree-utils.o AtlasStyle.o bin/skim-truth-tree.o 
+skim-truth-tree: src/truth-studies.o src/tree-utils.o bin/skim-truth-tree.o 
+	$(CC) $^ -o $@ $(LDFLAGS) 
+cut-flow-plots: src/AtlasStyle.o bin/cut-flow-plots.o 
 	$(CC) $^ -o $@ $(LDFLAGS) 
 
-$(BINOBJ): $(BINSRC) 
-	$(CC) $(CXXFLAGS) -c $<  -o $@
-cut-flow-plots: AtlasStyle.o bin/cut-flow-plots.o 
-	$(CC) $^  -o $@ $(LDFLAGS) 
-%.o: ./src/%.cxx
+bin/%.o: ./bin/%.cxx
+	$(CC) $(CXXFLAGS) -c $< -o $@
+src/%.o: ./src/%.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@
 clean:
-	-rm *.o $(BINS) bin/*.o 
+	-rm *.o $(BINS) bin/*.o src/*.o
