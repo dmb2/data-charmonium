@@ -27,7 +27,8 @@ int parse_line(const std::string& line, std::vector<std::string>& options,const 
   /// value, and cut_type is either "cat" or "real".
   size_t idx=0;
   idx=line.find('=');
-  if(idx!=std::string::npos && line[idx+1]!='='){
+  if(idx!=std::string::npos && line[idx+1]!='=' &&
+     line[idx-1]!='>' && line[idx-1]!='<' && line[idx-1]!='!'){
     options.push_back(line.substr(0,idx));
     options.push_back(line.substr(idx+1));
     return 0;

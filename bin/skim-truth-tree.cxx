@@ -6,7 +6,7 @@
 #include <string>
 #include <map>
 // Local Includes
-#include "cut-flow-studies.hh"
+#include "truth-studies.hh"
 #include "Units.hh"
 // Root Includes
 #include "TFile.h"
@@ -19,14 +19,8 @@ int main(const int argc, const char* argv[]){
   for(int i=0; i < argc; i++){
     arg_list.push_back(std::string(argv[i]));
   }
-  TFile* file = new TFile("ntuple-nsj.root");//ntuple.root
-  tree_collection Forest; 
-  const char* treeNames[] = {"AUX","JET","MU","JPSI",
-			    "PRIVX","SEL_TRACKS",
-			    "TRIG","TRUTH_JET"};
-  for(size_t i=0; i < sizeof(treeNames)/sizeof(*(treeNames)); i++){
-    Forest[std::string(treeNames[i])]=dynamic_cast<TTree*>(file->Get(treeNames[i]));
-  }
+  TFile* file = new TFile("1S0_8.truth.d3pd.root");
+  TTree* tree = (TTree*)file->Get("truth");
 
   real_cuts CutDefReals;
   category_cuts CutDefCats;
@@ -43,14 +37,16 @@ int main(const int argc, const char* argv[]){
   TFile OutFile("cut_tree.root","RECREATE");
   OutFile.cd();
   TTree OutTree("mini","mini");
-  process_tree(Forest,CutDefReals,CutDefCats,OutTree);
+  process_tree(*tree,CutDefReals,CutDefCats,OutTree);
   print_cut_table(CutDefReals,CutDefCats,CutNames,
 		  sizeof(CutNames)/sizeof(*CutNames));
-  for(tree_collection::iterator it=Forest.begin(); it != Forest.end(); ++it){
-    if(it->second) delete it->second;
+  if(tree){ 
+    delete tree;
   }
   file->Close();
-  if(file) delete file;
+  if(file){
+    delete file;
+  }
   OutFile.Write();
   OutFile.Close();
   return 0;

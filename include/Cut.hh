@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <map>
+
 template<class cut_type>
 class cut{
 public:
@@ -151,3 +153,11 @@ template<typename T>
 bool neq(T obs_val,cut<T> Cut){
   return obs_val!=Cut;
 }
+
+typedef std::map<std::string, cut<double> > real_cuts;
+typedef std::map<std::string, cut<int> > category_cuts;
+
+void print_cut_summary(std::string CutName, cut<int> Cut);
+void print_cut_summary(std::string CutName, cut<double> Cut);
+void print_cut_table(real_cuts& CutDefReals,category_cuts& CutDefCats,
+		     const char* CutNames[],size_t nCuts);

@@ -21,9 +21,9 @@ debug:
 # KISS
 simple-parser-test: bin/simple-parser-test.o src/simple-parser.o
 	$(CC) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
-skim-tree: src/cut-flow-studies.o src/tree-utils.o bin/skim-tree.o 
+skim-tree: src/Cut.o src/cut-flow-studies.o src/tree-utils.o bin/skim-tree.o 
 	$(CC) $^ -o $@ $(LDFLAGS) 
-skim-truth-tree: src/truth-studies.o src/tree-utils.o bin/skim-truth-tree.o 
+skim-truth-tree: src/truth-studies.o src/Cut.o src/tree-utils.o bin/skim-truth-tree.o 
 	$(CC) $^ -o $@ $(LDFLAGS) 
 cut-flow-plots: src/AtlasStyle.o bin/cut-flow-plots.o 
 	$(CC) $^ -o $@ $(LDFLAGS) 
