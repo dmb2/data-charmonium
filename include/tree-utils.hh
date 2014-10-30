@@ -13,7 +13,14 @@ typedef std::map<std::string,TTree*> tree_collection;
 
 void retrieve_values(tree_collection& forest, Long64_t entry);
 void initialize_forest(tree_collection& forest);
-
+template<typename LV> 
+void store_four_vector(LV vector, double& pt, double& eta, double& phi, double& E){
+  TLorentzVector tmp_vec(vector[0],vector[1],vector[2],vector[3]);
+  pt=tmp_vec.Pt();
+  eta=tmp_vec.Eta();
+  phi=tmp_vec.Phi();
+  E=tmp_vec.E();
+};
 template<typename T>
 void setup_four_vector(TTree* tree, T& pt, T& eta, T& phi, T& E,const char* key, bool lo_case_E=true){
   char branch_name[50];

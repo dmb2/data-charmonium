@@ -126,18 +126,13 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     tau3=jet_tau3->at(idx);
     tau32= (tau3*tau2 > 0) ? tau3/tau2 : -1.;
     tau21= (tau2*tau1 > 0) ? tau2/tau1 : -1.;
-    cand_jet_pt=candJet.Pt();
-    cand_jet_eta=candJet.Eta();
-    cand_jet_phi=candJet.Phi();
-    cand_jet_E=candJet.E();
+    store_four_vector(candJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
     idx=0;
     t_DeltaR=find_closest(*t_jet_pt,*t_jet_eta,*t_jet_phi,*t_jet_E, 
 			  candTruthJet, candJet,idx);
     t_z=t_jpsi_pt/(candTruthJet.Pt()+t_jpsi_pt);
-    cand_t_jet_pt=candTruthJet.Pt();
-    cand_t_jet_eta=candTruthJet.Eta();
-    cand_t_jet_phi=candTruthJet.Phi();
-    cand_t_jet_E=candTruthJet.E();
+    store_four_vector(candTruthJet, cand_t_jet_pt, cand_t_jet_eta, 
+		      cand_t_jet_phi, cand_t_jet_E);
 
     t_tau1=t_jet_tau1->at(idx);
     t_tau2=t_jet_tau2->at(idx);
