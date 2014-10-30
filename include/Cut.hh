@@ -5,25 +5,76 @@
 template<class cut_type>
 class cut{
 public:
+  bool operator== (const cut_type& obs){
+    return m_cut_val == obs;
+  }
+  bool operator!= (const cut_type& obs){
+    return m_cut_val != obs;
+  }
+  bool operator< (const cut_type& obs){
+    return m_cut_val < obs;
+  }
+  bool operator>= (const cut_type& obs){
+    return !(m_cut_val < obs);
+  }
+  bool operator> (const cut_type& obs){
+    return m_cut_val > obs;
+  }
+  bool operator<= (const cut_type& obs){
+    return !(m_cut_val > obs);
+  }
+
   cut():m_cut_val(),
 	m_count(0),
-	m_weight(0.) {};
+	m_weight(0.)
+	/*m_cut_op(equal)*/ {};
 
-  cut(cut_type cut_val, 
+  cut(cut_type cut_val, std::string cut_op_str,
       unsigned int count=0, 
       double weight=0.):
     m_cut_val(cut_val),
     m_count(count),
-    m_weight(weight){};
+    m_weight(weight) {
+
+    if(cut_op_str=="=="){
+      m_comp_fn=&cut<cut_type>::eq;
+    }
+    else if(cut_op_str=="!="){
+      m_comp_fn=&cut<cut_type>::neq;
+    }
+    else if(cut_op_str==">="){
+      m_comp_fn=&cut<cut_type>::greater_than_eq;
+    }
+    else if(cut_op_str=="<="){
+      m_comp_fn=&cut<cut_type>::less_than_eq;
+    }
+    else if(cut_op_str=="<"){
+      m_comp_fn=&cut<cut_type>::less_than;
+    }
+    else if(cut_op_str==">"){
+      m_comp_fn=&cut<cut_type>::greater_than;
+    }
+
+  };
+  
   ~cut(){};
-  void pass(double w=1.){
+  bool pass(){
     m_count++;
-    m_weight+=w;
+    m_weight+=1;
+    return true;
+  }
+  bool pass(const cut_type obs_val,double w=1.){
+    bool result = (this->*m_comp_fn)(obs_val);
+    if(result){
+      m_count++;
+      m_weight+=w;
+    }
+    return result;
   }
   cut_type cut_value() const {return m_cut_val;}
   unsigned int count() const {return m_count;}
   double weight() const {return m_weight;}
-
+  
   bool operator==(const cut &other) const {
     return (m_cut_val == other.m_cut_val &&
 	    m_weight == other.m_weight &&
@@ -32,127 +83,31 @@ public:
   bool operator!=(const cut &other) const {
     return !(*this == other);
   }
-  template<typename cType>
-  friend bool operator== (const cType& obs, const cut<cType>& Cut);
-  template<typename cType>
-  friend bool operator!= (const cType& obs, const cut<cType>& Cut);
-
-  template<typename cType>
-  friend bool operator== (const cut<cType>& Cut, const cType& obs);
-  template<typename cType>
-  friend bool operator!= (const cut<cType>& Cut, const cType& obs);
-
-  template<typename cType>
-  friend bool operator> (const cType& obs, const cut<cType>& Cut);
-  template<typename cType>
-  friend bool operator<= (const cType& obs, const cut<cType>& Cut);
-
-  template<typename cType>
-  friend bool operator> (const cut<cType>& Cut,const cType& obs);
-  template<typename cType>
-  friend bool operator<= (const cut<cType>& Cut,const cType& obs);
-
-  template<typename cType>
-  friend bool operator< (const cType& obs, const cut<cType>& Cut);
-  template<typename cType>
-  friend bool operator>= (const cType& obs, const cut<cType>& Cut);
-  
-  template<typename cType>
-  friend bool operator< (const cut<cType>& Cut,const cType& obs);
-  template<typename cType>
-  friend bool operator>= (const cut<cType>& Cut,const cType& obs);
   
 private:
+  bool (cut<cut_type>::*m_comp_fn)(const cut_type& obs);
   cut_type m_cut_val;
   unsigned int m_count;
   double m_weight;
-};
-template<typename cType>
-bool operator== (const cType& obs, const cut<cType>& Cut){
-  return (obs==Cut.m_cut_val);
-}
-template<typename cType>
-bool operator!= (const cType& obs, const cut<cType>& Cut){
-  return !(obs==Cut);
-}
-template<typename cType>
-bool operator== (const cut<cType>& Cut, const cType& obs){
-  return (obs==Cut.m_cut_val);
-}
-template<typename cType>
-bool operator!= (const cut<cType>& Cut, const cType& obs){
-  return !(obs==Cut);
-}
-
-template<typename cType>
-bool operator> (const cType& obs, const cut<cType>& Cut){
-  return (obs > Cut.m_cut_val);
-}
-template<typename cType>
-bool operator<= (const cType& obs, const cut<cType>& Cut){
-  return !(obs > Cut);
-}
-template<typename cType>
-bool operator> (const cut<cType>& Cut,const cType& obs){
-  return (Cut.m_cut_val > obs);
-}
-template<typename cType>
-bool operator<= (const cut<cType>& Cut,const cType& obs){
-  return !(Cut > obs);
-}
-
-template<typename cType>
-bool operator< (const cType& obs, const cut<cType>& Cut){
-  return (obs < Cut.m_cut_val);
-}
-template<typename cType>
-bool operator>= (const cType& obs, const cut<cType>& Cut){
-  return !(obs < Cut);
-}
-template<typename cType>
-bool operator< (const cut<cType>& Cut,const cType& obs){
-  return (Cut.m_cut_val < obs);
-}
-template<typename cType>
-bool operator>= (const cut<cType>& Cut,const cType& obs){
-  return !(Cut < obs);
-}
-
-template<typename T>
-bool pass_cut(bool (comp_fn)(T, cut<T>),
-	      T obs_val, cut<T>& Cut, 
-	      double w=1.){
-  bool result=comp_fn(obs_val,Cut);
-  if(result){
-    Cut.pass(w);
+  bool eq(const cut_type& obs_val){
+    return m_cut_val==obs_val;
   }
-  return result;
-}
-template<typename T>
-bool less_than(T obs_val, cut<T> Cut){
-  return obs_val < Cut;
-}
-template<typename T>
-bool greater_than(T obs_val, cut<T> Cut){
-  return obs_val > Cut;
-}
-
-template<typename T>
-bool less_than_eq(T obs_val, cut<T> Cut){
-  return !(obs_val > Cut);
-}
-template<typename T>
-bool greater_than_eq(T obs_val, cut<T> Cut){
-  return !(obs_val < Cut);
-}
-template<typename T>
-bool eq(T obs_val,cut<T> Cut){
-  return obs_val==Cut;
-}
-template<typename T>
-bool neq(T obs_val,cut<T> Cut){
-  return obs_val!=Cut;
-}
+  bool neq(const cut_type& obs_val){
+    return m_cut_val!=obs_val;
+  }
+  bool less_than(const cut_type& obs_val){
+    return obs_val < m_cut_val;
+  }
+  bool less_than_eq(const cut_type& obs_val){
+    return obs_val <= m_cut_val;
+  }
+  bool greater_than(const cut_type& obs_val){
+    return obs_val > m_cut_val;
+  }
+  bool greater_than_eq(const cut_type& obs_val){
+    return obs_val >= m_cut_val;
+  }
+};
 
 typedef std::map<std::string, cut<double> > real_cuts;
 typedef std::map<std::string, cut<int> > category_cuts;

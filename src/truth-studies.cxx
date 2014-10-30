@@ -161,14 +161,14 @@ int process_tree(TTree& tree, real_cuts& CutDefReal,
     
     CutDefCat["nominal"].pass();
     
-    has_num_jets=pass_cut(greater_than_eq, int(jets.size()), CutDefCat["num_jets"]);
-    has_jpsi_pt=pass_cut(greater_than, jpsi_pt, CutDefReal["jpsi_pt"]);
-    has_jpsi_eta=pass_cut(less_than, fabs(jpsi_eta),CutDefReal["jpsi_eta"]);
+    has_num_jets=CutDefCat["num_jets"].pass(int(jets.size()));
+    has_jpsi_pt=CutDefReal["jpsi_pt"].pass(jpsi_pt);
+    has_jpsi_eta=CutDefReal["jpsi_eta"].pass(fabs(jpsi_eta));
     DeltaR=find_closest(jets, candJet, candJPsi);
     store_four_vector(candJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
-    has_delta_r=pass_cut(less_than, DeltaR, CutDefReal["delta_r"]);
-    has_jet_eta=pass_cut(less_than, candJet.eta(), CutDefReal["jet_eta"]);
-    has_jet_pt=pass_cut(greater_than, candJet.pt(), CutDefReal["jet_pt"]);
+    has_delta_r=CutDefReal["delta_r"].pass(DeltaR);
+    has_jet_eta=CutDefReal["jet_eta"].pass(fabs(candJet.eta()));
+    has_jet_pt=CutDefReal["jet_pt"].pass(candJet.pt());
     
     z=(jpsi_pt)/(candJet.pt()+jpsi_pt);
     tau1=OneSubJCalc(candJet);

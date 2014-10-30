@@ -33,4 +33,4 @@ bin/%.o: ./bin/%.cxx
 src/%.o: ./src/%.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@
 clean:
-	-rm *.o $(BINS) bin/*.o src/*.o
+	-rm $(BINS) bin/*.o src/*.o
