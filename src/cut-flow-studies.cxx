@@ -108,11 +108,14 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     jpsi_pt*=GeV;
     t_jpsi_E*=GeV;
     t_jpsi_pt*=GeV;
+
     CutDefCat["nominal"].pass();
-    has_trigger=CutDefCat["mu_trigger"].pass(passed_trigger(*EF_trigger_names));
+
+    has_trigger=CutDefCat["trigger"].pass(passed_trigger(*EF_trigger_names));
     has_num_jets=CutDefCat["num_jets"].pass(int(jet_pt->size()));
     has_jpsi_pt=CutDefReal["jpsi_pt"].pass(jpsi_pt);
     has_jpsi_eta=CutDefReal["jpsi_eta"].pass(fabs(jpsi_eta));
+
     candJPsi.SetPtEtaPhiE(jpsi_pt, jpsi_eta, 
 			  jpsi_phi, jpsi_E);
     DeltaR=find_closest(*jet_pt,*jet_eta,*jet_phi,*jet_E, candJet, candJPsi,idx);
@@ -139,7 +142,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     t_tau3=t_jet_tau3->at(idx);
     t_tau32=t_tau3/t_tau2;
     t_tau21=t_tau2/t_tau1;
-
 
     OutTree.Fill();
   }
