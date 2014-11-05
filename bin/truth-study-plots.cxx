@@ -14,16 +14,11 @@
 
 #include "AtlasStyle.hh"
 #include "histo-utils.hh"
+#include "root-sugar.hh"
 
 using namespace std;
 void usage(const char* name){
   cout <<"Usage: "<< name << " input_file.root"<<endl;
-}
-template <typename T>
-T* retrieve(const char* fname,const char* objname){
-  //This probably leaks like a sieve 
-  TFile* file = TFile::Open(fname);
-  return dynamic_cast<T*>(file->Get(objname));
 }
 int main(const int argc, const char* argv[]){
   /*
@@ -36,20 +31,19 @@ int main(const int argc, const char* argv[]){
     usage(argv[0]);
     return 0;
   }
-  //TFile InFile(argv[1]);
   AtlasStyle style;
   style.SetAtlasStyle();
   gStyle->SetFrameLineWidth(0.0);
   // gStyle->SetPadTickX(0);
   // gStyle->SetPadTickY(0);
 
-  TTree* tree = retrieve<TTree>(argv[1],"mini");
   map<string,TTree*> sample_trees;
+  sample_trees["master"]=retrieve<TTree>(argv[1],"mini");
   const char* sample_names[]={"1S0_8"/*,"3PJ_1","3PJ_8","3S1_1","3S1_8"*/};
   char fname[256];
   for(size_t i=0; i < sizeof(sample_names)/sizeof(*sample_names); i++){
     snprintf(fname,256,"%s.truth.d3pd.root",sample_names[i]);
-    sample_trees[string(sample_names[i])]=retrieve<TTree>(fname,"mini");
+    sample_trees[sample_names[i]]=retrieve<TTree>(fname,"mini");
   }
 
   map<string,TH1D*> HistBook;
@@ -77,9 +71,7 @@ int main(const int argc, const char* argv[]){
   }
   for(vector<string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
     const std::string& plot = *p;
-    print_hist(tree,plot,HistBook[plot],
-	       "_nominal.pdf", make_normal_hist);
-    
+    print_stack(sample_trees,plot,HistBook[plot],"_stack.pdf");
   }
   return 0;
 }

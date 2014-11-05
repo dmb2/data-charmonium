@@ -7,6 +7,7 @@
 #include "TH2D.h"
 #include "TStyle.h"
 #include "TLatex.h"
+#include "THStack.h"
 
 using namespace std;
 
@@ -96,6 +97,30 @@ TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot){
   TH1* hist = (TH1*)base_hist->Clone((plot + "_NOM").c_str());
   draw_histo(tree,plot.c_str(), hist->GetName(), "");
   return hist;
+}
+void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
+		 TH1* base_hist, const std::string& suffix){
+  TCanvas canv(("stk_canv_"+plot).c_str(), "Stack", 600,600);
+  TLatex decorator;
+  decorator.SetTextSize(0.04);
+  THStack stack(("stack_"+plot).c_str(),base_hist->GetTitle());
+  TH1* master = make_normal_hist(base_hist,samples["master"],plot);
+  for(std::map<std::string,TTree*>::const_iterator pair=samples.begin();
+      pair!=samples.end(); ++pair){
+    const string name = pair->first;
+    TTree* const tree = pair->second;
+    if(name=="master") {
+      continue;
+    }
+    TH1* hist = make_normal_hist(base_hist,tree,plot);
+    double scale_factor = master->Integral()/hist->Integral();
+    hist->Scale(scale_factor > 0 ? scale_factor : 1);
+    stack.Add(hist);
+  }
+  stack.Draw();
+  master->Draw("same");
+  decorator.DrawLatexNDC(0.,0.05,master->GetTitle());
+  canv.SaveAs((plot+suffix).c_str());
 }
 
 void print_hist(TTree* tree, const std::string& plot, 

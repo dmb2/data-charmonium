@@ -40,6 +40,8 @@ TH1* make_ratio_hist(TH1* base_hist, TTree* tree,
 		     const std::string& plot);
 TH1* make_response_hist(TH1* base_hist,TTree* tree,const std::string& plot);
 TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot);
+void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
+		 TH1* base_hist, const std::string& suffix);
 void print_hist(TTree* tree, const std::string& plot, 
 		TH1* base_hist, const std::string suffix, 
 		TH1* (*make_hist)(TH1*,TTree*,const std::string&));

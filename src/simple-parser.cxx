@@ -6,6 +6,7 @@
 
 #include "simple-parser.hh"
 
+
 std::string strip_whitespace(const std::string& inString){
   std::string outString(inString); 
   outString.erase(std::remove_if(outString.begin(),outString.end() ,isspace),outString.end());
@@ -80,4 +81,31 @@ int parse_file(std::ifstream& file,std::vector<std::vector<std::string > >& opti
     options.push_back(line_opts);
   }
   return 0;
+}
+void get_opts(const char* opt_fname,std::string& inFName,std::string& outFName,
+	      real_cuts& CutDefReals, category_cuts& CutDefCats){
+  std::cout<<"Using config file: "<<opt_fname<<std::endl;
+  std::ifstream file(opt_fname);
+  std::vector<std::vector<std::string > > options;
+  parse_file(file,options);
+  for(std::vector<std::vector<std::string > >::const_iterator opt_line = options.begin(); 
+      opt_line!=options.end(); ++opt_line){
+    const std::vector<std::string>&  opt = *opt_line;
+    if(opt.size()==2){
+      if(opt[0]=="inFile"){
+	inFName=opt[1];
+      }
+      else if(opt[0]=="outFile"){
+	outFName=opt[1];
+      }
+    }
+    else if(opt.size()==4){
+      if(opt[3]=="cat"){
+	CutDefCats[opt[0]]=cut<int>(atoi(opt[2].c_str()), opt[1]);
+      }
+      else if(opt[3]=="real"){
+	CutDefReals[opt[0]]=cut<double>(atof(opt[2].c_str()), opt[1]);
+      }
+    }
+  }
 }

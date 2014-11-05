@@ -16,33 +16,6 @@ using namespace Units;
 void usage(const char* prog_name){
   std::cout << "Usage: "<<prog_name<< " config.conf"<<std::endl;
 }
-void get_opts(const char* opt_fname,std::string& inFName,std::string& outFName,
-	      real_cuts& CutDefReals, category_cuts& CutDefCats){
-  std::cout<<"Using config file: "<<opt_fname<<std::endl;
-  std::ifstream file(opt_fname);
-  std::vector<std::vector<std::string > > options;
-  parse_file(file,options);
-  for(std::vector<std::vector<std::string > >::const_iterator opt_line = options.begin(); 
-      opt_line!=options.end(); ++opt_line){
-    const std::vector<std::string>&  opt = *opt_line;
-    if(opt.size()==2){
-      if(opt[0]=="inFile"){
-	inFName=opt[1];
-      }
-      else if(opt[0]=="outFile"){
-	outFName=opt[1];
-      }
-    }
-    else if(opt.size()==4){
-      if(opt[3]=="cat"){
-	CutDefCats[opt[0]]=cut<int>(atoi(opt[2].c_str()), opt[1]);
-      }
-      else if(opt[3]=="real"){
-	CutDefReals[opt[0]]=cut<double>(atof(opt[2].c_str()), opt[1]);
-      }
-    }
-  }
-}
 int main(const int argc, const char* argv[]){
   if(argc != 2) {
     usage(argv[0]);
@@ -53,8 +26,6 @@ int main(const int argc, const char* argv[]){
   real_cuts CutDefReals;
   category_cuts CutDefCats;
   get_opts(argv[1],inFName,outFName, CutDefReals, CutDefCats);
-  std::cout<<"Input File Name: "<<inFName<<std::endl;
-  std::cout<<"Output File Name: "<<outFName<<std::endl;
 
   TFile* file = new TFile(inFName.c_str());
   tree_collection Forest; 

@@ -7,45 +7,42 @@
 #include <map>
 // Local Includes
 #include "truth-studies.hh"
+#include "simple-parser.hh"
+#include "root-sugar.hh"
 #include "Units.hh"
 // Root Includes
 #include "TFile.h"
 #include "TTree.h"
+
 using namespace Units;
 using std::cout;
 using std::endl;
+void usage(const char* name){
+  cout <<"Usage: "<< name << " config.conf"<<endl;
+}
 int main(const int argc, const char* argv[]){
-  std::vector<std::string> arg_list;
-  for(int i=0; i < argc; i++){
-    arg_list.push_back(std::string(argv[i]));
+  if(argc != 2) {
+    usage(argv[0]);
+    return 1;
   }
-  TFile* file = new TFile("1S0_8.truth.d3pd.root");
-  TTree* tree = (TTree*)file->Get("truth");
-
+  std::string inFName;
+  std::string outFName;
   real_cuts CutDefReals;
   category_cuts CutDefCats;
-  //CutDefCats["mu_trig"]=cut<int>(1);
-  CutDefCats["nominal"]=cut<int>();
-  CutDefCats["num_jets"]=cut<int>(1,">=");
-  CutDefReals["jpsi_pt"]=cut<double>(20,">");
-  CutDefReals["jpsi_eta"]=cut<double>(2.5,"<");
-  CutDefReals["jet_eta"]=cut<double>(2.5,"<");
-  CutDefReals["delta_r"]=cut<double>(0.4,"<");
-  CutDefReals["jet_pt"]=cut<double>(45,">");
-  const char* CutNames[]={ "nominal"/*, "mu_trig"*/,"num_jets", "jpsi_pt", "jpsi_eta",
-			   "jet_eta","delta_r","jet_pt"}; 
-  TFile OutFile("cut_tree.root","RECREATE");
+  get_opts(argv[1],inFName,outFName, CutDefReals, CutDefCats);
+
+TTree* tree = retrieve<TTree>(inFName.c_str(),"truth");
+  TFile OutFile(outFName.c_str(),"RECREATE");
   OutFile.cd();
   TTree OutTree("mini","mini");
+
+  const char* CutNames[]={ "nominal"/*, "mu_trig"*/,"num_jets", "jpsi_pt", "jpsi_eta",
+			   "jet_eta","delta_r","jet_pt"}; 
   process_tree(*tree,CutDefReals,CutDefCats,OutTree);
   print_cut_table(CutDefReals,CutDefCats,CutNames,
 		  sizeof(CutNames)/sizeof(*CutNames));
   if(tree){ 
     delete tree;
-  }
-  file->Close();
-  if(file){
-    delete file;
   }
   OutFile.Write();
   OutFile.Close();
