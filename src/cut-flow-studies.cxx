@@ -124,6 +124,9 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     has_jet_pt=CutDefReal["jet_pt"].pass(candJet.Pt());
 
     z=(jpsi_pt)/(candJet.Pt()+jpsi_pt);
+    if(jet_pt->size()==0){
+      continue;
+    }
     tau1=jet_tau1->at(idx);
     tau2=jet_tau2->at(idx);
     tau3=jet_tau3->at(idx);
@@ -144,6 +147,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     t_tau21=t_tau2/t_tau1;
 
     OutTree.Fill();
+    idx=0;
   }
   return 0;
 }

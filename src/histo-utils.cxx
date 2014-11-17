@@ -1,5 +1,6 @@
 #include <map>
 #include <string>
+#include <iostream>
 #include <cmath>
 
 #include "TTree.h"
@@ -8,6 +9,8 @@
 #include "TH2D.h"
 #include "TStyle.h"
 #include "TLatex.h"
+
+#include "histo-utils.hh"
 
 using namespace std;
 
@@ -41,15 +44,42 @@ void remove_axis(TAxis* axis){
   axis->SetTitle("");
   axis->SetLabelOffset(999);
 }
-void set_pad_margins(TVirtualPad* pad,int pad_pos){
+void set_pad_margins(TVirtualPad* pad,int pad_pos,bool y_axis){
   pad->SetRightMargin(0);
   pad->SetTopMargin(0);
   if (pad_pos < 4){
     pad->SetBottomMargin(0);
   }
   if(pad_pos != 4 && pad_pos != 1){
-    pad->SetLeftMargin(0);
+    if(!y_axis){
+      pad->SetLeftMargin(0);
+    }
   }
+}
+std::vector<std::pair<double,double> > make_roc_pairs(TH1* signal, TH1* background){
+  std::vector<std::pair<double,double> > result;
+  if(signal->GetDimension()!=background->GetDimension()){
+    std::cout << "Error: Dimension mismatch! - make_roc_pairs"<<std::endl;
+    return result;
+  }
+  else if (signal->GetDimension() > 1 ){
+    std::cout <<"Error: Only 1D hists are supported. - make_roc_pairs"<<std::endl;
+  }
+  else if(signal->GetNbinsX() != background->GetNbinsX()){
+    std::cout<<"Error: NbinsX mismatch. - make_roc_pairs"<<std::endl;
+  }
+  // reserve space for the histograms
+  result.reserve(signal->GetNbinsX());
+  // saves having to integrate Nbins times.
+  double N_bkg(0.);
+  double N_sig(0.);
+  for(size_t i=signal->GetNbinsX(); i > 0; --i){
+    N_bkg+=background->GetBinContent(i);
+    N_sig+=signal->GetBinContent(i);
+    result.push_back(std::pair<double,double>(N_sig/(N_bkg+N_sig),
+					      1-N_bkg/(N_bkg + N_sig)));
+  }
+  return result;
 }
 TH1* make_response_hist(TH1* base_hist, TTree* tree, 
 			const char* cut_branches[],size_t cut_index, 

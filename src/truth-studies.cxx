@@ -93,7 +93,7 @@ int process_tree(TTree& tree, real_cuts& CutDefReal,
   double z(0.), DeltaR(999.);
   double jpsi_pt(0.), jpsi_eta(0.), jpsi_phi(0.), jpsi_E(0.);
 
-  //std::vector<double> *jet_pt=NULL, *jet_eta=NULL, *jet_phi=NULL, *jet_E=NULL;
+  std::vector<double> *jet_pt=NULL, *jet_eta=NULL, *jet_phi=NULL, *jet_E=NULL;
 
   std::vector<double> *mu_pt=NULL, *mu_eta=NULL, *mu_phi=NULL, *mu_E=NULL;
   std::vector<int> *mu_charge=NULL;
@@ -108,7 +108,7 @@ int process_tree(TTree& tree, real_cuts& CutDefReal,
   tree.SetBranchAddress("mc_E",&mc_E);
 
   double cand_jet_pt(0.), cand_jet_eta(0.),cand_jet_phi(0.), cand_jet_E(0.);
-  //setup_four_vector(&tree, jet_pt, jet_eta, jet_phi, jet_E, "jet_AntiKt4TruthJets",false);
+  setup_four_vector(&tree, jet_pt, jet_eta, jet_phi, jet_E, "jet_AntiKt4TruthJets",false);
   setup_four_vector(&tree, mu_pt, mu_eta, mu_phi, mu_E, "mu_muid",false);
   setup_four_vector_output(OutTree,cand_jet_pt, cand_jet_eta, 
 			   cand_jet_phi, cand_jet_E, "jet");
@@ -138,12 +138,14 @@ int process_tree(TTree& tree, real_cuts& CutDefReal,
   }
   fastjet::PseudoJet candJet(0,0,0,0);
   TLorentzVector candJPsi(0,0,0,0);
+  TLorentzVector truthCandJet(0,0,0,0);
   std::vector<fastjet::PseudoJet> particles;
   const double jetR=0.4;
   const double beta=1.0;
   Nsubjettiness OneSubJCalc(1,Njettiness::kt_axes, beta, jetR, jetR);
   Nsubjettiness TwoSubJCalc(2,Njettiness::kt_axes, beta, jetR, jetR);
   Nsubjettiness ThreeSubJCalc(3,Njettiness::kt_axes, beta, jetR, jetR);
+  size_t idx(0);
   for(Long64_t entry=0; entry < nEntries; entry++){
     tree.GetEntry(entry);
     if(entry%squawk_every==0 && verbose){
@@ -158,19 +160,21 @@ int process_tree(TTree& tree, real_cuts& CutDefReal,
     z=-1.;
     find_jpsi(*mu_pt,*mu_eta,*mu_phi,*mu_E,*mu_charge,candJPsi);
     store_four_vector(candJPsi,jpsi_pt,jpsi_eta,jpsi_phi,jpsi_E);
+
+    DeltaR=find_closest(*jet_pt,*jet_eta,*jet_phi,*jet_E, truthCandJet, candJPsi,idx);
+    find_closest(jets,candJet,truthCandJet);
+    store_four_vector(truthCandJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
     
     CutDefCat["nominal"].pass();
     
     has_num_jets=CutDefCat["num_jets"].pass(int(jets.size()));
     has_jpsi_pt=CutDefReal["jpsi_pt"].pass(jpsi_pt);
     has_jpsi_eta=CutDefReal["jpsi_eta"].pass(fabs(jpsi_eta));
-    DeltaR=find_closest(jets, candJet, candJPsi);
-    store_four_vector(candJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
     has_delta_r=CutDefReal["delta_r"].pass(DeltaR);
-    has_jet_eta=CutDefReal["jet_eta"].pass(fabs(candJet.eta()));
-    has_jet_pt=CutDefReal["jet_pt"].pass(candJet.pt());
+    has_jet_eta=CutDefReal["jet_eta"].pass(fabs(truthCandJet.Eta()));
+    has_jet_pt=CutDefReal["jet_pt"].pass(truthCandJet.Pt());
     
-    z=(jpsi_pt)/(candJet.pt()+jpsi_pt);
+    z=(jpsi_pt)/(truthCandJet.Pt()+jpsi_pt);
     tau1=OneSubJCalc(candJet);
     tau2=TwoSubJCalc(candJet);
     tau3=ThreeSubJCalc(candJet);
