@@ -62,20 +62,21 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   setup_four_vector_output(OutTree,t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
   setup_four_vector_output(OutTree,jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
   OutTree.Branch("pileup",&pileup);
-  OutTree.Branch("jet_z",&z);
-  OutTree.Branch("delta_r",&DeltaR);
   OutTree.Branch("tau1",&tau1);
   OutTree.Branch("tau2",&tau2);
   OutTree.Branch("tau3",&tau3);
   OutTree.Branch("tau21",&tau21);
   OutTree.Branch("tau32",&tau32);
+		  
+  OutTree.Branch("jet_z",&z);
+  OutTree.Branch("delta_r",&DeltaR);
 
   OutTree.Branch("truth_tau1",&t_tau1);
   OutTree.Branch("truth_tau2",&t_tau2);
   OutTree.Branch("truth_tau3",&t_tau3);
   OutTree.Branch("truth_tau21",&t_tau21);
   OutTree.Branch("truth_tau32",&t_tau32);
-
+		        
   OutTree.Branch("truth_jet_z",&t_z);
   OutTree.Branch("truth_delta_r",&t_DeltaR);
 
