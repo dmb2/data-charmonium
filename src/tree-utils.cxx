@@ -26,9 +26,9 @@ double find_closest(const std::vector<double>& pt,
   double DeltaR(99.);
   TLorentzVector ptcl(0,0,0,0);
   for(size_t i=0; i < pt.size(); i++){
-    if(pt.at(i)*GeV < 20 || fabs(eta.at(i)) > 4.5){
-      continue;
-    }
+    // if(pt.at(i)*GeV < 20 || fabs(eta.at(i)) > 4.5){
+    //   continue;
+    // }
     ptcl.SetPtEtaPhiE(pt.at(i)*GeV, eta.at(i), phi.at(i), E.at(i)*GeV);
     dR=axis.DeltaR(ptcl);
     if(dR < DeltaR){
