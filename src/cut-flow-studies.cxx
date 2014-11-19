@@ -19,7 +19,7 @@ using namespace std;
 bool verbose=true;
 
 int process_tree(tree_collection& Forest, real_cuts& CutDefReal, 
-		 category_cuts& CutDefCat, TTree& OutTree){
+		 category_cuts& CutDefCat, TTree& OutTree, const double weight){
   unsigned int squawk_every = 1000;
   double pileup(0.);
   double tau1(0),tau2(0),tau3(0),tau21(0),tau32(0);
@@ -79,7 +79,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 		        
   OutTree.Branch("truth_jet_z",&t_z);
   OutTree.Branch("truth_delta_r",&t_DeltaR);
-
+  double w=weight;
   int has_trigger=0, has_num_jets=0, has_jpsi_pt=0, has_jpsi_eta=0, 
     has_jet_eta=0, has_delta_r=0, has_jet_pt=0;
   OutTree.Branch("mu_trigger_p",&has_trigger);
@@ -89,7 +89,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   OutTree.Branch("delta_r_p", &has_delta_r);
   OutTree.Branch("jet_eta_p",&has_jet_eta);
   OutTree.Branch("jet_pt_p",&has_jet_pt);
-
+  OutTree.Branch("weight", &w);
   Long64_t nEntries = Forest["AUX"]->GetEntries();
   if(verbose) {
     cout<<"Got "<<nEntries<< " entries in input tree"<<endl;
@@ -112,17 +112,17 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 
     CutDefCat["nominal"].pass();
 
-    has_trigger=CutDefCat["trigger"].pass(passed_trigger(*EF_trigger_names));
-    has_num_jets=CutDefCat["num_jets"].pass(int(jet_pt->size()));
-    has_jpsi_pt=CutDefReal["jpsi_pt"].pass(jpsi_pt);
-    has_jpsi_eta=CutDefReal["jpsi_eta"].pass(fabs(jpsi_eta));
+    has_trigger=CutDefCat["trigger"].pass(passed_trigger(*EF_trigger_names),w);
+    has_num_jets=CutDefCat["num_jets"].pass(int(jet_pt->size()),w);
+    has_jpsi_pt=CutDefReal["jpsi_pt"].pass(jpsi_pt,w);
+    has_jpsi_eta=CutDefReal["jpsi_eta"].pass(fabs(jpsi_eta),w);
 
     candJPsi.SetPtEtaPhiE(jpsi_pt, jpsi_eta, 
 			  jpsi_phi, jpsi_E);
     DeltaR=find_closest(*jet_pt,*jet_eta,*jet_phi,*jet_E, candJet, candJPsi,idx);
-    has_delta_r=CutDefReal["delta_r"].pass(DeltaR);
-    has_jet_eta=CutDefReal["jet_eta"].pass(fabs(candJet.Eta()));
-    has_jet_pt=CutDefReal["jet_pt"].pass(candJet.Pt());
+    has_delta_r=CutDefReal["delta_r"].pass(DeltaR,w);
+    has_jet_eta=CutDefReal["jet_eta"].pass(fabs(candJet.Eta()),w);
+    has_jet_pt=CutDefReal["jet_pt"].pass(candJet.Pt(),w);
 
     z=(jpsi_pt)/(candJet.Pt()+jpsi_pt);
     if(jet_pt->size()==0){

@@ -11,6 +11,12 @@
 
 typedef std::map<std::string,TTree*> tree_collection;
 
+struct sample {
+  double xsec;
+  TTree* tree;
+};
+
+
 void retrieve_values(tree_collection& forest, Long64_t entry);
 void initialize_forest(tree_collection& forest);
 template<typename LV> 
