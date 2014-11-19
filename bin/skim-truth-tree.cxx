@@ -29,8 +29,8 @@ int main(const int argc, const char* argv[]){
   std::string outFName;
   real_cuts CutDefReals;
   category_cuts CutDefCats;
-  double target_lumi;
-  double xsec;
+  double target_lumi(0.);
+  double xsec(0.);
   std::map<std::string,std::string> value_opts;
   get_opts(argv[1],value_opts, CutDefReals, CutDefCats);
   for(std::map<std::string,std::string>::const_iterator opt=value_opts.begin();
@@ -55,7 +55,8 @@ int main(const int argc, const char* argv[]){
   OutFile.cd();
   TTree OutTree("mini","mini");
 
-  process_tree(*tree,CutDefReals,CutDefCats,OutTree);
+  const double weight=(xsec*target_lumi)/tree->GetEntries();
+  process_tree(*tree,CutDefReals,CutDefCats,OutTree,weight);
   print_cut_table(CutDefReals,CutDefCats);
   if(tree){ 
     delete tree;

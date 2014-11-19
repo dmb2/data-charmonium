@@ -87,7 +87,7 @@ double find_closest(const std::vector<fastjet::PseudoJet> jets,
   return DeltaR;
 }
 int process_tree(TTree& tree, real_cuts& CutDefReal, 
-		 category_cuts& CutDefCat, TTree& OutTree){
+		 category_cuts& CutDefCat, TTree& OutTree,const double weight){
   unsigned int squawk_every = 1000;
   double tau1(-1),tau2(-1),tau3(-1),tau21(-1),tau32(-1);
   double z(0.), DeltaR(999.);
@@ -121,7 +121,9 @@ int process_tree(TTree& tree, real_cuts& CutDefReal,
   OutTree.Branch("tau3",&tau3);
   OutTree.Branch("tau21",&tau21);
   OutTree.Branch("tau32",&tau32);
-
+  double w(weight);
+  OutTree.Branch("weight",&w);
+    
   int /*has_trigger=1,*/ has_num_jets=0, has_jpsi_pt=0, has_jpsi_eta=0, 
     has_jet_eta=0, has_delta_r=0, has_jet_pt=0;
   //OutTree.Branch("mu_trig_p",&has_trigger);
@@ -165,14 +167,14 @@ int process_tree(TTree& tree, real_cuts& CutDefReal,
     find_closest(jets,candJet,truthCandJet);
     store_four_vector(truthCandJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
     
-    CutDefCat["nominal"].pass();
+    CutDefCat["nominal"].pass(w);
     
-    has_num_jets=CutDefCat["num_jets"].pass(int(jets.size()));
-    has_jpsi_pt=CutDefReal["jpsi_pt"].pass(jpsi_pt);
-    has_jpsi_eta=CutDefReal["jpsi_eta"].pass(fabs(jpsi_eta));
-    has_delta_r=CutDefReal["delta_r"].pass(DeltaR);
-    has_jet_eta=CutDefReal["jet_eta"].pass(fabs(truthCandJet.Eta()));
-    has_jet_pt=CutDefReal["jet_pt"].pass(truthCandJet.Pt());
+    has_num_jets=CutDefCat["num_jets"].pass(int(jets.size()),w);
+    has_jpsi_pt=CutDefReal["jpsi_pt"].pass(jpsi_pt,w);
+    has_jpsi_eta=CutDefReal["jpsi_eta"].pass(fabs(jpsi_eta),w);
+    has_delta_r=CutDefReal["delta_r"].pass(DeltaR,w);
+    has_jet_eta=CutDefReal["jet_eta"].pass(fabs(truthCandJet.Eta()),w);
+    has_jet_pt=CutDefReal["jet_pt"].pass(truthCandJet.Pt(),w);
     
     z=(jpsi_pt)/(truthCandJet.Pt()+jpsi_pt);
     tau1=OneSubJCalc(candJet);
