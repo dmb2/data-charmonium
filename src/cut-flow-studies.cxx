@@ -55,30 +55,30 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double cand_t_jet_pt(0.), cand_t_jet_eta(0.), cand_t_jet_phi(0.), cand_t_jet_E(0.);
 
   setup_four_vector_output(OutTree,cand_jet_pt, cand_jet_eta, 
-			   cand_jet_phi, cand_jet_E, "jet");
+			   cand_jet_phi, cand_jet_E, "truth_jet");
   setup_four_vector_output(OutTree,cand_t_jet_pt, cand_t_jet_eta, 
-			   cand_t_jet_phi, cand_t_jet_E, "truth_jet");
+			   cand_t_jet_phi, cand_t_jet_E, "jet");
 
-  setup_four_vector_output(OutTree,t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
-  setup_four_vector_output(OutTree,jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
+  setup_four_vector_output(OutTree,t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "jpsi");
+  setup_four_vector_output(OutTree,jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "truth_jpsi");
   OutTree.Branch("pileup",&pileup);
-  OutTree.Branch("tau1",&tau1);
-  OutTree.Branch("tau2",&tau2);
-  OutTree.Branch("tau3",&tau3);
-  OutTree.Branch("tau21",&tau21);
-  OutTree.Branch("tau32",&tau32);
-		  
-  OutTree.Branch("jet_z",&z);
-  OutTree.Branch("delta_r",&DeltaR);
-
-  OutTree.Branch("truth_tau1",&t_tau1);
-  OutTree.Branch("truth_tau2",&t_tau2);
-  OutTree.Branch("truth_tau3",&t_tau3);
-  OutTree.Branch("truth_tau21",&t_tau21);
-  OutTree.Branch("truth_tau32",&t_tau32);
+  OutTree.Branch("truth_tau1",&tau1);
+  OutTree.Branch("truth_tau2",&tau2);
+  OutTree.Branch("truth_tau3",&tau3);
+  OutTree.Branch("truth_tau21",&tau21);
+  OutTree.Branch("truth_tau32",&tau32);
 		        
-  OutTree.Branch("truth_jet_z",&t_z);
-  OutTree.Branch("truth_delta_r",&t_DeltaR);
+  OutTree.Branch("truth_jet_z",&z);
+  OutTree.Branch("truth_delta_r",&DeltaR);
+
+  OutTree.Branch("tau1",&t_tau1);
+  OutTree.Branch("tau2",&t_tau2);
+  OutTree.Branch("tau3",&t_tau3);
+  OutTree.Branch("tau21",&t_tau21);
+  OutTree.Branch("tau32",&t_tau32);
+		  
+  OutTree.Branch("jet_z",&t_z);
+  OutTree.Branch("delta_r",&t_DeltaR);
   double w=weight;
   int has_trigger=0, has_num_jets=0, has_jpsi_pt=0, has_jpsi_eta=0, 
     has_jet_eta=0, has_delta_r=0, has_jet_pt=0;
@@ -105,6 +105,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     }
     DeltaR=-1.;
     z=-1.;
+
     jpsi_E*=GeV;
     jpsi_pt*=GeV;
     t_jpsi_E*=GeV;
@@ -120,6 +121,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     candJPsi.SetPtEtaPhiE(jpsi_pt, jpsi_eta, 
 			  jpsi_phi, jpsi_E);
     DeltaR=find_closest(*jet_pt,*jet_eta,*jet_phi,*jet_E, candJet, candJPsi,idx);
+
     has_delta_r=CutDefReal["delta_r"].pass(DeltaR,w);
     has_jet_eta=CutDefReal["jet_eta"].pass(fabs(candJet.Eta()),w);
     has_jet_pt=CutDefReal["jet_pt"].pass(candJet.Pt(),w);
@@ -133,6 +135,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     tau3=jet_tau3->at(idx);
     tau32= (tau3*tau2 > 0) ? tau3/tau2 : -1.;
     tau21= (tau2*tau1 > 0) ? tau2/tau1 : -1.;
+
     store_four_vector(candJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
     idx=0;
     t_DeltaR=find_closest(*t_jet_pt,*t_jet_eta,*t_jet_phi,*t_jet_E, 

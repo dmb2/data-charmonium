@@ -75,7 +75,8 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
     TH1* hist =(TH1*)base_hist->Clone((name+plot+"_"+cut_branches[cut_index]).c_str());
     hist_list[i]=hist;
     draw_histo(tree,plot.c_str(),hist->GetName(),
-	       str_join("*",cut_branches,0,cut_index+1).c_str());
+	       ((cut_index == 0) ? "weight" : "weight*" 
+		+ str_join("*",cut_branches,0,cut_index+1)).c_str());
     total+=hist->Integral();
     stack->Add(hist);
     style_hist(hist,&leg,color_map[name],leg_map[name].c_str());
@@ -101,11 +102,19 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
   master->SetLineWidth(2.);
   master->SetFillStyle(0);
   master->SetLineColor(kBlack);
-  const char* cb[]={""};
+  const char* cb[]={};
   THStack* stack = make_stack(base_hist,samples,cb,0,plot,leg,master->Integral());
   
-  stack->Draw("HIST ");
+
+  master->Draw("H");
+  stack->Draw("HIST same");
+  double s_max=((TH1*)stack->GetStack()->Last())->GetMaximum();
+  double m_max=master->GetMaximum();
+  // MSG_DEBUG("Stack: "<<s_max<<" Master: "<<m_max);
+  master->SetMaximum((s_max > m_max ? s_max : m_max)*1.2);
   master->Draw("H same");
+
+  
   leg.AddEntry(master,"MC12");
   leg.Draw();
   decorator.DrawLatexNDC(0.,0.05,master->GetTitle());
@@ -221,10 +230,10 @@ int main(const int argc, const char* argv[]){
   }
   for(vector<string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
     const std::string& plot = *p;
-    // print_stack(sample_trees,plot,HistBook[plot],"_stack.pdf");
-    print_cut_stack(sample_trees,cut_branches,nCuts,plot,
-		    HistBook[plot],pretty_cNames,
-		    "_normal.pdf");
+    print_stack(sample_trees,plot,HistBook[plot],"_stack.pdf");
+    // print_cut_stack(sample_trees,cut_branches,nCuts,plot,
+    // 		    HistBook[plot],pretty_cNames,
+    // 		    "_normal.pdf");
   }
   return 0;
 }

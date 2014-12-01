@@ -98,7 +98,7 @@ TH1* make_normal_hist(TH1* base_hist, TTree* tree,
 				      str_join("_",cut_branches,
 					       0,cut_index+1)).c_str());
   draw_histo(tree,plot.c_str(),hist->GetName(),
-	     str_join("*",cut_branches,0,cut_index+1).c_str());
+	     ("weight*"+str_join("*",cut_branches,0,cut_index+1)).c_str());
   return hist;
 }
 TH1* make_ratio_hist(TH1* base_hist, TTree* tree,
@@ -125,7 +125,7 @@ TH1* make_response_hist(TH1* base_hist,TTree* tree,const std::string& plot){
 }
 TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot){
   TH1* hist = (TH1*)base_hist->Clone((plot + "_NOM").c_str());
-  draw_histo(tree,plot.c_str(), hist->GetName(), "");
+  draw_histo(tree,plot.c_str(), hist->GetName(), "weight");
   return hist;
 }
 
