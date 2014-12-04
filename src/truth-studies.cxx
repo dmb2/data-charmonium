@@ -167,7 +167,7 @@ int process_tree(TTree& tree, real_cuts& CutDefReal,
     find_closest(jets,candJet,truthCandJet);
     store_four_vector(truthCandJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
     
-    CutDefCat["nominal"].pass(w);
+    CutDefCat["nominal"].pass(0,w);//a little awkward
     
     has_num_jets=CutDefCat["num_jets"].pass(int(jets.size()),w);
     has_jpsi_pt=CutDefReal["jpsi_pt"].pass(jpsi_pt,w);

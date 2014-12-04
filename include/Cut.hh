@@ -58,12 +58,12 @@ public:
   };
   
   ~cut(){};
-  bool pass(){
+  bool pass(const double w=1.){
     m_count++;
-    m_weight+=1;
+    m_weight+=w;
     return true;
   }
-  bool pass(const cut_type obs_val,double w=1.){
+  bool pass(const cut_type obs_val,const double w=1.){
     bool result = (this->*m_comp_fn)(obs_val);
     if(result){
       m_count++;
