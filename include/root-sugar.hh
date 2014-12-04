@@ -2,7 +2,7 @@
 #include "TFile.h"
 #include <iostream>
 
-#define MSG(message) std::cout<<message<<std::endl
+#define MSG(message) std::cout<<""<<message<<""<<std::endl
 #define MSG_ERR(message) std::cerr<<"\033[31m"<<message<<"\033[0m"<<std::endl
 #define MSG_DEBUG(message) std::cout<<"\033[32m"<<message<<"\033[0m"<<std::endl
 
@@ -17,7 +17,9 @@ T* retrieve(TFile* file,const char* objname){
     }
   }
   catch(int e){
-    MSG_ERR("Could not retrieve object "<<objname);
+    obj = new T;
+    MSG_ERR("Could not retrieve object "<<obj->ClassName()<<"::"<<objname);
+    delete obj;
     exit(e);
   }
   return obj;

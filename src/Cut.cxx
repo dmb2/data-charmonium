@@ -5,14 +5,14 @@
 #include <vector>
 
 void print_cut_summary(std::string CutName, cut<int> Cut){
-  printf("| %-8s | %8d | %6d | %9.2g |\n",
+  printf("| %-8s | %8d | %6d | %9.3g |\n",
 	 CutName.c_str(), 
 	 Cut.cut_value(),
 	 Cut.count(),
 	 Cut.weight());
 }
 void print_cut_summary(std::string CutName, cut<double> Cut){
-  printf("| %-8s | %8.2g | %6d | %9.2g |\n",
+  printf("| %-8s | %8.2g | %6d | %9.3g |\n",
 	 CutName.c_str(),
 	 Cut.cut_value(),
 	 Cut.count(),

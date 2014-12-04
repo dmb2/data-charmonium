@@ -9,6 +9,7 @@
 
 //Local
 #include "cut-flow-studies.hh"
+#include "root-sugar.hh"
 #include "Units.hh"
 
 using namespace Units;
@@ -103,6 +104,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     if(entry%squawk_every==0 && verbose){
       cout <<"Processing entry "<<entry<<endl;
     }
+    idx=0;
     DeltaR=-1.;
     z=-1.;
 
@@ -112,7 +114,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     t_jpsi_pt*=GeV;
 
     CutDefCat["nominal"].pass();
-
     has_trigger=CutDefCat["trigger"].pass(passed_trigger(*EF_trigger_names),w);
     has_num_jets=CutDefCat["num_jets"].pass(int(jet_pt->size()),w);
     has_jpsi_pt=CutDefReal["jpsi_pt"].pass(jpsi_pt,w);
@@ -127,12 +128,20 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     has_jet_pt=CutDefReal["jet_pt"].pass(candJet.Pt(),w);
 
     z=(jpsi_pt)/(candJet.Pt()+jpsi_pt);
-    if(jet_pt->size()==0){
+    if(jet_pt->size()==0 || 
+       jet_tau1->size()==0 ||
+       jet_tau2->size()==0 ||
+       jet_tau3->size()==0 ||
+       t_jet_pt->size()==0 || 
+       t_jet_tau1->size()==0 ||
+       t_jet_tau2->size()==0 ||
+       t_jet_tau3->size()==0){
       continue;
     }
     tau1=jet_tau1->at(idx);
     tau2=jet_tau2->at(idx);
     tau3=jet_tau3->at(idx);
+
     tau32= (tau3*tau2 > 0) ? tau3/tau2 : -1.;
     tau21= (tau2*tau1 > 0) ? tau2/tau1 : -1.;
 
@@ -151,7 +160,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     t_tau21=t_tau2/t_tau1;
 
     OutTree.Fill();
-    idx=0;
+
   }
   return 0;
 }
