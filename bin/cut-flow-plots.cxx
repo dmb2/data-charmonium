@@ -36,9 +36,9 @@ int main(const int argc, const char* argv[]){
 			      "jet_eta_p", "jet_pt_p"};
   size_t nCuts=sizeof(cut_branches)/sizeof(*cut_branches);
   map<string,string> pretty_cNames;
-  initialize_cut_names(pretty_cNames);
+  init_cut_names(pretty_cNames);
   map<string,TH1D*> HistBook;
-  initialize_hist_book(HistBook);
+  init_hist_book(HistBook);
   map<string,TH2D*> HistBook2D;
   for(map<string,TH1D*>::iterator item=HistBook.begin(); 
       item != HistBook.end(); ++item){

@@ -27,7 +27,7 @@ skim-truth-tree: src/truth-studies.o src/Cut.o src/tree-utils.o bin/skim-truth-t
 	$(CC) $^ -o $@ $(LDFLAGS) 
 cut-flow-plots: src/histo-utils.o src/AtlasStyle.o bin/cut-flow-plots.o 
 	$(CC) $^ -o $@ $(LDFLAGS) 
-truth-study-plots: src/histo-utils.o src/AtlasStyle.o bin/truth-study-plots.o 
+truth-study-plots: src/histo-utils.o src/stack-utils.o src/AtlasStyle.o bin/truth-study-plots.o 
 	$(CC) $^ -o $@ $(LDFLAGS) 
 
 %.o: %.cxx
