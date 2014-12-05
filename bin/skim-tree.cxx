@@ -30,6 +30,7 @@ int main(const int argc, const char* argv[]){
   double xsec(0.);
   std::map<std::string,std::string> value_opts;
   get_opts(argv[1],value_opts, CutDefReals, CutDefCats);
+  MSG("Parsed opts, checking for meta info");
   for(std::map<std::string,std::string>::const_iterator opt=value_opts.begin();
       opt!=value_opts.end(); ++opt){
     //MSG_DEBUG(opt->first <<"->"<<opt->second);
@@ -48,10 +49,10 @@ int main(const int argc, const char* argv[]){
   }
   if(argc==5){
     MSG("Overriding options in config file!");
+    inFName=argv[2];
+    outFName=argv[3];
+    xsec=atof(argv[4]);
   }
-  inFName=argv[2];
-  outFName=argv[3];
-  xsec=atof(argv[4]);
   MSG("Target Lumi: "<<target_lumi);
   MSG("Input Cross Section: " << xsec);
   MSG("Input File: "<<inFName);
