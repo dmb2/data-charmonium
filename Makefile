@@ -1,5 +1,5 @@
 CC=$(shell root-config --cxx)
-# Build this library the same way root was compiled/linked
+
 INCDIR=$(PWD)/include
 LIBDIR:=$(shell root-config --libdir)
 ROOTINCDIR:=$(shell root-config --incdir)
@@ -25,9 +25,9 @@ skim-tree: src/Cut.o src/cut-flow-studies.o src/tree-utils.o bin/skim-tree.o src
 	$(CC) $^ -o $@ $(LDFLAGS) 
 skim-truth-tree: src/truth-studies.o src/Cut.o src/tree-utils.o bin/skim-truth-tree.o src/simple-parser.o
 	$(CC) $^ -o $@ $(LDFLAGS) 
-cut-flow-plots: src/histo-utils.o src/AtlasStyle.o bin/cut-flow-plots.o 
+cut-flow-plots: src/histo-utils.o src/AtlasStyle.o src/histo-meta-data.o bin/cut-flow-plots.o 
 	$(CC) $^ -o $@ $(LDFLAGS) 
-truth-study-plots: src/histo-utils.o src/stack-utils.o src/AtlasStyle.o bin/truth-study-plots.o 
+truth-study-plots: src/histo-utils.o src/stack-utils.o src/histo-meta-data.o src/AtlasStyle.o bin/truth-study-plots.o 
 	$(CC) $^ -o $@ $(LDFLAGS) 
 
 %.o: %.cxx
