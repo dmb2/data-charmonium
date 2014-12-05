@@ -3,6 +3,7 @@
 #include <vector>
 
 class TH1;
+class TH2D;
 class TTree;
 
 template<class T1,class T2>
@@ -23,6 +24,8 @@ inline std::vector<T2> map_values(std::map<T1,T2>& inputMap){
   }
   return values;
 }
+void setup_hist(TH1* hist);
+TH2D* setup_response_hist(TH1* hist);
 std::vector<std::string> add_prefix(std::string prefix, std::vector<std::string> strings);
 std::string str_join(std::string base, const char* strings[],size_t start, size_t end);
 void draw_histo(TTree* tree,const char* branch_name, const char* hist_name, 

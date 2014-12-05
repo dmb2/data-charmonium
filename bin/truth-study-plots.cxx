@@ -18,6 +18,7 @@
 
 #include "AtlasStyle.hh"
 #include "histo-utils.hh"
+#include "histo-meta-data.hh"
 #include "root-sugar.hh"
 
 using namespace std;
@@ -172,6 +173,7 @@ void print_cut_stack(std::map<std::string,TTree*>& samples,
   decorator.DrawLatex(0.0,0.05,base_hist->GetTitle());
   canv.SaveAs((plot+file_suffix).c_str());
 }
+
 int main(const int argc, const char* argv[]){
   if(argc!=2){
     usage(argv[0]);
@@ -180,20 +182,6 @@ int main(const int argc, const char* argv[]){
   AtlasStyle style;
   style.SetAtlasStyle();
   gStyle->SetFrameLineWidth(0.0);
-  // gStyle->SetPadTickX(0);
-  // gStyle->SetPadTickY(0);
-  const char* cut_branches[]={"num_jets_p", "jpsi_pt_p",    
-			      "jpsi_eta_p", "delta_r_p",    
-			      "jet_eta_p", "jet_pt_p"};
-  size_t nCuts=sizeof(cut_branches)/sizeof(*cut_branches);
-  map<string,string> pretty_cNames;
-  pretty_cNames["num_jets_p"]="N_{j} #geq 1"; 
-  pretty_cNames["jpsi_pt_p"]="p_{T}(J/#psi) > 20 GeV";    
-  pretty_cNames["jpsi_eta_p"]="|#eta(J/#psi)| < 2.5";
-  pretty_cNames["delta_r_p"]="#Delta R(Jet;J/#psi) < 0.4";    
-  pretty_cNames["jet_eta_p"]="|#eta(jet)| < 2.5"; 
-  pretty_cNames["jet_pt_p"]="p_{T}(jet) > 45 GeV";
-  pretty_cNames["mu_trigger_p"]="1 #mu Trigger, 2012";
 
   map<string,TTree*> sample_trees;
   sample_trees["master"]=retrieve<TTree>(argv[1],"mini");
@@ -203,31 +191,23 @@ int main(const int argc, const char* argv[]){
     snprintf(fname,256,"%s.mini.root",sample_names[i]);
     sample_trees[sample_names[i]]=retrieve<TTree>(fname,"mini");
   }
+
+  const char* cut_branches[]={"num_jets_p", "jpsi_pt_p",    
+			      "jpsi_eta_p", "delta_r_p",    
+			      "jet_eta_p", "jet_pt_p"};
+  size_t nCuts=sizeof(cut_branches)/sizeof(*cut_branches);
+  map<string,string> pretty_cNames;
+  initialize_cut_names(pretty_cNames);
+  
   map<string,TH1D*> HistBook;
-  HistBook["jet_pt"]=new TH1D("jet_pt","Jet p_{T};p_{T} [GeV];evts/binwidth",50,0,400);
-  HistBook["jet_eta"]=new TH1D("jet_eta","Jet #eta;#eta;evts/binwidth",50,-2.6,2.6);
-  HistBook["jet_e"]=new TH1D("jet_e","Jet E;E [GeV]; evts/binwidth",50,0,500);
-  HistBook["jet_z"]=new TH1D("jet_z","Jet Z;z;evts/binwidth",50,0,1.);
-  //cout<<"SWITCH NSUBJETTINESS AXES RANGE BACK TO [0.,1.]"<<endl;
-  HistBook["tau1"]=new TH1D("tau1","N Subjettiness #tau_{1};#tau_{1};evts/binwidth",100,0,1.);
-  HistBook["tau2"]=new TH1D("tau2","N Subjettiness #tau_{2};#tau_{2};evts/binwidth",100,0,1.);
-  HistBook["tau3"]=new TH1D("tau3","N Subjettiness #tau_{3};#tau_{3};evts/binwidth",100,0,1.);
-  HistBook["tau32"]=new TH1D("tau32","N Subjettiness #tau_{32};#tau_{32};evts/binwidth",100,0,1.2);
-  HistBook["tau21"]=new TH1D("tau21","N Subjettiness #tau_{21};#tau_{21};evts/binwidth",100,0,1.2);
-  HistBook["delta_r"]=new TH1D("delta_r","#Delta R(J/#psi,Jet); #Delta R; evts/binwidth",50,0,1.);
-  HistBook["jpsi_pt"]=new TH1D("jpsi_pt","J/#psi p_{T};p_{T} [GeV];evts/binwidth",50,0,300);
-  HistBook["jpsi_eta"]=new TH1D("jpsi_eta","J/#psi #eta;#eta;evts/binwidth",50,-2.6,2.6);
-  HistBook["jpsi_e"]=new TH1D("jpsi_e","J/#psi E;E [GeV]; evts/binwidth",50,0,600);
-  vector<string> plots = map_keys(HistBook);
+  initialize_hist_book(HistBook);
   for(map<string,TH1D*>::iterator item=HistBook.begin(); 
       item != HistBook.end(); ++item){
     TH1D* hist = item->second;
-    hist->Sumw2();
-    hist->SetMarkerStyle(1);
-    hist->SetLineWidth(1.);
+    setup_hist(hist);
     hist->SetFillStyle(1001);
-    hist->SetDrawOption("H");
   }
+  vector<string> plots = map_keys(HistBook);
   for(vector<string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
     const std::string& plot = *p;
     print_stack(sample_trees,plot,HistBook[plot],"_stack.pdf");

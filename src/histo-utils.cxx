@@ -9,12 +9,32 @@
 #include "TH2D.h"
 #include "TStyle.h"
 #include "TLatex.h"
+#include "TColor.h"
 
 #include "histo-utils.hh"
 
 using namespace std;
 
+void setup_hist(TH1* hist){
+  hist->Sumw2();
+  hist->SetMarkerStyle(1);
+  hist->SetLineWidth(1.);
+  hist->SetDrawOption("H");
+}
+TH2D* setup_response_hist(TH1* hist){
+  TColor* color = new TColor(1756,0.0,0.0,0.0,"tran_black",0.75);
+  const TAxis* axis = hist->GetXaxis();
+  TH2D* hist2D = new TH2D((string(hist->GetName())+ "_rsp").c_str(), hist->GetTitle(),
+			  axis->GetNbins(), axis->GetXmin(), axis->GetXmax(),
+			  axis->GetNbins(), axis->GetXmin(), axis->GetXmax());
+  hist2D->SetMarkerStyle(6);
+  hist2D->SetMarkerColor(color->GetNumber());
 
+  hist2D->GetXaxis()->SetTitle("Truth");
+  hist2D->GetYaxis()->SetTitle("Reconstructed");
+  delete color;
+  return hist2D;
+}
 vector<string> add_prefix(string prefix, vector<string> strings){
   vector<string> result;
   result.reserve(strings.size());
