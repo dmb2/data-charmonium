@@ -10,7 +10,7 @@ CXXFLAGS=$(shell root-config --ldflags) -pg -I$(INCDIR) -I$(ROOTINCDIR)	$(shell 
 $(DFLAGS) $(WFLAGS) -ansi
 
 BINSRC:=$(wildcard bin/*.cxx)
-BINS:=skim-tree skim-truth-tree cut-flow-plots truth-study-plots simple-parser-test 
+BINS:=skim-tree skim-truth-tree cut-flow-plots truth-study-plots simple-parser-test make-stack-plots
 BINOBJ:=$(BINSRC:.cxx=.o)
 
 .PHONY: all clean 
@@ -28,6 +28,8 @@ skim-truth-tree: src/truth-studies.o src/Cut.o src/tree-utils.o bin/skim-truth-t
 cut-flow-plots: src/histo-utils.o src/AtlasStyle.o src/histo-meta-data.o bin/cut-flow-plots.o 
 	$(CC) $^ -o $@ $(LDFLAGS) 
 truth-study-plots: src/histo-utils.o src/stack-utils.o src/histo-meta-data.o src/AtlasStyle.o bin/truth-study-plots.o 
+	$(CC) $^ -o $@ $(LDFLAGS) 
+make-stack-plots: src/histo-utils.o src/stack-utils.o src/histo-meta-data.o src/AtlasStyle.o bin/make-stack-plots.o 
 	$(CC) $^ -o $@ $(LDFLAGS) 
 
 %.o: %.cxx
