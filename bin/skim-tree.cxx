@@ -72,8 +72,6 @@ int main(const int argc, const char* argv[]){
   TTree OutTree("mini","mini");
   const double weight=(xsec*target_lumi)/Forest["AUX"]->GetEntries();
   process_tree(Forest,CutDefReals,CutDefCats,OutTree,weight);
-  // const char* CutNames[]={ "nominal", "trigger","num_jets", "jpsi_pt", "jpsi_eta",
-  // 			   "jet_eta","delta_r","jet_pt"}; 
   print_cut_table(CutDefReals,CutDefCats);
   for(tree_collection::iterator it=Forest.begin(); it != Forest.end(); ++it){
     if(it->second) delete it->second;

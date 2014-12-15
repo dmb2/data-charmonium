@@ -13,7 +13,8 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
 		    const char* cut_branches[], int cut_index, 
 		    const std::string& plot, TLegend& leg, double n_master);
 void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
-		 TH1* base_hist, const std::string& suffix);
+		 TH1* base_hist, const std::string& suffix,
+		 const char* cut_branches[]=NULL,size_t nCuts=0);
 void print_cut_stack(std::map<std::string,TTree*>& samples, 
 		     const char* cut_branches[],size_t nCuts, 
 		     const std::string& plot, TH1* base_hist, 

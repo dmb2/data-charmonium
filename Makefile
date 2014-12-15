@@ -6,7 +6,7 @@ ROOTINCDIR:=$(shell root-config --incdir)
 LDFLAGS:=$(shell root-config --libs) $(shell fastjet-config --libs) -lNsubjettiness#-L ./lib #-lgcov
 WFLAGS= -Wextra -Wall 
 DFLAGS=-O3 #-fprofile-arcs -ftest-coverage 
-CXXFLAGS=$(shell root-config --ldflags) -pg -I$(INCDIR) -I$(ROOTINCDIR)	$(shell fastjet-config --cxxflags)\
+CXXFLAGS= $(shell root-config --ldflags)  -pg -I$(INCDIR) -I$(ROOTINCDIR)	$(shell fastjet-config --cxxflags)\
 $(DFLAGS) $(WFLAGS) -ansi
 
 BINSRC:=$(wildcard bin/*.cxx)

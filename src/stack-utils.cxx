@@ -59,13 +59,14 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
     style_hist(hist,&leg,color_map[name],leg_map[name].c_str());
   }
   //ROOT SUCKS
-  scale_stack(hist_list,num_hists-1,n_master > 0 ? n_master/total : 1);
+  // scale_stack(hist_list,num_hists-1,n_master > 0 ? n_master/total : 1);
   free(hist_list);
   return stack;
 }
 
 void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
-		 TH1* base_hist, const std::string& suffix){
+		 TH1* base_hist, const std::string& suffix,
+		 const char* cut_branches[],size_t nCuts){
   
   TCanvas canv(("stk_canv_"+plot).c_str(), "Stack", 600,600);
   TLatex decorator;
@@ -80,7 +81,7 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
   master->SetFillStyle(0);
   master->SetLineColor(kBlack);
   const char* cb[]={""};
-  THStack* stack = make_stack(base_hist,samples,cb,0,plot,leg,master->Integral());
+  THStack* stack = make_stack(base_hist,samples,cut_branches==NULL ? cb : cut_branches,nCuts,plot,leg,master->Integral());
   
 
   master->Draw("H");
