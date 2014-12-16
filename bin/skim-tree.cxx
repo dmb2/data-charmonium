@@ -26,7 +26,6 @@ int main(const int argc, const char* argv[]){
   std::string outFName;
   real_cuts CutDefReals;
   category_cuts CutDefCats;
-  double target_lumi(22.1);
   double xsec(0.);
   std::map<std::string,std::string> value_opts;
   get_opts(argv[1],value_opts, CutDefReals, CutDefCats);
@@ -40,9 +39,6 @@ int main(const int argc, const char* argv[]){
     else if(opt->first=="outFile"){
       outFName=opt->second;
     }
-    else if(opt->first=="targetLumi"){
-      target_lumi = atof(opt->second.c_str());
-    }
     else if(opt->first=="crossSection"){
       xsec = atof(opt->second.c_str());
     }
@@ -53,7 +49,6 @@ int main(const int argc, const char* argv[]){
     outFName=argv[3];
     xsec=atof(argv[4]);
   }
-  MSG("Target Lumi: "<<target_lumi);
   MSG("Input Cross Section: " << xsec);
   MSG("Input File: "<<inFName);
   
@@ -70,7 +65,7 @@ int main(const int argc, const char* argv[]){
 
   OutFile.cd();
   TTree OutTree("mini","mini");
-  const double weight=(xsec*target_lumi)/Forest["AUX"]->GetEntries();
+  const double weight=xsec/Forest["AUX"]->GetEntries();
   process_tree(Forest,CutDefReals,CutDefCats,OutTree,weight);
   print_cut_table(CutDefReals,CutDefCats);
   for(tree_collection::iterator it=Forest.begin(); it != Forest.end(); ++it){

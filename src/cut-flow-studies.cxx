@@ -128,14 +128,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     has_jet_pt=CutDefReal["jet_pt"].pass(candJet.Pt(),w);
 
     z=(jpsi_pt)/(candJet.Pt()+jpsi_pt);
-    if(jet_pt->size()==0 || 
-       jet_tau1->size()==0 ||
-       jet_tau2->size()==0 ||
-       jet_tau3->size()==0 ||
-       t_jet_pt->size()==0 || 
-       t_jet_tau1->size()==0 ||
-       t_jet_tau2->size()==0 ||
-       t_jet_tau3->size()==0){
+    if(jet_pt->size()==0){
       continue;
     }
     tau1=jet_tau1->at(idx);
@@ -146,6 +139,9 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     tau21= (tau2*tau1 > 0) ? tau2/tau1 : -1.;
 
     store_four_vector(candJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
+    if(t_jet_pt->size()==0){
+      continue;
+    }
     idx=0;
     t_DeltaR=find_closest(*t_jet_pt,*t_jet_eta,*t_jet_phi,*t_jet_E, 
 			  candTruthJet, candJet,idx);
