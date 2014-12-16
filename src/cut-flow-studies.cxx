@@ -126,7 +126,9 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     has_delta_r=CutDefReal["delta_r"].pass(DeltaR,w);
     has_jet_eta=CutDefReal["jet_eta"].pass(fabs(candJet.Eta()),w);
     has_jet_pt=CutDefReal["jet_pt"].pass(candJet.Pt(),w);
-
+    if(!(has_trigger*has_num_jets*has_jpsi_pt*has_jpsi_eta*has_delta_r*has_jet_eta*has_jet_pt)){
+      continue;
+    }
     z=(jpsi_pt)/(candJet.Pt()+jpsi_pt);
     if(jet_pt->size()==0){
       continue;
