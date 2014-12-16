@@ -29,7 +29,7 @@ void style_hist(TH1* hist, TLegend* leg, const int color, const char* leg_name){
 }
 THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
 		    const char* cut_branches[], int cut_index, 
-		    const std::string& plot, TLegend& leg, double n_master){
+		    const std::string& plot, TLegend& leg, double target_lumi ){
   std::vector<std::string> sample_names = map_keys(samples);
   //const char* sample_names[]={"3PJ_8","3S1_8","1S0_8","3PJ_1","3S1_1"};
   std::map<std::string,int> color_map;
@@ -41,6 +41,7 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
   size_t num_hists=sample_names.size();//sizeof(sample_names)/sizeof(*sample_names);
   TH1** hist_list = (TH1**)calloc(num_hists, sizeof(TH1*));
   string cut_expr;
+  char cut_str[1024];
   for(size_t i=0; i < num_hists; i++){
     cut_expr.clear();
     const string name(sample_names[i]);
@@ -52,8 +53,9 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
     hist_list[i]=hist;
     cut_expr=((cut_index == 0) ? "weight" : "weight*" 
 	      + str_join("*",cut_branches,0,cut_index+1));
-    draw_histo(tree,plot.c_str(),hist->GetName(),
-	       cut_expr.c_str());
+    cut_expr+="%.4g";
+    snprintf(cut_str,sizeof(cut_str)/sizeof(*cut_str),cut_expr.c_str(),target_lumi);
+    draw_histo(tree,plot.c_str(),hist->GetName(), cut_str);
     total+=hist->Integral();
     stack->Add(hist);
     style_hist(hist,&leg,color_map[name],leg_map[name].c_str());
@@ -65,10 +67,10 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
 }
 
 void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
-		 TH1* base_hist, const std::string& suffix,
-		 const char* cut_branches[],size_t nCuts){
-  
-  TCanvas canv(("stk_canv_"+plot).c_str(), "Stack", 600,600);
+		 TH1* base_hist, const std::string& suffix, 
+		 const double target_lumi,
+		 const char* cut_branches[], const size_t nCuts){
+    TCanvas canv(("stk_canv_"+plot).c_str(), "Stack", 600,600);
   TLatex decorator;
   TLegend leg(0.75,0.68,0.99,0.92);
   leg.SetFillColor(0);
@@ -81,7 +83,7 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
   master->SetFillStyle(0);
   master->SetLineColor(kBlack);
   const char* cb[]={""};
-  THStack* stack = make_stack(base_hist,samples,cut_branches==NULL ? cb : cut_branches,nCuts,plot,leg,master->Integral());
+  THStack* stack = make_stack(base_hist,samples,cut_branches==NULL ? cb : cut_branches,nCuts,plot,leg,target_lumi);
   
 
   master->Draw("H");
@@ -101,7 +103,8 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
 void print_cut_stack(std::map<std::string,TTree*>& samples, 
 		     const char* cut_branches[],size_t nCuts, 
 		     const std::string& plot, TH1* base_hist, 
-		     map<string,string>& CutNames, std::string file_suffix){
+		     map<string,string>& CutNames, std::string file_suffix, 
+		     double target_lumi){
     TCanvas canv(("canv_"+plot).c_str(),"Cut Plot",1800,800);
   std::map<std::string,std::string> leg_map;
   init_leg_names(leg_map);
@@ -123,7 +126,7 @@ void print_cut_stack(std::map<std::string,TTree*>& samples,
     master->SetLineWidth(1.5);
     master->SetFillStyle(0);
     master->SetLineColor(kBlack);
-    hist = make_stack(base_hist,samples, cut_branches, i,plot, leg, master->Integral());
+    hist = make_stack(base_hist,samples, cut_branches, i,plot, leg, target_lumi);
     hist->Draw("HIST");
     master->Draw("H same");
     if( i < 3){ //top row

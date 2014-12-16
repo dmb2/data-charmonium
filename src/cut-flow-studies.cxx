@@ -21,7 +21,7 @@ bool verbose=true;
 
 int process_tree(tree_collection& Forest, real_cuts& CutDefReal, 
 		 category_cuts& CutDefCat, TTree& OutTree, const double weight){
-  unsigned int squawk_every = 1000;
+  unsigned int squawk_every = 1e5;
   double pileup(0.);
   double tau1(0),tau2(0),tau3(0),tau21(0),tau32(0);
   double t_tau1(0),t_tau2(0),t_tau3(0),t_tau21(0),t_tau32(0);

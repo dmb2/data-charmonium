@@ -17,10 +17,10 @@
 #include "AtlasStyle.hh"
 
 void usage(const char* name){
-  std::cout <<"Usage: "<< name << " input_file.root"<<std::endl;
+  std::cout <<"Usage: "<< name << " target_lumi (fb) reference_file.root [mc_samples.root]"<<std::endl;
 }
 void print_stack_plots(const char* master_fname, const char* sample_names[],
-		       const size_t n_samp){
+		       const size_t n_samp, const double target_lumi){
   std::map<std::string,TTree*> sample_trees;
   sample_trees["master"]=retrieve<TTree>(master_fname,"mini");
   char fname[512];
@@ -49,7 +49,7 @@ void print_stack_plots(const char* master_fname, const char* sample_names[],
   for(std::vector<std::string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
     const std::string& plot = *p;
     print_stack(sample_trees,plot,HistBook[plot],"_nominal.pdf");
-    print_stack(sample_trees,plot,HistBook[plot],"_all_cuts.pdf",cut_branches, nCuts-1);
+    print_stack(sample_trees,plot,HistBook[plot],"_all_cuts.pdf",target_lumi,cut_branches, nCuts-1);
     // print_cut_stack(sample_trees,cut_branches,nCuts,plot,
     // 		    HistBook[plot],pretty_cNames,
     // 		    "_cutflow.pdf");
@@ -58,7 +58,7 @@ void print_stack_plots(const char* master_fname, const char* sample_names[],
 }
 
 int main(const int argc, const char* argv[]){
-  if(argc < 2){
+  if(argc < 3){
     usage(argv[0]);
     return 0;
   }
@@ -66,6 +66,6 @@ int main(const int argc, const char* argv[]){
   style.SetAtlasStyle();
   gStyle->SetFrameLineWidth(0.0);
   //const char* sample_names[]={"1S0_8","3S1_8","3PJ_8","3S1_1","3PJ_1"};
-  print_stack_plots(argv[1],&argv[2],argc-2);
+  print_stack_plots(argv[2],&argv[3],argc-3,atof(argv[1]));
   return 0;
 }
