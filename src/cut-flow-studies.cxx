@@ -26,11 +26,15 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double tau1(0),tau2(0),tau3(0),tau21(0),tau32(0);
   double t_tau1(0),t_tau2(0),t_tau3(0),t_tau21(0),t_tau32(0);
   double z(0.), DeltaR(999.);
+  double jpsi_lxy(0.);
+  double jpsi_m(0.);
   double jpsi_pt(0.), jpsi_eta(0.), jpsi_phi(0.), jpsi_E(0.);
+  std::vector<std::vector<double> > *vtx_lxy=NULL;
   std::vector<double> *jet_tau1=NULL, *jet_tau2=NULL, *jet_tau3=NULL;
   std::vector<double> *jet_pt=NULL, *jet_eta=NULL, *jet_phi=NULL, *jet_E=NULL;
 
   double t_z(0.), t_DeltaR(0.);
+  double t_jpsi_m(0.);
   double t_jpsi_pt(0.), t_jpsi_eta(0.),t_jpsi_phi(0.), t_jpsi_E(0.);
   std::vector<double> *t_jet_tau1=NULL, *t_jet_tau2=NULL, *t_jet_tau3=NULL;
   std::vector<double> *t_jet_pt=NULL, *t_jet_eta=NULL, 
@@ -42,6 +46,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   setup_four_vector(Forest["JET"], jet_pt, jet_eta, jet_phi, jet_E, "JET");
   setup_four_vector(Forest["TRUTH_JET"], t_jet_pt, t_jet_eta, t_jet_phi, t_jet_E, "JET");
   Forest["AUX"]->SetBranchAddress("AvgIntPerXing",&pileup);
+  Forest["JPSI"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
   Forest["TRIG"]->SetBranchAddress("TRIG_EF_trigger_name",&EF_trigger_names);
   Forest["JET"]->SetBranchAddress("JET_tau1",&jet_tau1);
   Forest["JET"]->SetBranchAddress("JET_tau2",&jet_tau2);
@@ -56,30 +61,32 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double cand_t_jet_pt(0.), cand_t_jet_eta(0.), cand_t_jet_phi(0.), cand_t_jet_E(0.);
 
   setup_four_vector_output(OutTree,cand_jet_pt, cand_jet_eta, 
-			   cand_jet_phi, cand_jet_E, "truth_jet");
+			   cand_jet_phi, cand_jet_E, "jet");
   setup_four_vector_output(OutTree,cand_t_jet_pt, cand_t_jet_eta, 
-			   cand_t_jet_phi, cand_t_jet_E, "jet");
-
-  setup_four_vector_output(OutTree,t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "jpsi");
-  setup_four_vector_output(OutTree,jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "truth_jpsi");
+			   cand_t_jet_phi, cand_t_jet_E, "truth_jet");
+  OutTree.Branch("jpsi_lxy",&jpsi_lxy);
+  OutTree.Branch("jpsi_m",&jpsi_m);
+  setup_four_vector_output(OutTree,jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
+  OutTree.Branch("truth_jpsi_m",&t_jpsi_m);
+  setup_four_vector_output(OutTree,t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
   OutTree.Branch("pileup",&pileup);
-  OutTree.Branch("truth_tau1",&tau1);
-  OutTree.Branch("truth_tau2",&tau2);
-  OutTree.Branch("truth_tau3",&tau3);
-  OutTree.Branch("truth_tau21",&tau21);
-  OutTree.Branch("truth_tau32",&tau32);
-		        
-  OutTree.Branch("truth_jet_z",&z);
-  OutTree.Branch("truth_delta_r",&DeltaR);
-
-  OutTree.Branch("tau1",&t_tau1);
-  OutTree.Branch("tau2",&t_tau2);
-  OutTree.Branch("tau3",&t_tau3);
-  OutTree.Branch("tau21",&t_tau21);
-  OutTree.Branch("tau32",&t_tau32);
+  OutTree.Branch("tau1",&tau1);
+  OutTree.Branch("tau2",&tau2);
+  OutTree.Branch("tau3",&tau3);
+  OutTree.Branch("tau21",&tau21);
+  OutTree.Branch("tau32",&tau32);
 		  
-  OutTree.Branch("jet_z",&t_z);
-  OutTree.Branch("delta_r",&t_DeltaR);
+  OutTree.Branch("jet_z",&z);
+  OutTree.Branch("delta_r",&DeltaR);
+
+  OutTree.Branch("truth_tau1",&t_tau1);
+  OutTree.Branch("truth_tau2",&t_tau2);
+  OutTree.Branch("truth_tau3",&t_tau3);
+  OutTree.Branch("truth_tau21",&t_tau21);
+  OutTree.Branch("truth_tau32",&t_tau32);
+		        
+  OutTree.Branch("truth_jet_z",&t_z);
+  OutTree.Branch("truth_delta_r",&t_DeltaR);
   double w=weight;
   int has_trigger=0, has_num_jets=0, has_jpsi_pt=0, has_jpsi_eta=0, 
     has_jet_eta=0, has_delta_r=0, has_jet_pt=0;
@@ -114,21 +121,35 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     t_jpsi_pt*=GeV;
 
     CutDefCat["nominal"].pass();
-    has_trigger=CutDefCat["trigger"].pass(passed_trigger(*EF_trigger_names),w);
-    has_num_jets=CutDefCat["num_jets"].pass(int(jet_pt->size()),w);
-    has_jpsi_pt=CutDefReal["jpsi_pt"].pass(jpsi_pt,w);
-    has_jpsi_eta=CutDefReal["jpsi_eta"].pass(fabs(jpsi_eta),w);
+    if(!CutDefCat["trigger"].pass(passed_trigger(*EF_trigger_names),w)){
+      continue;
+    };
+    
+    if(!CutDefCat["num_jets"].pass(int(jet_pt->size()),w)){
+      continue;
+    };
+    if(!CutDefReal["jpsi_pt"].pass(jpsi_pt,w)){
+      continue;
+    };
+    if(!CutDefReal["jpsi_eta"].pass(fabs(jpsi_eta),w)){
+      continue;
+    };
 
     candJPsi.SetPtEtaPhiE(jpsi_pt, jpsi_eta, 
 			  jpsi_phi, jpsi_E);
     DeltaR=find_closest(*jet_pt,*jet_eta,*jet_phi,*jet_E, candJet, candJPsi,idx);
-
-    has_delta_r=CutDefReal["delta_r"].pass(DeltaR,w);
-    has_jet_eta=CutDefReal["jet_eta"].pass(fabs(candJet.Eta()),w);
-    has_jet_pt=CutDefReal["jet_pt"].pass(candJet.Pt(),w);
-    if(!(has_trigger*has_num_jets*has_jpsi_pt*has_jpsi_eta*has_delta_r*has_jet_eta*has_jet_pt)){
+    jpsi_lxy = (vtx_lxy->size() > 0) ? vtx_lxy->at(0).at(0) : -99999.;
+    jpsi_m=candJPsi.M();
+    if(!CutDefReal["delta_r"].pass(DeltaR,w)){
       continue;
-    }
+    };
+    if(!CutDefReal["jet_eta"].pass(fabs(candJet.Eta()),w)){
+      continue;
+    };
+    if(!CutDefReal["jet_pt"].pass(candJet.Pt(),w)){
+      continue;
+    };
+    
     z=(jpsi_pt)/(candJet.Pt()+jpsi_pt);
     if(jet_pt->size()==0){
       continue;
@@ -145,6 +166,9 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       continue;
     }
     idx=0;
+    TLorentzVector tvec(0,0,0,0);
+    tvec.SetPtEtaPhiE(t_jpsi_pt,t_jpsi_eta,t_jpsi_phi, t_jpsi_E);
+    t_jpsi_m=tvec.M();
     t_DeltaR=find_closest(*t_jet_pt,*t_jet_eta,*t_jet_phi,*t_jet_E, 
 			  candTruthJet, candJet,idx);
     t_z=t_jpsi_pt/(candTruthJet.Pt()+t_jpsi_pt);
