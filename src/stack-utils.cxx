@@ -48,6 +48,7 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
     if(name=="master"){
       continue;
     }
+    MSG_DEBUG("Processing: "<<name);
     TTree* const tree = samples[name];
     TH1* hist =(TH1*)base_hist->Clone((name+plot+"_"+cut_branches[cut_index]).c_str());
     hist_list[i]=hist;
@@ -70,7 +71,7 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
 		 TH1* base_hist, const std::string& suffix, 
 		 const double target_lumi,
 		 const char* cut_branches[], const size_t nCuts){
-    TCanvas canv(("stk_canv_"+plot).c_str(), "Stack", 600,600);
+  TCanvas canv(("stk_canv_"+plot).c_str(), "Stack", 600,600);
   TLatex decorator;
   TLegend leg(0.75,0.68,0.99,0.92);
   leg.SetFillColor(0);
@@ -87,14 +88,14 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
   
 
   master->Draw("H");
-  //canv.SetLogY();
   stack->Draw("HIST same");
-  double s_max=((TH1*)stack->GetStack()->Last())->GetMaximum();
+
+  double s_max=stack->GetStack()!=NULL ? ((TH1*)stack->GetStack()->Last())->GetMaximum() : 0.;
   double m_max=master->GetMaximum();
   // MSG_DEBUG("Stack: "<<s_max<<" Master: "<<m_max);
   master->SetMaximum((s_max > m_max ? s_max : m_max)*1.2);
   master->Draw("H same");
-  
+
   leg.AddEntry(master,"MC12");
   leg.Draw();
   decorator.DrawLatexNDC(0.,0.05,master->GetTitle());
