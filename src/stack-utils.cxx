@@ -66,7 +66,11 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
   free(hist_list);
   return stack;
 }
-
+void print_2D_stack(std::map<std::string,TTree*> samples,const std::string& plot,
+		    TH1* base_hist, const std::string& suffix, 
+		    const double target_lumi){
+  
+}
 void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
 		 TH1* base_hist, const std::string& suffix, 
 		 const double target_lumi,

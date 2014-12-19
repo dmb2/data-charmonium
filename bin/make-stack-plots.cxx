@@ -39,6 +39,8 @@ void print_stack_plots(const char* master_fname, const char* sample_names[],
   
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
+  std::map<std::string,TH2D*> Hist2DBook;
+  init_hist2D_book(Hist2DBook);
   for(std::map<std::string,TH1D*>::iterator item=HistBook.begin(); 
       item != HistBook.end(); ++item){
     TH1D* hist = item->second;
@@ -48,13 +50,18 @@ void print_stack_plots(const char* master_fname, const char* sample_names[],
   std::vector<std::string> plots = map_keys(HistBook);
   for(std::vector<std::string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
     const std::string& plot = *p;
-    print_stack(sample_trees,plot,HistBook[plot],"_nominal.pdf", target_lumi);
+    print_stack(sample_trees,plot,HistBook[plot],"_nominal.root", target_lumi);
     //print_stack(sample_trees,plot,HistBook[plot],"_all_cuts.pdf",target_lumi,cut_branches, nCuts-1);
     // print_cut_stack(sample_trees,cut_branches,nCuts,plot,
     // 		    HistBook[plot],pretty_cNames,
     // 		    "_cutflow.pdf");
     
   }
+  plots = map_keys(Hist2DBook);
+  for(std::vector<std::string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
+    const std::string& plot = *p;
+    print_2D_stack(sample_trees,plot,HistBook[plot],"_nominal.root", target_lumi);
+    
 }
 
 int main(const int argc, const char* argv[]){

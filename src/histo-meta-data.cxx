@@ -1,6 +1,12 @@
 #include "histo-meta-data.hh"
 #include "TH1D.h"
 #include "TColor.h"
+void init_hist_book(std::map<std::string,TH2D*>& Hist2DBook){
+  Hist2DBook["jet_z:jet_E"] = new TH2D("jet_z:jet_E","Jet E vs Jet z;E [GeV]; z"
+				     25,0,500,
+				     10,0,1.);
+  
+}
 
 void init_hist_book(std::map<std::string,TH1D*>& HistBook){
   HistBook["jet_pt"]=new TH1D("jet_pt","Jet p_{T};p_{T} [GeV];evts/binwidth",50,0,400);
