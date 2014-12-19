@@ -48,13 +48,13 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
     if(name=="master"){
       continue;
     }
-    MSG_DEBUG("Processing: "<<name);
+    // MSG_DEBUG("Processing: "<<name);
     TTree* const tree = samples[name];
     TH1* hist =(TH1*)base_hist->Clone((name+plot+"_"+cut_branches[cut_index]).c_str());
     hist_list[i]=hist;
     cut_expr=((cut_index == 0) ? "weight" : "weight*" 
 	      + str_join("*",cut_branches,0,cut_index+1));
-    cut_expr+="%.4g";
+    cut_expr+="*%.4g";
     snprintf(cut_str,sizeof(cut_str)/sizeof(*cut_str),cut_expr.c_str(),target_lumi);
     draw_histo(tree,plot.c_str(),hist->GetName(), cut_str);
     total+=hist->Integral();
