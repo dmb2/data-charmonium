@@ -7,6 +7,7 @@
 #include "TROOT.h"
 #include "TStyle.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "TTree.h"
 
 #include "histo-utils.hh"
@@ -29,11 +30,11 @@ void print_stack_plots(const char* master_fname, const char* sample_names[],
     sample_trees[sample_names[i]]=retrieve<TTree>(fname,"mini");
   }
 
-  const char* cut_branches[]={/*"mu_trigger_p",*/ "num_jets_p",
-			      "jpsi_pt_p", "jpsi_eta_p",
-			      "delta_r_p", "jet_eta_p",
-			      "jet_pt_p"};
-  size_t nCuts=sizeof(cut_branches)/sizeof(*cut_branches);
+  // const char* cut_branches[]={/*"mu_trigger_p",*/ "num_jets_p",
+  // 			      "jpsi_pt_p", "jpsi_eta_p",
+  // 			      "delta_r_p", "jet_eta_p",
+  // 			      "jet_pt_p"};
+  // size_t nCuts=sizeof(cut_branches)/sizeof(*cut_branches);
   std::map<std::string,std::string> pretty_cNames;
   init_cut_names(pretty_cNames);
   
@@ -50,7 +51,7 @@ void print_stack_plots(const char* master_fname, const char* sample_names[],
   std::vector<std::string> plots = map_keys(HistBook);
   for(std::vector<std::string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
     const std::string& plot = *p;
-    print_stack(sample_trees,plot,HistBook[plot],"_nominal.root", target_lumi);
+    print_stack(sample_trees,plot,HistBook[plot],"_stacked.pdf", target_lumi);
     //print_stack(sample_trees,plot,HistBook[plot],"_all_cuts.pdf",target_lumi,cut_branches, nCuts-1);
     // print_cut_stack(sample_trees,cut_branches,nCuts,plot,
     // 		    HistBook[plot],pretty_cNames,
@@ -60,8 +61,9 @@ void print_stack_plots(const char* master_fname, const char* sample_names[],
   plots = map_keys(Hist2DBook);
   for(std::vector<std::string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
     const std::string& plot = *p;
-    print_2D_stack(sample_trees,plot,HistBook[plot],"_nominal.root", target_lumi);
-    
+    print_2D_stack(sample_trees,plot,Hist2DBook[plot],"_stacked.pdf", target_lumi);
+    print_2D_slices(sample_trees,plot,Hist2DBook[plot],"_stacked.pdf", target_lumi);
+  }    
 }
 
 int main(const int argc, const char* argv[]){

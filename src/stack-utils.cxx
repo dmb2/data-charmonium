@@ -1,4 +1,6 @@
 #include <string>
+#include <cmath>
+#include <algorithm>
 #include <map>
 
 #include "TLegend.h"
@@ -69,6 +71,125 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
 void print_2D_stack(std::map<std::string,TTree*> samples,const std::string& plot,
 		    TH1* base_hist, const std::string& suffix, 
 		    const double target_lumi){
+  const size_t n_samp = samples.size();
+  const size_t n_col = 3;
+  //kind of dirty
+  const size_t n_row = static_cast<size_t>(ceil(n_samp/(n_col+0.)));
+  TCanvas canv(("2D_stk_canv_"+plot).c_str(),"2D Stack",600*n_col,600*n_row);
+  TLatex decorator;
+  std::map<std::string,std::string> leg_map;
+  init_leg_names(leg_map);
+  std::vector<std::string> sample_names=map_keys(samples);
+  decorator.SetTextSize(0.07);
+  canv.Divide(n_col,n_row);
+  // canv.cd(1);
+  char weight_expr[256];
+  snprintf(weight_expr,256,"weight*%.4g",target_lumi);
+
+  for(size_t i=0; i < n_samp; i++){
+    set_pad_margins(canv.cd(i+1),i+1,n_col,n_row);
+    std::string& name = sample_names[i];
+    TH1* hist = make_normal_hist(base_hist,samples[name],plot,
+				 weight_expr,name+"_2D_STK");
+    canv.cd(i+1);
+    hist->Draw("COLZ");
+    if(i < n_col*n_row){
+      remove_axis(hist->GetXaxis());
+    }
+    if(i%n_col!=0){
+      remove_axis(hist->GetYaxis());
+    }
+
+    decorator.DrawLatexNDC(0.45,0.85,leg_map[name].c_str());
+  }
+  canv.cd(0);
+  decorator.SetTextSize(0.04);
+  decorator.DrawLatex(0.0,0.05,base_hist->GetTitle());
+  std::string outname=plot+suffix;
+  replace(outname.begin(),outname.end(),':','_');
+  canv.SaveAs(outname.c_str());
+}
+/*
+static std::string transpose(std::string base,std::string anchor){
+  // C-M-t in emacs... 
+  std::string result;
+  size_t anchor_pos = base.find(anchor);
+  if(anchor_pos==std::string::npos){
+    return base;
+  }
+  result = base.substr(anchor_pos+1) + anchor + base.substr(0,anchor_pos);
+  return result;
+}
+*/
+static std::vector<double> build_norm_factors(TH1* HistZvsE){
+  THStack stack(HistZvsE,"y");
+  std::vector<double> result;
+  result.reserve(HistZvsE->GetNbinsX());
+  TIter next(stack.GetHists());
+  TH1* hist = NULL;
+  while((hist = dynamic_cast<TH1*>(next()))){
+    result.push_back(hist->Integral());
+  }
+  return result;
+}
+static void norm_hist(TH1* hist,const std::vector<double> norm_factors){
+  double bc(0);
+  double nf(0);
+  for(size_t i = 0; i < norm_factors.size(); i++){
+    nf = norm_factors.at(i);
+    bc = hist->GetBinContent(i)/(nf > 0 ? nf : 1.);
+    hist->SetBinContent(i,bc/norm_factors.at(i));
+  }
+}
+void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plot,
+		     TH1* base_hist, const std::string& suffix, 
+		     const double target_lumi){
+  const size_t n_col = 3;
+  const size_t n_bins_z = base_hist->GetNbinsY();
+  const size_t n_row = static_cast<size_t>(ceil(n_bins_z/(n_col+0.)));
+  TCanvas canv(("2D_stk_canv_"+plot).c_str(),"2D Stack",600*n_col,600*n_row);
+  TLatex decorator;
+  std::map<std::string,std::string> leg_map;
+  init_leg_names(leg_map);
+  std::vector<std::string> sample_names=map_keys(samples);
+  decorator.SetTextSize(0.07);
+  canv.Divide(n_col,n_row);
+  char weight_expr[256];
+  snprintf(weight_expr,256,"weight*%.4g",target_lumi);
+  size_t pad_pos(0);
+  for(std::vector<std::string>::const_iterator n=sample_names.begin();
+      n!=sample_names.end(); ++n){
+    pad_pos = 1;
+    const std::string& name = *n;
+    TH1* HistZvsE = make_normal_hist(base_hist,samples[name],plot,
+				     weight_expr,name+"_2D_SLC");
+    std::vector<double> norm_factors = build_norm_factors(HistZvsE);
+    THStack proj_stack(HistZvsE,"x");
+    TH1* HistE = NULL;
+    TIter next(proj_stack.GetHists());
+    MSG_DEBUG(name);
+    while((HistE = dynamic_cast<TH1*>(next()))){
+      set_pad_margins(canv.cd(pad_pos),pad_pos,true);
+      norm_hist(HistE, norm_factors);
+      
+      pad_pos++;
+    }
+  }
+  //for each sample
+  //    draw 2D jet_e:jet_z
+  //        make vector of normalization factors
+  //    split jet_e:jet_z into list of hists
+  //         draw each hist on a subpad
+  //         annotate z bin on each subpad
+  //    add sample to legend
+  //draw legend
+
+  canv.cd(0);
+  decorator.SetTextSize(0.04);
+  decorator.DrawLatex(0.0,0.05,base_hist->GetTitle());
+  std::string outname=plot+suffix;
+  replace(outname.begin(),outname.end(),':','_');
+  canv.SaveAs(outname.c_str());
   
 }
 void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
@@ -83,7 +204,7 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
   leg.SetBorderSize(0);
 
   decorator.SetTextSize(0.04);
-  TH1* master = make_normal_hist(base_hist,samples["master"],plot);
+  TH1* master = make_normal_hist(base_hist,samples["master"],plot,"weight","_nom");
   master->SetLineWidth(2.);
   master->SetFillStyle(0);
   master->SetLineColor(kBlack);

@@ -31,7 +31,7 @@ std::string str_join(std::string base, const char* strings[],size_t start, size_
 void draw_histo(TTree* tree,const char* branch_name, const char* hist_name, 
 		const char* cut_expr);
 void remove_axis(TAxis* axis);
-void set_pad_margins(TVirtualPad* pad,int pad_pos,bool y_axis=true);
+void set_pad_margins(TVirtualPad* pad,int pad_pos,int n_col=3,int n_row=2);
 void make_roc_list(TH1* signal, TH1* background);
 TH1* make_response_hist(TH1* base_hist, TTree* tree, 
 			const char* cut_branches[],size_t cut_index, 
@@ -42,11 +42,16 @@ TH1* make_normal_hist(TH1* base_hist, TTree* tree,
 TH1* make_ratio_hist(TH1* base_hist, TTree* tree,
 		     const char* cut_branches[],size_t cut_index, 
 		     const std::string& plot);
-TH1* make_response_hist(TH1* base_hist,TTree* tree,const std::string& plot);
-TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot);
+TH1* make_response_hist(TH1* base_hist,TTree* tree,const std::string& plot,
+		      const char* weight_expr="weight",
+		      const std::string& name_suffix="_NOM");
+TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot,
+		      const char* weight_expr="weight",
+		      const std::string& name_suffix="_NOM");
 void print_hist(TTree* tree, const std::string& plot, 
 		TH1* base_hist, const std::string suffix, 
-		TH1* (*make_hist)(TH1*,TTree*,const std::string&));
+		TH1* (*make_hist)(TH1*,TTree*,const std::string&, const char*,
+				  const std::string&));
 void print_cut_hist(TTree* tree,const char* cut_branches[],size_t nCuts, 
 		const std::string& plot, TH1* base_hist, 
 		std::map<std::string,std::string>& CutNames, std::string file_suffix,

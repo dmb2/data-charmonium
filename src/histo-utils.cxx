@@ -64,16 +64,11 @@ void remove_axis(TAxis* axis){
   axis->SetTitle("");
   axis->SetLabelOffset(999);
 }
-void set_pad_margins(TVirtualPad* pad,int pad_pos,bool y_axis){
+void set_pad_margins(TVirtualPad* pad,int pad_pos,int n_col,int n_row){
   pad->SetRightMargin(0);
   pad->SetTopMargin(0);
-  if (pad_pos < 4){
+  if (pad_pos < n_col*(n_row-1)+1){
     pad->SetBottomMargin(0);
-  }
-  if(pad_pos != 4 && pad_pos != 1){
-    if(!y_axis){
-      pad->SetLeftMargin(0);
-    }
   }
 }
 std::vector<std::pair<double,double> > make_roc_pairs(TH1* signal, TH1* background){
@@ -114,12 +109,11 @@ TH1* make_response_hist(TH1* base_hist, TTree* tree,
 TH1* make_normal_hist(TH1* base_hist, TTree* tree, 
 		      const char* cut_branches[], size_t cut_index, 
 		      const string& plot){
-  TH1* hist = (TH1*)base_hist->Clone((plot + "_NRM_"+
-				      str_join("_",cut_branches,
-					       0,cut_index+1)).c_str());
-  draw_histo(tree,plot.c_str(),hist->GetName(),
-	     ("weight*"+str_join("*",cut_branches,0,cut_index+1)).c_str());
-  return hist;
+  const std::string name_suffix="_NRM_"+ str_join("_",cut_branches,
+						  0,cut_index+1);
+  const std::string weight_expr=("weight*"+str_join("*",cut_branches,
+						    0,cut_index+1));
+  return make_normal_hist(base_hist,tree,plot,weight_expr.c_str(),name_suffix);
 }
 TH1* make_ratio_hist(TH1* base_hist, TTree* tree,
 		     const char* cut_branches[],size_t cut_index, 
@@ -138,24 +132,28 @@ TH1* make_ratio_hist(TH1* base_hist, TTree* tree,
   ratio->SetMinimum(0.);
   return ratio;
 }
-TH1* make_response_hist(TH1* base_hist,TTree* tree,const std::string& plot){
+TH1* make_response_hist(TH1* base_hist,TTree* tree,const std::string& plot,
+			const char* weight_expr, const std::string& name_suffix){
   TH1* hist = (TH1*)base_hist->Clone((plot + "_rsp_NOM").c_str());
   draw_histo(tree,(plot + ":truth_"+plot).c_str(), hist->GetName(), "");
   return hist;
 }
-TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot){
-  TH1* hist = (TH1*)base_hist->Clone((plot + "_NOM").c_str());
-  draw_histo(tree,plot.c_str(), hist->GetName(), "weight");
+TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot,
+		      const char* weight_expr,
+		      const std::string& name_suffix){
+  TH1* hist = (TH1*)base_hist->Clone((plot + name_suffix).c_str());
+  draw_histo(tree,plot.c_str(), hist->GetName(), weight_expr);
   return hist;
 }
 
 void print_hist(TTree* tree, const std::string& plot, 
 		TH1* base_hist, const std::string suffix, 
-		TH1* (*make_hist)(TH1*,TTree*,const std::string&)){
+		TH1* (*make_hist)(TH1*,TTree*,const std::string&, const char*,
+				  const std::string&)){
   TCanvas canv(("canv_"+plot).c_str(),"Plot",600,600);
   TLatex decorator;
   decorator.SetTextSize(0.04);
-  TH1* hist = make_hist(base_hist,tree,plot);
+  TH1* hist = make_hist(base_hist,tree,plot,"_nom","weight");
   hist->Draw("H");
   decorator.DrawLatexNDC(0.,0.05,hist->GetTitle());
   canv.SaveAs((plot+suffix).c_str());
