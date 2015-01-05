@@ -32,7 +32,7 @@ std::string str_join(std::string base, const char* strings[],size_t start, size_
 void draw_histo(TTree* tree,const char* branch_name, const char* hist_name, 
 		const char* cut_expr);
 void remove_axis(TAxis* axis);
-void set_pad_margins(TVirtualPad* pad,int pad_pos,int N_hists,int n_col=3,int n_row=2);
+void set_pad_margins(TVirtualPad* pad,int pad_pos,int N_hists,int n_col=3,int n_row=2,bool y_axis=true);
 TLegend* make_legend(double x, double y, double width, double height);
 void make_roc_list(TH1* signal, TH1* background);
 TH1* make_response_hist(TH1* base_hist, TTree* tree, 

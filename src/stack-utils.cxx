@@ -86,15 +86,22 @@ void print_2D_stack(std::map<std::string,TTree*> samples,const std::string& plot
   // canv.cd(1);
   char weight_expr[256];
   snprintf(weight_expr,256,"weight*%.4g",target_lumi);
-
+  Double_t Red[3]    = { 1.00, 0.00, 0.00};
+  Double_t Green[3]  = { 0.00, 1.00, 0.00};
+  Double_t Blue[3]   = { 0.00, 0.00, 1.00};
+  Double_t Length[3] = { 0.00, 0.50, 1.00 };
+  Int_t nb=100;
+  TColor::CreateGradientColorTable(3,Length,Red,Green,Blue,nb);
+  
   for(size_t i=0; i < n_samp; i++){
-    set_pad_margins(canv.cd(i+1),i+1,n_col,n_row);
+    set_pad_margins(canv.cd(i+1),i+1,n_samp,n_col,n_row,false);
     std::string& name = sample_names[i];
     TH1* hist = make_normal_hist(base_hist,samples[name],plot,
 				 weight_expr,name+"_2D_STK");
     canv.cd(i+1);
-    hist->Draw("COLZ");
-    if( i < (n_samp%n_col)*n_row){
+    hist->SetContour(nb);
+    hist->Draw("COL");
+    if(i < (n_row - 2)*n_col + n_samp%n_col){
       remove_axis(hist->GetXaxis());
     }
     if(i%n_col!=0){
