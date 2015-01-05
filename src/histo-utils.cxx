@@ -5,6 +5,7 @@
 
 #include "TTree.h"
 #include "TCanvas.h"
+#include "TLegend.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TStyle.h"
@@ -64,10 +65,10 @@ void remove_axis(TAxis* axis){
   axis->SetTitle("");
   axis->SetLabelOffset(999);
 }
-void set_pad_margins(TVirtualPad* pad,int pad_pos,int n_col,int n_row){
+void set_pad_margins(TVirtualPad* pad,int pad_pos, int N_hists,int n_col,int n_row){
   pad->SetRightMargin(0);
   pad->SetTopMargin(0);
-  if (pad_pos < n_col*(n_row-1)+1){
+  if (pad_pos-1 < (n_row - 2)*n_col + N_hists%n_col){
     pad->SetBottomMargin(0);
   }
 }
@@ -158,6 +159,13 @@ void print_hist(TTree* tree, const std::string& plot,
   decorator.DrawLatexNDC(0.,0.05,hist->GetTitle());
   canv.SaveAs((plot+suffix).c_str());
 }
+TLegend* make_legend(double x, double y, double width, double height){
+  TLegend* leg = new TLegend(x,y,x+width,y+height);
+  leg->SetFillColor(0);
+  leg->SetFillStyle(0);
+  leg->SetBorderSize(0);
+  return leg;
+}
 void print_cut_hist(TTree* tree,const char* cut_branches[],size_t nCuts, 
 		const std::string& plot, TH1* base_hist, 
 		map<string,string>& CutNames, std::string file_suffix,
@@ -172,7 +180,7 @@ void print_cut_hist(TTree* tree,const char* cut_branches[],size_t nCuts,
   canv.SetRightMargin(0);
   canv.SetTopMargin(0);
   for(size_t i = 0; i < nCuts; i++){
-    set_pad_margins(canv.cd(i+1),i+1);
+    set_pad_margins(canv.cd(i+1),i+1,nCuts);
     TH1* hist = make_hist(base_hist,tree, cut_branches, i,plot);
     hist->Draw("BOX");
     if( i < 3){ //top row

@@ -49,6 +49,8 @@ void init_leg_names(std::map<std::string,std::string>& leg_map){
   leg_map["208023.Pythia8B_AU2_CTEQ6L1_pp_X3872_JpsiPiPi"]="X(3872) #rightarrow J/#psi 2#pi";
   leg_map["208401.Pythia8B_AU2_CTEQ6L1_Bs_Jpsimu4mu4_phi"]="B_{s}#rightarrow J/#psi #phi";
   leg_map["208413.Pythia8B_AU2_CTEQ6L1_chib_Jpsimu3p5mu3p5Jpsimu3p5mu3p5"]="#chi_{b}#rightarrow 2 J/#psi";
+
+  leg_map["master"]="Signal";
 }
 void init_colors(std::map<std::string,int>& colors){
   // Octet colors
@@ -64,6 +66,8 @@ void init_colors(std::map<std::string,int>& colors){
   colors["208401.Pythia8B_AU2_CTEQ6L1_Bs_Jpsimu4mu4_phi"]=TColor::GetColor(49,163,84);
   colors["208413.Pythia8B_AU2_CTEQ6L1_chib_Jpsimu3p5mu3p5Jpsimu3p5mu3p5"]=TColor::GetColor(0,109,44);
   // feed down
-  colors["208022.Pythia8B_AU2_CTEQ6L1_pp_Psi2S_JpsiPiPi"]=TColor::GetColor(158,154,200);;
-  colors["208023.Pythia8B_AU2_CTEQ6L1_pp_X3872_JpsiPiPi"]=TColor::GetColor(106,81,163);;
+  colors["208022.Pythia8B_AU2_CTEQ6L1_pp_Psi2S_JpsiPiPi"]=TColor::GetColor(158,154,200);
+  colors["208023.Pythia8B_AU2_CTEQ6L1_pp_X3872_JpsiPiPi"]=TColor::GetColor(106,81,163);
+
+  colors["master"]=TColor::GetColor(0,0,0);
 }

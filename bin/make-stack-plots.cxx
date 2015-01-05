@@ -62,7 +62,7 @@ void print_stack_plots(const char* master_fname, const char* sample_names[],
   for(std::vector<std::string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
     const std::string& plot = *p;
     print_2D_stack(sample_trees,plot,Hist2DBook[plot],"_stacked.pdf", target_lumi);
-    print_2D_slices(sample_trees,plot,Hist2DBook[plot],"_stacked.pdf", target_lumi);
+    print_2D_slices(sample_trees,plot,Hist2DBook[plot],"_sliced.pdf", target_lumi);
   }    
 }
 
