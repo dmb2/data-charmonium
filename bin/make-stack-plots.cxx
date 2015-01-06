@@ -74,6 +74,7 @@ int main(const int argc, const char* argv[]){
   AtlasStyle style;
   style.SetAtlasStyle();
   gStyle->SetFrameLineWidth(0.0);
+  gStyle->SetPalette(1);
   //const char* sample_names[]={"1S0_8","3S1_8","3PJ_8","3S1_1","3PJ_1"};
   print_stack_plots(argv[2],&argv[3],argc-3,atof(argv[1]));
   return 0;

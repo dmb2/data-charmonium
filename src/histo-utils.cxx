@@ -67,7 +67,7 @@ void remove_axis(TAxis* axis){
 }
 void set_pad_margins(TVirtualPad* pad,int pad_pos, int N_hists,int n_col,int n_row, bool y_axis){
   pad->SetRightMargin(0);
-  pad->SetTopMargin(0);
+  pad->SetTopMargin(0.05);
   if((pad_pos-1)%n_col!=0 && !y_axis){
     pad->SetLeftMargin(0);
   }

@@ -6,6 +6,8 @@ void init_hist2D_book(std::map<std::string,TH2D*>& Hist2DBook){
   Hist2DBook["jet_z:jet_e"] = new TH2D("jet_z:jet_E","Jet E vs Jet z;E [GeV]; z",
 				       25,0,500,
 				       10,0,1.);
+  Hist2DBook["jet_z:jet_e"]->GetYaxis()->SetNdivisions(508);
+  Hist2DBook["jet_z:jet_e"]->GetXaxis()->SetNdivisions(508);
 }
 
 void init_hist_book(std::map<std::string,TH1D*>& HistBook){

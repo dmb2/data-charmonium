@@ -5,11 +5,13 @@
 #include <map>
 
 #include "TLegend.h"
+#include "TPaletteAxis.h"
 #include "TLatex.h"
 #include "THStack.h"
 #include "TColor.h"
 #include "TList.h"
 #include "TTree.h"
+#include "TROOT.h"
 #include "TCanvas.h"
 
 #include "stack-utils.hh"
@@ -86,33 +88,35 @@ void print_2D_stack(std::map<std::string,TTree*> samples,const std::string& plot
   // canv.cd(1);
   char weight_expr[256];
   snprintf(weight_expr,256,"weight*%.4g",target_lumi);
-  Double_t Red[3]    = { 1.00, 0.00, 0.00};
-  Double_t Green[3]  = { 0.00, 1.00, 0.00};
-  Double_t Blue[3]   = { 0.00, 0.00, 1.00};
+  /*
+  Double_t Red[3]    = { 0.15, 0.50, 0.72};
+  Double_t Green[3]  = { 0.25, 0.71, 0.77};
+  Double_t Blue[3]   = { 1.00, 1.00, 1.0};
   Double_t Length[3] = { 0.00, 0.50, 1.00 };
-  Int_t nb=100;
   TColor::CreateGradientColorTable(3,Length,Red,Green,Blue,nb);
-  
+  */
+  Int_t nb=100;
   for(size_t i=0; i < n_samp; i++){
-    set_pad_margins(canv.cd(i+1),i+1,n_samp,n_col,n_row,false);
+    TVirtualPad* pad = canv.cd(i+1);
+    set_pad_margins(pad,i+1,n_samp,n_col,n_row,false);
+    pad->SetRightMargin(0.16);
     std::string& name = sample_names[i];
     TH1* hist = make_normal_hist(base_hist,samples[name],plot,
 				 weight_expr,name+"_2D_STK");
     canv.cd(i+1);
     hist->SetContour(nb);
-    hist->Draw("COL");
+    hist->Draw("COLZ");
     if(i < (n_row - 2)*n_col + n_samp%n_col){
       remove_axis(hist->GetXaxis());
     }
     if(i%n_col!=0){
       remove_axis(hist->GetYaxis());
     }
-
-    decorator.DrawLatexNDC(0.45,0.85,leg_map[name].c_str());
+    decorator.DrawLatexNDC(0.25,0.85,leg_map[name].c_str());
   }
   canv.cd(0);
   decorator.SetTextSize(0.04);
-  decorator.DrawLatex(0.0,0.05,base_hist->GetTitle());
+  decorator.DrawLatex(0.01,0.02,base_hist->GetTitle());
   std::string outname=plot+suffix;
   replace(outname.begin(),outname.end(),':','_');
   canv.SaveAs(outname.c_str());
@@ -228,7 +232,7 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
     TVirtualPad* pad = canv.cd(i);
     zbl_ss.str("");
     zbl_ss << axis->GetBinLowEdge(i)<<" #leq z #leq "<< axis->GetBinLowEdge(i)+axis->GetBinWidth(i);
-    MSG_DEBUG(zbl_ss.str());
+    // MSG_DEBUG(zbl_ss.str());
     decorator.DrawLatexNDC(0.64,0.9,zbl_ss.str().c_str());
     TIter next(pad->GetListOfPrimitives());
     TH1* h = NULL;
