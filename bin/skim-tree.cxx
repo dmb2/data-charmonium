@@ -54,18 +54,21 @@ int main(const int argc, const char* argv[]){
   
   TFile* file = new TFile(inFName.c_str());
   tree_collection Forest; 
-  const char* treeNames[] = {"AUX","JET","MU","JPSI",
+  const char* treeNames[] = {"AUX","LCTOPO","MU","JPSI",
 			    "PRIVX","SEL_TRACKS",
-			    "TRIG","TRUTH_JET"};
+			    "TRIG"};
   for(size_t i=0; i < sizeof(treeNames)/sizeof(*(treeNames)); i++){
     Forest[std::string(treeNames[i])]=retrieve<TTree>(file,treeNames[i]);
+  }
+  if(xsec > 0){
+    Forest["TRUTH_JET"]=retrieve<TTree>(file,"TRUTH_JET");
   }
   MSG("Opening output file: "<<outFName);
   TFile OutFile(outFName.c_str(),"RECREATE");
 
   OutFile.cd();
   TTree OutTree("mini","mini");
-  const double weight=xsec/Forest["AUX"]->GetEntries();
+  const double weight=xsec > 0 ? xsec/Forest["AUX"]->GetEntries() : 1.;
   process_tree(Forest,CutDefReals,CutDefCats,OutTree,weight);
   print_cut_table(CutDefReals,CutDefCats);
   for(tree_collection::iterator it=Forest.begin(); it != Forest.end(); ++it){

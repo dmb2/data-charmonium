@@ -29,6 +29,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double jpsi_lxy(0.);
   double jpsi_m(0.);
   double jpsi_pt(0.), jpsi_eta(0.), jpsi_phi(0.), jpsi_E(0.);
+  std::vector<double> *vtx_px=NULL, *vtx_py=NULL, *vtx_pz=NULL, *vtx_m=NULL;
   std::vector<std::vector<double> > *vtx_lxy=NULL;
   std::vector<double> *jet_tau1=NULL, *jet_tau2=NULL, *jet_tau3=NULL;
   std::vector<double> *jet_pt=NULL, *jet_eta=NULL, *jet_phi=NULL, *jet_E=NULL;
@@ -40,13 +41,15 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   std::vector<double> *t_jet_pt=NULL, *t_jet_eta=NULL, 
     *t_jet_phi=NULL, *t_jet_E=NULL;
   std::vector<std::string>* EF_trigger_names=NULL;
-
-  setup_four_vector(Forest["AUX"], jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
-  setup_four_vector(Forest["AUX"], t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
-  setup_four_vector(Forest["JET"], jet_pt, jet_eta, jet_phi, jet_E, "JET");
-  setup_four_vector(Forest["TRUTH_JET"], t_jet_pt, t_jet_eta, t_jet_phi, t_jet_E, "JET");
+  // setup_four_vector(Forest["AUX"], jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
+  // setup_px_py_pz_e(Forest["JPSI"], jpsi_px, jpsi_py, jpsi_pz,jpsi_E)
+  //setup_four_vector(Forest["AUX"], t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
+  setup_pt_eta_phi_e(Forest["LCTOPO"], jet_pt, jet_eta, jet_phi, jet_E, "JET");
+  //setup_four_vector(Forest["TRUTH_JET"], t_jet_pt, t_jet_eta, t_jet_phi, t_jet_E, "JET");
   Forest["AUX"]->SetBranchAddress("AvgIntPerXing",&pileup);
   Forest["JPSI"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
+  const char* vtx_names[] = {"px","py","pz","mass"};
+  setup_four_vector(Forest["JPSI"],vtx_px,vtx_py,vtx_pz,vtx_m,"VTX",vtx_names);
   Forest["TRIG"]->SetBranchAddress("TRIG_EF_trigger_name",&EF_trigger_names);
   Forest["JET"]->SetBranchAddress("JET_tau1",&jet_tau1);
   Forest["JET"]->SetBranchAddress("JET_tau2",&jet_tau2);
@@ -67,8 +70,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   OutTree.Branch("jpsi_lxy",&jpsi_lxy);
   OutTree.Branch("jpsi_m",&jpsi_m);
   setup_four_vector_output(OutTree,jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
-  OutTree.Branch("truth_jpsi_m",&t_jpsi_m);
-  setup_four_vector_output(OutTree,t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
+  // OutTree.Branch("truth_jpsi_m",&t_jpsi_m);
+  // setup_four_vector_output(OutTree,t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
   OutTree.Branch("pileup",&pileup);
   OutTree.Branch("tau1",&tau1);
   OutTree.Branch("tau2",&tau2);
@@ -78,7 +81,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 		  
   OutTree.Branch("jet_z",&z);
   OutTree.Branch("delta_r",&DeltaR);
-
+  /*
   OutTree.Branch("truth_tau1",&t_tau1);
   OutTree.Branch("truth_tau2",&t_tau2);
   OutTree.Branch("truth_tau3",&t_tau3);
@@ -87,6 +90,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 		        
   OutTree.Branch("truth_jet_z",&t_z);
   OutTree.Branch("truth_delta_r",&t_DeltaR);
+  */
   double w=weight;
   int has_trigger=0, has_num_jets=0, has_jpsi_pt=0, has_jpsi_eta=0, 
     has_jet_eta=0, has_delta_r=0, has_jet_pt=0;
@@ -114,11 +118,16 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     idx=0;
     DeltaR=-1.;
     z=-1.;
-
-    jpsi_E*=GeV;
-    jpsi_pt*=GeV;
-    t_jpsi_E*=GeV;
-    t_jpsi_pt*=GeV;
+    if(vtx_pt->size()==1){
+      double E = TMath::Sqrt(pow(vtx_m->at(0),2)
+			     - (  pow(vtx_px->at(0),2)
+				+ pow(vtx_py->at(0),2)
+				+ pow(vtx_pz->at(0),2)));
+      candJPsi.SetPxPyPzE(vtx_px->at(0)*GeV, vtx_py->at(0)*GeV, vtx_pz->at(0)*GeV, E*GeV);
+    }
+    else if (vtx_pt->size() > 0){
+      
+    }
 
     CutDefCat["nominal"].pass();
     if(!CutDefCat["trigger"].pass(passed_trigger(*EF_trigger_names),w)){
@@ -135,8 +144,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       continue;
     };
 
-    candJPsi.SetPtEtaPhiE(jpsi_pt, jpsi_eta, 
-			  jpsi_phi, jpsi_E);
     DeltaR=find_closest(*jet_pt,*jet_eta,*jet_phi,*jet_E, candJet, candJPsi,idx);
     jpsi_lxy = (vtx_lxy->size() > 0) ? vtx_lxy->at(0).at(0) : -99999.;
     jpsi_m=candJPsi.M();
