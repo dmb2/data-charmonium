@@ -102,6 +102,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   if(verbose) {
     cout<<"Got "<<nEntries<< " entries in input tree"<<endl;
   }
+  std::vector<TLorentzVector> jets;
   TLorentzVector candJet(0,0,0,0);
   TLorentzVector candTruthJet(0,0,0,0);
   TLorentzVector candJPsi(0,0,0,0);
@@ -114,12 +115,12 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     idx=0;
     DeltaR=-1.;
     z=-1.;
-
+    jets.clear();
+    jets.reserve(jet_pt->size());
     jpsi_E*=GeV;
     jpsi_pt*=GeV;
     t_jpsi_E*=GeV;
     t_jpsi_pt*=GeV;
-
     CutDefCat["nominal"].pass();
     if(!CutDefCat["trigger"].pass(passed_trigger(*EF_trigger_names),w)){
       continue;
@@ -128,6 +129,17 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     if(!CutDefCat["num_jets"].pass(int(jet_pt->size()),w)){
       continue;
     };
+    std::vector<size_t> good_indices = filter_by_pt(*jet_pt, CutDefReal["jet_pt"].cut_value());
+    // MSG_DEBUG("num jets: "<<jet_pt->size()<<" filtered: "<<good_indices.size());
+    for(std::vector<size_t>::const_iterator itr=good_indices.begin();
+	itr!=good_indices.end(); ++itr){
+      TLorentzVector tmp_vec(0,0,0,0);
+      tmp_vec.SetPtEtaPhiE(jet_pt->at(*itr)*GeV,
+			   jet_eta->at(*itr),
+			   jet_phi->at(*itr),
+			   jet_E->at(*itr)*GeV);
+      jets.push_back(tmp_vec);
+    }
     if(!CutDefReal["jpsi_pt"].pass(jpsi_pt,w)){
       continue;
     };
@@ -137,9 +149,14 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 
     candJPsi.SetPtEtaPhiE(jpsi_pt, jpsi_eta, 
 			  jpsi_phi, jpsi_E);
-    DeltaR=find_closest(*jet_pt,*jet_eta,*jet_phi,*jet_E, candJet, candJPsi,idx);
+    DeltaR=find_closest(jets,candJet,candJPsi,idx);
+    // MSG_DEBUG(candJet.Pt());
+    // DeltaR=find_closest(*jet_pt,*jet_eta,*jet_phi,*jet_E, candJet, candJPsi,idx);
     jpsi_lxy = (vtx_lxy->size() > 0) ? vtx_lxy->at(0).at(0) : -99999.;
     jpsi_m=candJPsi.M();
+    if(!CutDefReal["jpsi_lxy"].pass(fabs(jpsi_lxy),w)){
+      continue;
+    };
     if(!CutDefReal["delta_r"].pass(DeltaR,w)){
       continue;
     };
@@ -149,7 +166,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     if(!CutDefReal["jet_pt"].pass(candJet.Pt(),w)){
       continue;
     };
-    
     z=(jpsi_pt)/(candJet.Pt()+jpsi_pt);
     if(jet_pt->size()==0){
       continue;

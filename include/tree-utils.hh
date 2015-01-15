@@ -51,10 +51,15 @@ void setup_four_vector_output(TTree& tree, T& pt, T& eta, T& phi, T& E,const cha
   snprintf(branch_name, 50,"%s_e",key);
   tree.Branch(branch_name, &E);
 }
+double find_closest(const std::vector<TLorentzVector>& jets,
+		    TLorentzVector& closest,
+		    TLorentzVector& axis, size_t& idx);
 double find_closest(const std::vector<double>& pt,
 		    const std::vector<double>& eta,
 		    const std::vector<double>& phi,
 		    const std::vector<double>& E,
 		    TLorentzVector& closest,
 		    TLorentzVector& axis, size_t& idx);
+std::vector<size_t> filter_by_pt(const std::vector<double>& pt,
+				 const double ptMin);
 int passed_trigger(std::vector<std::string>& trigger_names);

@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "root-sugar.hh"
 #include "tree-utils.hh"
 #include "Units.hh"
 
@@ -38,6 +39,41 @@ double find_closest(const std::vector<double>& pt,
     }
   }
   return DeltaR;
+}
+double find_closest(const std::vector<TLorentzVector>& jets,
+		    TLorentzVector& closest,
+		    TLorentzVector& axis, size_t& idx){
+  double dR(0.);
+  double DeltaR(99.);
+  size_t i=0;
+  for(std::vector<TLorentzVector>::const_iterator jet = jets.begin();
+      jet != jets.end(); ++jet,++i){
+
+    dR = axis.DeltaR(*jet);
+    if (dR < DeltaR){
+      DeltaR = dR;
+      closest=*jet;
+      idx=i;
+    }
+  }
+  return DeltaR;
+}
+std::vector<size_t> filter_by_pt(const std::vector<double>& pt,
+				 const double ptMin){
+  //return a vector of indices when pt is bigger than ptMin
+  std::vector<size_t> passed_indices;
+  if(pt.size()==0){
+    return passed_indices;
+  }
+  // MSG_DEBUG(pt.size());
+  passed_indices.reserve(pt.size());
+  for(size_t i=0; i < pt.size(); i++){
+    if(pt.at(i)*GeV > ptMin){
+      // MSG_DEBUG(pt.at(i)*GeV<<"> ptMin: "<< ptMin<<" "<<i);
+      passed_indices.push_back(i);
+    }
+  }
+  return passed_indices;
 }
 int passed_trigger(std::vector<std::string>& trigger_names){
   //cf https://twiki.cern.ch/twiki/bin/view/Atlas/MuonTriggerPhysicsTriggerRecommendations2012
