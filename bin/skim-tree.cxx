@@ -61,7 +61,7 @@ int main(const int argc, const char* argv[]){
     Forest[std::string(treeNames[i])]=retrieve<TTree>(file,treeNames[i]);
   }
   if(xsec > 0){
-    Forest["TRUTH_JET"]=retrieve<TTree>(file,"TRUTH_JET");
+    Forest["TRUTH"]=retrieve<TTree>(file,"TRUTH");
   }
   MSG("Opening output file: "<<outFName);
   TFile OutFile(outFName.c_str(),"RECREATE");

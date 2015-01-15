@@ -50,7 +50,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   }
   setup_pt_eta_phi_e(Forest["LCTOPO"], jet_pt, jet_eta, jet_phi, jet_E, "JET");
   if(do_truth){
-    setup_pt_eta_phi_e(Forest["TRUTH_JET"], t_jet_pt, t_jet_eta, t_jet_phi, t_jet_E, "JET");
+    setup_pt_eta_phi_e(Forest["TRUTH"], t_jet_pt, t_jet_eta, t_jet_phi, t_jet_E, "JET");
   }
   Forest["AUX"]->SetBranchAddress("AvgIntPerXing",&pileup);
   Forest["JPSI"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
