@@ -28,16 +28,26 @@ void store_four_vector(LV vector, double& pt, double& eta, double& phi, double& 
   E=tmp_vec.E();
 };
 template<typename T>
-void setup_four_vector(TTree* tree, T& pt, T& eta, T& phi, T& E,const char* key, bool lo_case_E=true){
+void setup_four_vector(TTree* tree, T& p0, T& p1, T& p2, T& p3, const char* key, const char* vec_names[]){
   char branch_name[50];
-  snprintf(branch_name, 50,"%s_pt",key);
-  tree->SetBranchAddress(branch_name, &pt);
-  snprintf(branch_name, 50,"%s_eta",key);
-  tree->SetBranchAddress(branch_name, &eta);
-  snprintf(branch_name, 50,"%s_phi",key);
-  tree->SetBranchAddress(branch_name, &phi);
-  snprintf(branch_name, 50,lo_case_E ? "%s_e" : "%s_E",key);
-  tree->SetBranchAddress(branch_name, &E);
+  snprintf(branch_name, 50,"%s_%s",key,vec_names[0]);
+  tree->SetBranchAddress(branch_name, &p0);
+  snprintf(branch_name, 50,"%s_%s",key,vec_names[1]);
+  tree->SetBranchAddress(branch_name, &p1);
+  snprintf(branch_name, 50,"%s_%s",key,vec_names[2]);
+  tree->SetBranchAddress(branch_name, &p2);
+  snprintf(branch_name, 50,"%s_%s",key,vec_names[3]);
+  tree->SetBranchAddress(branch_name, &p3);
+}
+template<typename T>
+void setup_pt_eta_phi_e(TTree* tree, T& pt, T& eta, T& phi, T& E, const char* key, bool upperE=false){
+  const char* names[] = {"pt","eta","phi",upperE ? "E": "e"};
+  setup_four_vector(tree,pt,eta,phi,E,key,names);
+}
+template<typename T>
+void setup_px_py_pz_e(TTree* tree, T& px, T& py, T& pz, T& E,const char* key, bool upperE=false){
+  const char* names[] = {"px","py","pz",upperE ? "E": "e"};
+  setup_four_vector(tree,px,py,pz,E,key,names);
 }
 template<typename T>
 void setup_four_vector_output(TTree& tree, T& pt, T& eta, T& phi, T& E,const char* key){
