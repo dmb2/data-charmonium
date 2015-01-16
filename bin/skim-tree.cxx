@@ -69,7 +69,7 @@ int main(const int argc, const char* argv[]){
   OutFile.cd();
   TTree OutTree("mini","mini");
   const double weight=xsec > 0 ? xsec/Forest["AUX"]->GetEntries() : 1.;
-  process_tree(Forest,CutDefReals,CutDefCats,OutTree,weight);
+  process_tree(Forest,CutDefReals,CutDefCats,OutTree,"trkComb","LCTOPO",weight);
   print_cut_table(CutDefReals,CutDefCats);
   for(tree_collection::iterator it=Forest.begin(); it != Forest.end(); ++it){
     if(it->second) delete it->second;

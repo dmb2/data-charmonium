@@ -18,6 +18,17 @@ using std::cerr;
 using std::endl;
 using namespace std;
 bool verbose=true;
+std::vector<TLorentzVector> buildMuons(const std::vector<double>* pt, const std::vector<double>* eta,
+				       const std::vector<double>* phi, const std::vector<double>* e){
+  std::vector<TLorentzVector> muons;
+  muons.reserve(pt->size());
+  TLorentzVector tmp;
+  for(size_t i =0; i < pt->size(); i++){
+    tmp.SetPtEtaPhiE(pt->at(i), eta->at(i), phi->at(i), e->at(i));
+    muons.push_back(tmp);
+  }
+  return muons;
+}
 
 TLorentzVector buildJPsiCand(const std::vector<TLorentzVector>& muons, const std::vector<int>& charge){
   std::vector<TLorentzVector> dimuon_pairs;
@@ -43,7 +54,8 @@ TLorentzVector buildJPsiCand(const std::vector<TLorentzVector>& muons, const std
   return dimuon_pairs.at(idx);
 }
 int process_tree(tree_collection& Forest, real_cuts& CutDefReal, 
-		 category_cuts& CutDefCat, TTree& OutTree, const double weight){
+		 category_cuts& CutDefCat, TTree& OutTree, 
+		 const char* muon_system, const std::string& jet_type, const double weight){
   bool do_truth=(weight != 1.0);
   unsigned int squawk_every = 1e5;
   double pileup(0.);
@@ -54,6 +66,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double jpsi_m(0.);
   double jpsi_pt(0.), jpsi_eta(0.), jpsi_phi(0.), jpsi_E(0.);
   std::vector<double> *vtx_pt=NULL;
+  std::vector<double> *mu_pt=NULL, *mu_eta=NULL, *mu_phi=NULL, *mu_E=NULL;
+  std::vector<int> *mu_charge=NULL;
   std::vector<double> *vtx_px=NULL, *vtx_py=NULL, *vtx_pz=NULL, *vtx_m=NULL;
   std::vector<std::vector<double> > *vtx_lxy=NULL;
   std::vector<double> *jet_tau1=NULL, *jet_tau2=NULL, *jet_tau3=NULL;
@@ -67,11 +81,14 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     *t_jet_phi=NULL, *t_jet_E=NULL;
   std::vector<std::string>* EF_trigger_names=NULL;
   // setup_four_vector(Forest["AUX"], jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
-
+  char muon_prefix[50];
+  snprintf(muon_prefix,50,"MU_MU_%s",muon_system);
+  setup_pt_eta_phi_e(Forest["MU"],mu_pt,mu_eta,mu_phi,mu_E,muon_prefix);
+  Forest["MU"]->SetBranchAddress("MU_MU_charge",&mu_charge);
   if(do_truth){
     setup_pt_eta_phi_e(Forest["AUX"], t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
   }
-  setup_pt_eta_phi_e(Forest["LCTOPO"], jet_pt, jet_eta, jet_phi, jet_E, "JET");
+  setup_pt_eta_phi_e(Forest[jet_type], jet_pt, jet_eta, jet_phi, jet_E, "JET");
   if(do_truth){
     setup_pt_eta_phi_e(Forest["TRUTH"], t_jet_pt, t_jet_eta, t_jet_phi, t_jet_E, "JET");
   }
@@ -84,9 +101,9 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     Forest["JPSI"]->SetBranchAddress("VTX_pt",&vtx_pt);
   Forest["TRIG"]->SetBranchAddress("TRIG_EF_trigger_name",&EF_trigger_names);
 
-  Forest["LCTOPO"]->SetBranchAddress("JET_tau1",&jet_tau1);
-  Forest["LCTOPO"]->SetBranchAddress("JET_tau2",&jet_tau2);
-  Forest["LCTOPO"]->SetBranchAddress("JET_tau3",&jet_tau3);
+  Forest[jet_type]->SetBranchAddress("JET_tau1",&jet_tau1);
+  Forest[jet_type]->SetBranchAddress("JET_tau2",&jet_tau2);
+  Forest[jet_type]->SetBranchAddress("JET_tau3",&jet_tau3);
     if(do_truth){
     Forest["TRUTH"]->SetBranchAddress("JET_tau1",&t_jet_tau1);
     Forest["TRUTH"]->SetBranchAddress("JET_tau2",&t_jet_tau2);
@@ -185,6 +202,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       jets.push_back(tmp_vec);
     }
     if (vtx_pt->size() > 0){
+      /*
       for(size_t i = 0; i < vtx_pt->size(); i++){
 	if(vtx_pt->at(i) > vtx_pt->at(jpsi_idx)){
 	  jpsi_idx=i;
@@ -195,6 +213,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 				  + pow(vtx_py->at(jpsi_idx),2)
 				  + pow(vtx_pz->at(jpsi_idx),2)));
       candJPsi.SetPxPyPzE(vtx_px->at(jpsi_idx)*GeV, vtx_py->at(jpsi_idx)*GeV, vtx_pz->at(jpsi_idx)*GeV, E*GeV);
+      */
+      candJPsi=buildJPsiCand(buildMuons(mu_pt,mu_eta,mu_phi,mu_E),*mu_charge);
       jpsi_pt=candJPsi.Pt();
       jpsi_eta=candJPsi.Eta();
       jpsi_phi=candJPsi.Phi();
