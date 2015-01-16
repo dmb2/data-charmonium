@@ -108,8 +108,8 @@ int process_tree(TTree& tree, real_cuts& CutDefReal,
   tree.SetBranchAddress("mc_E",&mc_E);
 
   double cand_jet_pt(0.), cand_jet_eta(0.),cand_jet_phi(0.), cand_jet_E(0.);
-  setup_four_vector(&tree, jet_pt, jet_eta, jet_phi, jet_E, "jet_AntiKt4TruthJets",false);
-  setup_four_vector(&tree, mu_pt, mu_eta, mu_phi, mu_E, "mu_muid",false);
+  setup_pt_eta_phi_e(&tree, jet_pt, jet_eta, jet_phi, jet_E, "jet_AntiKt4TruthJets",false);
+  setup_pt_eta_phi_e(&tree, mu_pt, mu_eta, mu_phi, mu_E, "mu_muid",false);
   setup_four_vector_output(OutTree,cand_jet_pt, cand_jet_eta, 
 			   cand_jet_phi, cand_jet_E, "jet");
 

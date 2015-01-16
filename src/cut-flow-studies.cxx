@@ -19,6 +19,29 @@ using std::endl;
 using namespace std;
 bool verbose=true;
 
+TLorentzVector buildJPsiCand(const std::vector<TLorentzVector>& muons, const std::vector<int>& charge){
+  std::vector<TLorentzVector> dimuon_pairs;
+  for(size_t i = 0; i < muons.size(); i++){
+    for(size_t j = i; j < muons.size(); j++){
+      if(charge.at(i)*charge.at(j) < 0){
+	dimuon_pairs.push_back(muons.at(i)+ muons.at(j));
+      }
+    }
+  }
+  size_t idx=0;
+  double max_pt=0;
+  if(dimuon_pairs.size()==0){
+    return TLorentzVector(0,0,0,0);
+  }
+  for(std::vector<TLorentzVector>::const_iterator jpsi=dimuon_pairs.begin();
+      jpsi!=dimuon_pairs.end(); ++jpsi){
+    if(jpsi->Pt() > max_pt){
+      idx = jpsi-dimuon_pairs.begin();
+      max_pt = jpsi->Pt();
+    }
+  }
+  return dimuon_pairs.at(idx);
+}
 int process_tree(tree_collection& Forest, real_cuts& CutDefReal, 
 		 category_cuts& CutDefCat, TTree& OutTree, const double weight){
   bool do_truth=(weight != 1.0);
