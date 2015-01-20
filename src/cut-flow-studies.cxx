@@ -32,10 +32,13 @@ std::vector<TLorentzVector> buildMuons(const std::vector<double>* pt, const std:
 
 TLorentzVector buildJPsiCand(const std::vector<TLorentzVector>& muons, const std::vector<int>& charge){
   std::vector<TLorentzVector> dimuon_pairs;
+  TLorentzVector cand;
   for(size_t i = 0; i < muons.size(); i++){
     for(size_t j = i; j < muons.size(); j++){
-      if(charge.at(i)*charge.at(j) < 0){
-	dimuon_pairs.push_back(muons.at(i)+ muons.at(j));
+      cand = muons.at(i) + muons.at(j);
+      if(charge.at(i)*charge.at(j) < 0 && cand.M() > 2e3 && cand.M() < 6e3 ){
+	
+	dimuon_pairs.push_back(cand);
       }
     }
   }
@@ -43,14 +46,18 @@ TLorentzVector buildJPsiCand(const std::vector<TLorentzVector>& muons, const std
   double max_pt=0;
   if(dimuon_pairs.size()==0){
     return TLorentzVector(0,0,0,0);
-  }
+  } 
+  //MSG_DEBUG("Num dimuon pairs: " << dimuon_pairs.size());
+///*
   for(std::vector<TLorentzVector>::const_iterator jpsi=dimuon_pairs.begin();
       jpsi!=dimuon_pairs.end(); ++jpsi){
     if(jpsi->Pt() > max_pt){
       idx = jpsi-dimuon_pairs.begin();
       max_pt = jpsi->Pt();
     }
+    //MSG_DEBUG(jpsi-dimuon_pairs.begin()<<": ("<<jpsi->Pt()<<" GeV, "<<jpsi->Eta()<<", "<<jpsi->Phi()<<", "<<jpsi->M()<<" GeV)");
   }
+//*/
   return dimuon_pairs.at(idx);
 }
 int process_tree(tree_collection& Forest, real_cuts& CutDefReal, 
@@ -215,11 +222,11 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       candJPsi.SetPxPyPzE(vtx_px->at(jpsi_idx)*GeV, vtx_py->at(jpsi_idx)*GeV, vtx_pz->at(jpsi_idx)*GeV, E*GeV);
       */
       candJPsi=buildJPsiCand(buildMuons(mu_pt,mu_eta,mu_phi,mu_E),*mu_charge);
-      jpsi_pt=candJPsi.Pt();
+      jpsi_pt=candJPsi.Pt()*GeV;
       jpsi_eta=candJPsi.Eta();
       jpsi_phi=candJPsi.Phi();
-      jpsi_E=candJPsi.E();
-      jpsi_m=candJPsi.M();
+      jpsi_E=candJPsi.E()*GeV;
+      jpsi_m=candJPsi.M()*GeV;
     }
     else{
       continue;
