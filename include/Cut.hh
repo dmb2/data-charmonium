@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
+#include <vector>
 #include <map>
+#include <iostream>
 
 template<class cut_type>
 class cut{
@@ -26,8 +28,7 @@ public:
 
   cut():m_cut_val(),
 	m_count(0),
-	m_weight(0.)
-	/*m_cut_op(equal)*/ {};
+	m_weight(0.) {};
 
   cut(cut_type cut_val, std::string cut_op_str,
       unsigned int count=0, 
@@ -111,7 +112,30 @@ private:
 
 typedef std::map<std::string, cut<double> > real_cuts;
 typedef std::map<std::string, cut<int> > category_cuts;
-
 void print_cut_summary(std::string CutName, cut<int> Cut);
 void print_cut_summary(std::string CutName, cut<double> Cut);
 void print_cut_table(real_cuts& CutDefReals,category_cuts& CutDefCats);
+
+class cut_container{
+public:
+  cut_container(){};
+  ~cut_container(){};
+  
+  /*
+  template<typename T>
+  cut<T>& get_cut(const std::string name){ std::cout<<"Don't know how to retrieve cut!"<<std::endl;}
+  cut<int>& get_cut(const std::string name){ return m_cCutDefs[name]; };
+  cut<double>& get_cut(const std::string name){return m_rCutDefs[name];};
+  */
+
+  void add_cut(cut<int> Cut, const std::string name);
+  void add_cut(cut<double> Cut, const std::string name);
+  void get_cut(cut<int>& Cut, const std::string name)  { Cut = m_cCutDefs[name]; };
+  void get_cut(cut<double>& Cut, const std::string name)  { Cut = m_rCutDefs[name]; };
+  void print_cut_table();
+private:
+  real_cuts m_rCutDefs;
+  category_cuts m_cCutDefs;
+  std::vector<std::string> m_cutOrder;
+};
+

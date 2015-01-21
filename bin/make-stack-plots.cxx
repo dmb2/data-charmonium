@@ -30,11 +30,6 @@ void print_stack_plots(const char* master_fname, const char* sample_names[],
     sample_trees[sample_names[i]]=retrieve<TTree>(fname,"mini");
   }
 
-  // const char* cut_branches[]={/*"mu_trigger_p",*/ "num_jets_p",
-  // 			      "jpsi_pt_p", "jpsi_eta_p",
-  // 			      "delta_r_p", "jet_eta_p",
-  // 			      "jet_pt_p"};
-  // size_t nCuts=sizeof(cut_branches)/sizeof(*cut_branches);
   std::map<std::string,std::string> pretty_cNames;
   init_cut_names(pretty_cNames);
   
@@ -52,11 +47,6 @@ void print_stack_plots(const char* master_fname, const char* sample_names[],
   for(std::vector<std::string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
     const std::string& plot = *p;
     print_stack(sample_trees,plot,HistBook[plot],"_stacked.pdf", target_lumi);
-    //print_stack(sample_trees,plot,HistBook[plot],"_all_cuts.pdf",target_lumi,cut_branches, nCuts-1);
-    // print_cut_stack(sample_trees,cut_branches,nCuts,plot,
-    // 		    HistBook[plot],pretty_cNames,
-    // 		    "_cutflow.pdf");
-    
   }
   plots = map_keys(Hist2DBook);
   for(std::vector<std::string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
@@ -75,7 +65,6 @@ int main(const int argc, const char* argv[]){
   style.SetAtlasStyle();
   gStyle->SetFrameLineWidth(0.0);
   gStyle->SetPalette(1);
-  //const char* sample_names[]={"1S0_8","3S1_8","3PJ_8","3S1_1","3PJ_1"};
   print_stack_plots(argv[2],&argv[3],argc-3,atof(argv[1]));
   return 0;
 }
