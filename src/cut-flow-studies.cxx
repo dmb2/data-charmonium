@@ -37,7 +37,6 @@ TLorentzVector buildJPsiCand(const std::vector<TLorentzVector>& muons, const std
     for(size_t j = i; j < muons.size(); j++){
       cand = muons.at(i) + muons.at(j);
       if(charge.at(i)*charge.at(j) < 0 && cand.M() > 2e3 && cand.M() < 6e3 ){
-	
 	dimuon_pairs.push_back(cand);
       }
     }
@@ -48,7 +47,7 @@ TLorentzVector buildJPsiCand(const std::vector<TLorentzVector>& muons, const std
     return TLorentzVector(0,0,0,0);
   } 
   //MSG_DEBUG("Num dimuon pairs: " << dimuon_pairs.size());
-///*
+  ///*
   for(std::vector<TLorentzVector>::const_iterator jpsi=dimuon_pairs.begin();
       jpsi!=dimuon_pairs.end(); ++jpsi){
     if(jpsi->Pt() > max_pt){
@@ -57,7 +56,7 @@ TLorentzVector buildJPsiCand(const std::vector<TLorentzVector>& muons, const std
     }
     //MSG_DEBUG(jpsi-dimuon_pairs.begin()<<": ("<<jpsi->Pt()<<" GeV, "<<jpsi->Eta()<<", "<<jpsi->Phi()<<", "<<jpsi->M()<<" GeV)");
   }
-//*/
+  //*/
   return dimuon_pairs.at(idx);
 }
 int process_tree(tree_collection& Forest, real_cuts& CutDefReal, 
@@ -89,7 +88,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   std::vector<std::string>* EF_trigger_names=NULL;
   // setup_four_vector(Forest["AUX"], jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
   char muon_prefix[50];
-  snprintf(muon_prefix,50,"MU_MU_%s",muon_system);
+  snprintf(muon_prefix,50,std::string(muon_system)=="" ? "MU_MU%s": "MU_MU_%s",muon_system);
   setup_pt_eta_phi_e(Forest["MU"],mu_pt,mu_eta,mu_phi,mu_E,muon_prefix);
   Forest["MU"]->SetBranchAddress("MU_MU_charge",&mu_charge);
   if(do_truth){
@@ -101,17 +100,17 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   }
   Forest["AUX"]->SetBranchAddress("AvgIntPerXing",&pileup);
   Forest["JPSI"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
-  const char* vtx_names[] = {"px","py","pz","mass"};
-  setup_four_vector(Forest["JPSI"],vtx_px,vtx_py,vtx_pz,vtx_m,"VTX",vtx_names);
+  // const char* vtx_names[] = {"px","py","pz","mass"};
+  // setup_four_vector(Forest["JPSI"],vtx_px,vtx_py,vtx_pz,vtx_m,"VTX",vtx_names);
 
 
-    Forest["JPSI"]->SetBranchAddress("VTX_pt",&vtx_pt);
+  Forest["JPSI"]->SetBranchAddress("VTX_pt",&vtx_pt);
   Forest["TRIG"]->SetBranchAddress("TRIG_EF_trigger_name",&EF_trigger_names);
 
   Forest[jet_type]->SetBranchAddress("JET_tau1",&jet_tau1);
   Forest[jet_type]->SetBranchAddress("JET_tau2",&jet_tau2);
   Forest[jet_type]->SetBranchAddress("JET_tau3",&jet_tau3);
-    if(do_truth){
+  if(do_truth){
     Forest["TRUTH"]->SetBranchAddress("JET_tau1",&t_jet_tau1);
     Forest["TRUTH"]->SetBranchAddress("JET_tau2",&t_jet_tau2);
     Forest["TRUTH"]->SetBranchAddress("JET_tau3",&t_jet_tau3);
@@ -155,15 +154,15 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double w=weight;
   OutTree.Branch("weight", &w);
   /*
-  int has_trigger=0, has_num_jets=0, has_jpsi_pt=0, has_jpsi_eta=0, 
+    int has_trigger=0, has_num_jets=0, has_jpsi_pt=0, has_jpsi_eta=0, 
     has_jet_eta=0, has_delta_r=0, has_jet_pt=0;
-  OutTree.Branch("mu_trigger_p",&has_trigger);
-  OutTree.Branch("num_jets_p",&has_num_jets);
-  OutTree.Branch("jpsi_pt_p",&has_jpsi_pt);
-  OutTree.Branch("jpsi_eta_p",&has_jpsi_eta);
-  OutTree.Branch("delta_r_p", &has_delta_r);
-  OutTree.Branch("jet_eta_p",&has_jet_eta);
-  OutTree.Branch("jet_pt_p",&has_jet_pt);
+    OutTree.Branch("mu_trigger_p",&has_trigger);
+    OutTree.Branch("num_jets_p",&has_num_jets);
+    OutTree.Branch("jpsi_pt_p",&has_jpsi_pt);
+    OutTree.Branch("jpsi_eta_p",&has_jpsi_eta);
+    OutTree.Branch("delta_r_p", &has_delta_r);
+    OutTree.Branch("jet_eta_p",&has_jet_eta);
+    OutTree.Branch("jet_pt_p",&has_jet_pt);
   */
 
   Long64_t nEntries = Forest["AUX"]->GetEntries();
@@ -210,16 +209,16 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     }
     if (vtx_pt->size() > 0){
       /*
-      for(size_t i = 0; i < vtx_pt->size(); i++){
+	for(size_t i = 0; i < vtx_pt->size(); i++){
 	if(vtx_pt->at(i) > vtx_pt->at(jpsi_idx)){
-	  jpsi_idx=i;
+	jpsi_idx=i;
 	}
-      }
-      double E = TMath::Sqrt(pow(vtx_m->at(jpsi_idx),2)
-			     - (  pow(vtx_px->at(jpsi_idx),2)
-				  + pow(vtx_py->at(jpsi_idx),2)
-				  + pow(vtx_pz->at(jpsi_idx),2)));
-      candJPsi.SetPxPyPzE(vtx_px->at(jpsi_idx)*GeV, vtx_py->at(jpsi_idx)*GeV, vtx_pz->at(jpsi_idx)*GeV, E*GeV);
+	}
+	double E = TMath::Sqrt(pow(vtx_m->at(jpsi_idx),2)
+	- (  pow(vtx_px->at(jpsi_idx),2)
+	+ pow(vtx_py->at(jpsi_idx),2)
+	+ pow(vtx_pz->at(jpsi_idx),2)));
+	candJPsi.SetPxPyPzE(vtx_px->at(jpsi_idx)*GeV, vtx_py->at(jpsi_idx)*GeV, vtx_pz->at(jpsi_idx)*GeV, E*GeV);
       */
       candJPsi=buildJPsiCand(buildMuons(mu_pt,mu_eta,mu_phi,mu_E),*mu_charge);
       jpsi_pt=candJPsi.Pt()*GeV;
