@@ -75,7 +75,7 @@ public:
   cut_type cut_value() const {return m_cut_val;}
   unsigned int count() const {return m_count;}
   double weight() const {return m_weight;}
-  
+  void reset(){ m_count=0; m_weight=0; }
   bool operator==(const cut &other) const {
     return (m_cut_val == other.m_cut_val &&
 	    m_weight == other.m_weight &&
