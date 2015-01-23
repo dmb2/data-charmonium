@@ -78,7 +78,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   std::vector<std::vector<double> > *vtx_lxy=NULL;
   std::vector<double> *jet_tau1=NULL, *jet_tau2=NULL, *jet_tau3=NULL;
   std::vector<double> *jet_pt=NULL, *jet_eta=NULL, *jet_phi=NULL, *jet_E=NULL;
-
   double t_z(0.), t_DeltaR(0.);
   double t_jpsi_m(0.);
   double t_jpsi_pt(0.), t_jpsi_eta(0.),t_jpsi_phi(0.), t_jpsi_E(0.);
@@ -284,6 +283,9 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     }
     OutTree.Fill();
   }
-
+  // Clean up the forest
+  for(tree_collection::iterator tree = Forest.begin(); tree != Forest.end(); ++tree){
+    tree->second->ResetBranchAddresses();
+  }
   return 0;
 }
