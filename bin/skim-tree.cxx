@@ -9,6 +9,7 @@
 #include "simple-parser.hh"
 #include "cut-flow-studies.hh"
 #include "Units.hh"
+#include "tree-utils.hh"
 #include "root-sugar.hh"
 // Root Includes
 #include "TFile.h"
@@ -59,20 +60,19 @@ int main(const int argc, const char* argv[]){
   MSG("Input Cross Section: " << xsec);
   MSG("Input File: "<<inFName);
   
-  TFile* file = new TFile(inFName.c_str());
+  TFile* file = TFile::Open(inFName.c_str());
   tree_collection Forest; 
   const char* treeNames[] = {"AUX","LCTOPO","TOPOEM","TRACKZ","MU","JPSI",
-			    "PRIVX","SEL_TRACKS",
-			    "TRIG"};
+			    "PRIVX","SEL_TRACKS", "TRIG"};
   for(size_t i=0; i < sizeof(treeNames)/sizeof(*(treeNames)); i++){
-    Forest[std::string(treeNames[i])]=retrieve<TTree>(file,treeNames[i]);
+    Forest[std::string(treeNames[i])]=dynamic_cast<TTree*>(file->Get(treeNames[i]));//retrieve<TTree>(file,treeNames[i]);
   }
   if(xsec > 0){
     Forest["TRUTH"]=retrieve<TTree>(file,"TRUTH");
   }
   const double weight=xsec > 0 ? xsec/Forest["AUX"]->GetEntries() : 1.;
   const char* muon_systems[] = {"","trkMS","trkMuonExtr","trkInnerExtr","trkComb"};
-  const char* jet_systems[] = {"TOPOEM","LCTOPO","TRACKZ"};
+  const char* jet_systems[] = {"TRACKZ","LCTOPO","TOPOEM"};
   char outName[100];
   for(size_t i=0; i < sizeof(muon_systems)/sizeof(*muon_systems); i++){
     for(size_t j=0; j < sizeof(jet_systems)/sizeof(*jet_systems); j++){
