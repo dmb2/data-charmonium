@@ -71,18 +71,24 @@ int main(const int argc, const char* argv[]){
     Forest["TRUTH"]=retrieve<TTree>(file,"TRUTH");
   }
   const double weight=xsec > 0 ? xsec/Forest["AUX"]->GetEntries() : 1.;
-  // const char* muon_systems[] = {"","trkMS","trkMuonExtr","trkInnerExtr","trkComb"};
-  // const char* jet_systems[] = {"TRACKZ","LCTOPO","TOPOEM"};
-  MSG("Opening output file: "<<outFName);
-  TFile OutFile(outFName.c_str(),"RECREATE");
-  OutFile.cd();
-  TTree OutTree("mini","mini");
-  process_tree(Forest,CutDefReals,CutDefCats,OutTree,"","LCTOPO",weight);
-  print_cut_table(CutDefReals,CutDefCats);
-  reset_cut_cat(CutDefReals);
-  reset_cut_cat(CutDefCats);
-  OutFile.Write();
-  OutFile.Close();
+  const char* muon_systems[] = {"","trkMS","trkMuonExtr","trkInnerExtr","trkComb"};
+  const char* jet_systems[] = {"TRACKZ","LCTOPO","TOPOEM"};
+  char outName[100];
+  for(size_t i=0; i < sizeof(muon_systems)/sizeof(*muon_systems); i++){
+    for(size_t j=0; j < sizeof(jet_systems)/sizeof(*jet_systems); j++){
+      snprintf(outName,100,("208004.%s.%s.mini.root"),muon_systems[i],jet_systems[j]);
+      MSG("Opening output file: "<<outName);
+      TFile OutFile(outName,"RECREATE");
+      OutFile.cd();
+      TTree OutTree("mini","mini");
+      process_tree(Forest,CutDefReals,CutDefCats,OutTree,muon_systems[i],jet_systems[j],weight);
+      print_cut_table(CutDefReals,CutDefCats);
+      reset_cut_cat(CutDefReals);
+      reset_cut_cat(CutDefCats);
+      OutFile.Write();
+      OutFile.Close();
+    }
+  }
   for(tree_collection::iterator it=Forest.begin(); it != Forest.end(); ++it){
     if(it->second) delete it->second;
   }

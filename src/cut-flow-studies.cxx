@@ -99,8 +99,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   }
   Forest["AUX"]->SetBranchAddress("AvgIntPerXing",&pileup);
   Forest["JPSI"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
-  // const char* vtx_names[] = {"px","py","pz","mass"};
-  // setup_four_vector(Forest["JPSI"],vtx_px,vtx_py,vtx_pz,vtx_m,"VTX",vtx_names);
+  const char* vtx_names[] = {"px","py","pz","mass"};
+  setup_four_vector(Forest["JPSI"],vtx_px,vtx_py,vtx_pz,vtx_m,"VTX",vtx_names);
 
 
   Forest["JPSI"]->SetBranchAddress("VTX_pt",&vtx_pt);
@@ -207,24 +207,25 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       jets.push_back(tmp_vec);
     }
     if (vtx_pt->size() > 0){
-      /*
-	for(size_t i = 0; i < vtx_pt->size(); i++){
+
+      for(size_t i = 0; i < vtx_pt->size(); i++){
 	if(vtx_pt->at(i) > vtx_pt->at(jpsi_idx)){
-	jpsi_idx=i;
+	  jpsi_idx=i;
 	}
-	}
-	double E = TMath::Sqrt(pow(vtx_m->at(jpsi_idx),2)
-	- (  pow(vtx_px->at(jpsi_idx),2)
-	+ pow(vtx_py->at(jpsi_idx),2)
-	+ pow(vtx_pz->at(jpsi_idx),2)));
-	candJPsi.SetPxPyPzE(vtx_px->at(jpsi_idx)*GeV, vtx_py->at(jpsi_idx)*GeV, vtx_pz->at(jpsi_idx)*GeV, E*GeV);
-      */
-      candJPsi=buildJPsiCand(buildMuons(mu_pt,mu_eta,mu_phi,mu_E),*mu_charge);
-      jpsi_pt=candJPsi.Pt()*GeV;
+      }
+      double E = TMath::Sqrt(pow(vtx_m->at(jpsi_idx),2)
+			     + pow(vtx_px->at(jpsi_idx),2)
+			     + pow(vtx_py->at(jpsi_idx),2)
+			     + pow(vtx_pz->at(jpsi_idx),2));
+
+      candJPsi.SetPxPyPzE(vtx_px->at(jpsi_idx)*GeV, vtx_py->at(jpsi_idx)*GeV, vtx_pz->at(jpsi_idx)*GeV, E*GeV);
+
+      // candJPsi=buildJPsiCand(buildMuons(mu_pt,mu_eta,mu_phi,mu_E),*mu_charge);
+      jpsi_pt=candJPsi.Pt();
       jpsi_eta=candJPsi.Eta();
       jpsi_phi=candJPsi.Phi();
-      jpsi_E=candJPsi.E()*GeV;
-      jpsi_m=candJPsi.M()*GeV;
+      jpsi_E=candJPsi.E();
+      jpsi_m=candJPsi.M();
     }
     else{
       continue;
@@ -239,9 +240,9 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     // MSG_DEBUG(candJet.Pt());
     // DeltaR=find_closest(*jet_pt,*jet_eta,*jet_phi,*jet_E, candJet, candJPsi,idx);
     jpsi_lxy = (vtx_lxy->size() > 0) ? vtx_lxy->at(0).at(0) : -99999.;
-    if(!CutDefReal["jpsi_lxy"].pass(fabs(jpsi_lxy),w)){
-      continue;
-    };
+    // if(!CutDefReal["jpsi_lxy"].pass(fabs(jpsi_lxy),w)){
+    //   continue;
+    // };
     if(!CutDefReal["delta_r"].pass(DeltaR,w)){
       continue;
     };
