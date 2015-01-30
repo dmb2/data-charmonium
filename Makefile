@@ -3,7 +3,7 @@ CC=$(shell root-config --cxx)
 INCDIR=$(PWD)/include
 LIBDIR:=$(shell root-config --libdir)
 ROOTINCDIR:=$(shell root-config --incdir)
-LDFLAGS:=$(shell root-config --libs) $(shell fastjet-config --libs) -lNsubjettiness#-L ./lib #-lgcov
+LDFLAGS:=$(shell root-config --libs)  -lRooFit -lRooFitCore $(shell fastjet-config --libs) -lNsubjettiness #-L ./lib #-lgcov
 WFLAGS= -Wextra -Wall 
 DFLAGS=-O3 #-fprofile-arcs -ftest-coverage 
 CXXFLAGS= $(shell root-config --ldflags)  -pg -I$(INCDIR) -I$(ROOTINCDIR)	$(shell fastjet-config --cxxflags)\
@@ -15,7 +15,8 @@ SKIM_DEPS:=src/tree-utils.o src/simple-parser.o src/Cut.o
 HISTO_DEPS:=src/histo-utils.o src/AtlasStyle.o src/histo-meta-data.o src/stack-utils.o src/plot-utils.o
 .PHONY: all clean 
 all: $(BINS)
-
+debug:
+	@echo $(LDFLAGS)
 # KISS
 simple-parser-test: bin/simple-parser-test.o src/simple-parser.o
 	$(CC) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
