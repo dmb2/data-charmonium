@@ -10,4 +10,6 @@ class RooRealVar;
 
 RooAbsPdf* build_model(RooRealVar* mass, RooRealVar* tau);
 RooFitResult* Fit(RooAbsPdf* model,RooDataSet& data);
-void print_fit_results(RooAbsPdf* model);
+void print_fit_results(RooAbsPdf* model, RooDataSet* data, 
+		       RooRealVar* mass, RooRealVar *tau);
+

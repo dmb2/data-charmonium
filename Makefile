@@ -3,7 +3,7 @@ CC=$(shell root-config --cxx)
 INCDIR=$(PWD)/include
 LIBDIR:=$(shell root-config --libdir)
 ROOTINCDIR:=$(shell root-config --incdir)
-LDFLAGS:=$(shell root-config --libs)  -lRooFit -lRooFitCore $(shell fastjet-config --libs) -lNsubjettiness #-L ./lib #-lgcov
+LDFLAGS:=$(shell root-config --libs)  $(shell fastjet-config --libs) -lNsubjettiness #-L ./lib #-lgcov
 WFLAGS= -Wextra -Wall 
 DFLAGS=-O3 #-fprofile-arcs -ftest-coverage 
 CXXFLAGS= $(shell root-config --ldflags)  -pg -I$(INCDIR) -I$(ROOTINCDIR)	$(shell fastjet-config --cxxflags)\
@@ -33,7 +33,7 @@ make-stack-plots: $(HISTO_DEPS) bin/make-stack-plots.o
 make-plots: $(HISTO_DEPS) bin/make-plots.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 fit-and-sbs: src/fit-utils.o bin/fit-and-sbs.o 
-	$(CC) $^ -o $@ $(LDFLAGS)
+	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) 
 %.o: %.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@
 clean:

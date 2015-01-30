@@ -20,8 +20,8 @@ int main(const int argc, const char* argv[]){
     usage(argv[0]);
     return 1;
   }
-  RooRealVar *mass = new RooRealVar("jpsi_m","jpsi_m",PDGMASS, PDGMASS-0.110, PDGMASS+0.110); //Range set to +/- 0.11 GeV of particle mass
-  RooRealVar *tau = new RooRealVar("jpsi_lxy","Lifetime",-2.,10.);
+  RooRealVar *mass = new RooRealVar("jpsi_m","jpsi_m",PDGMASS, PDGMASS-0.5, PDGMASS+0.5);
+  RooRealVar *tau = new RooRealVar("jpsi_tau","Lifetime",-2.,5);
 
   RooAbsPdf* model = build_model(mass,tau);
   TFile* file = TFile::Open(argv[1]);
@@ -29,9 +29,11 @@ int main(const int argc, const char* argv[]){
 
   RooDataSet data("data","data",RooArgSet(*mass,*tau),RooFit::Import(*tree));
 
-  //RooFitResult* result = Fit(model,data);
-  //result->Print();
-  print_fit_results(model);
+  RooFitResult* result = Fit(model,data);
+  if (result){
+    result->Print();
+  }
+  print_fit_results(model,&data,mass,tau);
   
   return 0;
 }
