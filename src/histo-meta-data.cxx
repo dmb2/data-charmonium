@@ -67,6 +67,10 @@ void init_leg_names(std::map<std::string,std::string>& leg_map){
   leg_map["208004.trkMS.TRACKZ"]="#mu MS, Jet TrackZ";
   leg_map["208004.trkMuonExtr.TRACKZ"]="#mu MS Extr., Jet TrackZ";
 
+  leg_map["208004..LCTOPO"]="#mu, Jet LCTopo";
+  leg_map["208004..TOPOEM"]="#mu, Jet LopoEM";
+  leg_map["208004..TRACKZ"]="#mu, Jet TrackZ";
+
   leg_map["master"]="Signal";
 }
 void init_colors(std::map<std::string,int>& colors){
@@ -100,6 +104,10 @@ void init_colors(std::map<std::string,int>& colors){
   colors["208004.trkInnerExtr.TRACKZ"]=TColor::GetColor(223,101,176);
   colors["208004.trkMS.TRACKZ"]=TColor::GetColor(221,28,119);
   colors["208004.trkMuonExtr.TRACKZ"]=TColor::GetColor(152,0,67);
+
+  colors["208004..LCTOPO"]=TColor::GetColor(254,204,92);
+  colors["208004..TOPOEM"]=TColor::GetColor(194,230,153);
+  colors["208004..TRACKZ"]=TColor::GetColor(215,181,216);
 
   colors["master"]=TColor::GetColor(0,0,0);
 }
