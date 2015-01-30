@@ -52,6 +52,25 @@ void init_leg_names(std::map<std::string,std::string>& leg_map){
   leg_map["208401.Pythia8B_AU2_CTEQ6L1_Bs_Jpsimu4mu4_phi"]="B_{s}#rightarrow J/#psi #phi";
   leg_map["208413.Pythia8B_AU2_CTEQ6L1_chib_Jpsimu3p5mu3p5Jpsimu3p5mu3p5"]="#chi_{b}#rightarrow 2 J/#psi";
 
+  leg_map["208004.trkComb.LCTOPO"]="#mu Comb, Jet LCTopo";
+  leg_map["208004.trkInnerExtr.LCTOPO"]="#mu ID Extr., Jet LCTopo";
+  leg_map["208004.trkMS.LCTOPO"]="#mu MS, Jet LCTopo";
+  leg_map["208004.trkMuonExtr.LCTOPO"]="#mu MS Extr., Jet LCTopo";
+
+  leg_map["208004.trkComb.TOPOEM"]="#mu Comb, Jet TopoEM";
+  leg_map["208004.trkInnerExtr.TOPOEM"]="#mu ID Extr., Jet TopoEM";
+  leg_map["208004.trkMS.TOPOEM"]="#mu MS, Jet Topoem";
+  leg_map["208004.trkMuonExtr.TOPOEM"]="#mu MS Extr., Jet TopoEM";
+
+  leg_map["208004.trkComb.TRACKZ"]="#mu Comb, Jet TrackZ";
+  leg_map["208004.trkInnerExtr.TRACKZ"]="#mu ID Extr., Jet TrackZ";
+  leg_map["208004.trkMS.TRACKZ"]="#mu MS, Jet TrackZ";
+  leg_map["208004.trkMuonExtr.TRACKZ"]="#mu MS Extr., Jet TrackZ";
+
+  leg_map["208004..LCTOPO"]="#mu, Jet LCTopo";
+  leg_map["208004..TOPOEM"]="#mu, Jet LopoEM";
+  leg_map["208004..TRACKZ"]="#mu, Jet TrackZ";
+
   leg_map["master"]="Signal";
 }
 void init_colors(std::map<std::string,int>& colors){
@@ -70,6 +89,25 @@ void init_colors(std::map<std::string,int>& colors){
   // feed down
   colors["208022.Pythia8B_AU2_CTEQ6L1_pp_Psi2S_JpsiPiPi"]=TColor::GetColor(158,154,200);
   colors["208023.Pythia8B_AU2_CTEQ6L1_pp_X3872_JpsiPiPi"]=TColor::GetColor(106,81,163);
+  //Oranges
+  colors["208004.trkComb.LCTOPO"]=TColor::GetColor(254,204,92);
+  colors["208004.trkInnerExtr.LCTOPO"]=TColor::GetColor(253,141,60);
+  colors["208004.trkMS.LCTOPO"]=TColor::GetColor(240,59,32);
+  colors["208004.trkMuonExtr.LCTOPO"]=TColor::GetColor(189,0,38);
+  //Greens 
+  colors["208004.trkComb.TOPOEM"]=TColor::GetColor(194,230,153);
+  colors["208004.trkInnerExtr.TOPOEM"]=TColor::GetColor(120,198,121);
+  colors["208004.trkMS.TOPOEM"]=TColor::GetColor(49,163,84);
+  colors["208004.trkMuonExtr.TOPOEM"]=TColor::GetColor(0,104,55);
+  // Pinks
+  colors["208004.trkComb.TRACKZ"]=TColor::GetColor(215,181,216);
+  colors["208004.trkInnerExtr.TRACKZ"]=TColor::GetColor(223,101,176);
+  colors["208004.trkMS.TRACKZ"]=TColor::GetColor(221,28,119);
+  colors["208004.trkMuonExtr.TRACKZ"]=TColor::GetColor(152,0,67);
+
+  colors["208004..LCTOPO"]=TColor::GetColor(254,204,92);
+  colors["208004..TOPOEM"]=TColor::GetColor(194,230,153);
+  colors["208004..TRACKZ"]=TColor::GetColor(215,181,216);
 
   colors["master"]=TColor::GetColor(0,0,0);
 }

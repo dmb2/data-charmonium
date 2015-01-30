@@ -2,9 +2,11 @@
 #include "TFile.h"
 #include <iostream>
 
+#define DEBUG_LEVEL 1
+
 #define MSG(message) std::cout<<""<<message<<""<<std::endl
 #define MSG_ERR(message) std::cerr<<"\033[31m"<<message<<"\033[0m"<<std::endl
-#define MSG_DEBUG(message) std::cout<<"\033[32m"<<message<<"\033[0m"<<std::endl
+#define MSG_DEBUG(message) if(DEBUG_LEVEL > 0){std::cout<<"\033[32m"<<message<<"\033[0m"<<std::endl;}
 
 
 template <typename T>
