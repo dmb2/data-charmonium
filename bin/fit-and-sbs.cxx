@@ -16,7 +16,7 @@ void usage(const char* name){
 }
 
 int main(const int argc, const char* argv[]){
-  if(argc !=2){
+  if(argc !=3){
     usage(argv[0]);
     return 1;
   }
@@ -29,8 +29,8 @@ int main(const int argc, const char* argv[]){
 
   RooDataSet data("data","data",RooArgSet(*mass,*tau),RooFit::Import(*tree));
 
-  RooFitResult* result = Fit(model,data);
-  result->Print();
+  //RooFitResult* result = Fit(model,data);
+  //result->Print();
   print_fit_results(model);
   
   return 0;

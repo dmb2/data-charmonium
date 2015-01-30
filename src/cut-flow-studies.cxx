@@ -46,17 +46,14 @@ TLorentzVector buildJPsiCand(const std::vector<TLorentzVector>& muons, const std
   if(dimuon_pairs.size()==0){
     return TLorentzVector(0,0,0,0);
   } 
-  //MSG_DEBUG("Num dimuon pairs: " << dimuon_pairs.size());
-  ///*
   for(std::vector<TLorentzVector>::const_iterator jpsi=dimuon_pairs.begin();
       jpsi!=dimuon_pairs.end(); ++jpsi){
     if(jpsi->Pt() > max_pt){
       idx = jpsi-dimuon_pairs.begin();
       max_pt = jpsi->Pt();
     }
-    //MSG_DEBUG(jpsi-dimuon_pairs.begin()<<": ("<<jpsi->Pt()<<" GeV, "<<jpsi->Eta()<<", "<<jpsi->Phi()<<", "<<jpsi->M()<<" GeV)");
+
   }
-  //*/
   return dimuon_pairs.at(idx);
 }
 int process_tree(tree_collection& Forest, real_cuts& CutDefReal, 
@@ -69,7 +66,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double t_tau1(0),t_tau2(0),t_tau3(0),t_tau21(0),t_tau32(0);
   double z(0.), DeltaR(999.);
   double jpsi_lxy(0.);
-  double jpsi_m(0.);
+  double jpsi_tau(0.);
+  double jpsi_m(0.), jpsi_rap(0.);
   double jpsi_pt(0.), jpsi_eta(0.), jpsi_phi(0.), jpsi_E(0.);
   std::vector<double> *vtx_pt=NULL;
   std::vector<double> *mu_pt=NULL, *mu_eta=NULL, *mu_phi=NULL, *mu_E=NULL;
@@ -79,7 +77,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   std::vector<double> *jet_tau1=NULL, *jet_tau2=NULL, *jet_tau3=NULL;
   std::vector<double> *jet_pt=NULL, *jet_eta=NULL, *jet_phi=NULL, *jet_E=NULL;
   double t_z(0.), t_DeltaR(0.);
-  double t_jpsi_m(0.);
+  double t_jpsi_m(0.), t_jpsi_rap(0.);
+
   double t_jpsi_pt(0.), t_jpsi_eta(0.),t_jpsi_phi(0.), t_jpsi_E(0.);
   std::vector<double> *t_jet_tau1=NULL, *t_jet_tau2=NULL, *t_jet_tau3=NULL;
   std::vector<double> *t_jet_pt=NULL, *t_jet_eta=NULL, 
@@ -125,6 +124,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   if(do_truth){
     setup_four_vector_output(OutTree,cand_t_jet_pt, cand_t_jet_eta, 
 			     cand_t_jet_phi, cand_t_jet_E, "truth_jet");
+    OutTree.Branch("truth_jpsi_rap",&t_jpsi_rap);
     OutTree.Branch("truth_jpsi_m",&t_jpsi_m);
     setup_four_vector_output(OutTree,t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
     OutTree.Branch("truth_tau1",&t_tau1);
@@ -137,7 +137,9 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     OutTree.Branch("truth_delta_r",&t_DeltaR);
   }
   OutTree.Branch("jpsi_lxy",&jpsi_lxy);
+  OutTree.Branch("jpsi_tau", &jpsi_tau);
   OutTree.Branch("jpsi_m",&jpsi_m);
+  OutTree.Branch("jpsi_rap",&jpsi_rap);
   setup_four_vector_output(OutTree,jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
   OutTree.Branch("pileup",&pileup);
   OutTree.Branch("tau1",&tau1);
@@ -152,17 +154,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 
   double w=weight;
   OutTree.Branch("weight", &w);
-  /*
-    int has_trigger=0, has_num_jets=0, has_jpsi_pt=0, has_jpsi_eta=0, 
-    has_jet_eta=0, has_delta_r=0, has_jet_pt=0;
-    OutTree.Branch("mu_trigger_p",&has_trigger);
-    OutTree.Branch("num_jets_p",&has_num_jets);
-    OutTree.Branch("jpsi_pt_p",&has_jpsi_pt);
-    OutTree.Branch("jpsi_eta_p",&has_jpsi_eta);
-    OutTree.Branch("delta_r_p", &has_delta_r);
-    OutTree.Branch("jet_eta_p",&has_jet_eta);
-    OutTree.Branch("jet_pt_p",&has_jet_pt);
-  */
 
   Long64_t nEntries = Forest["AUX"]->GetEntries();
   if(verbose) {
@@ -223,6 +214,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       // candJPsi=buildJPsiCand(buildMuons(mu_pt,mu_eta,mu_phi,mu_E),*mu_charge);
       jpsi_pt=candJPsi.Pt();
       jpsi_eta=candJPsi.Eta();
+      jpsi_rap=candJPsi.Rapidity();
       jpsi_phi=candJPsi.Phi();
       jpsi_E=candJPsi.E();
       jpsi_m=candJPsi.M();
@@ -237,9 +229,9 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       continue;
     }
     DeltaR=find_closest(jets,candJet,candJPsi,idx);
-    // MSG_DEBUG(candJet.Pt());
-    // DeltaR=find_closest(*jet_pt,*jet_eta,*jet_phi,*jet_E, candJet, candJPsi,idx);
+
     jpsi_lxy = (vtx_lxy->size() > 0) ? vtx_lxy->at(0).at(0) : -99999.;
+    jpsi_tau = jpsi_lxy*(3096.915*GeV)/jpsi_pt;
     // if(!CutDefReal["jpsi_lxy"].pass(fabs(jpsi_lxy),w)){
     //   continue;
     // };
@@ -269,6 +261,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       idx=0;
       TLorentzVector tvec(0,0,0,0);
       tvec.SetPtEtaPhiE(t_jpsi_pt,t_jpsi_eta,t_jpsi_phi, t_jpsi_E);
+      t_jpsi_rap=tvec.Rapidity();
       t_jpsi_m=tvec.M();
       t_DeltaR=find_closest(*t_jet_pt,*t_jet_eta,*t_jet_phi,*t_jet_E, 
 			    candTruthJet, candJet,idx);
