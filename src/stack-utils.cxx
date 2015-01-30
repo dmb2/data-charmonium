@@ -145,6 +145,7 @@ static std::vector<double> build_norm_factors(TH1* HistZvsE){
   }
   return result;
 }
+/*
 static void norm_hist(TH1* hist,const std::vector<double> norm_factors){
   double bc(0);
   double nf(0);
@@ -154,7 +155,7 @@ static void norm_hist(TH1* hist,const std::vector<double> norm_factors){
     hist->SetBinContent(i,bc/norm_factors.at(i));
   }
 }
-
+*/
 static void paint_hist(TH1* hist, TVirtualPad* pad,
 		       size_t pad_pos,size_t n_col, size_t n_row, size_t n_hists,
 		       int color){
