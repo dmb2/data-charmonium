@@ -45,19 +45,19 @@ RooAbsPdf* build_model(RooRealVar* mass, RooRealVar* tau){
   RooGenericPdf *npmBkg = new RooGenericPdf("NonPromptMassBkg","Background",gen_pdf_str,RooArgList(*mass,*npc0,*npc1));
   */	
   // ** Example **  Background mass model - 1st order polnomial
-  RooRealVar* c= new RooRealVar("c","Slope", -0.00015, -0.01,0.01);
+  RooRealVar* c= new RooRealVar("c","Slope", -0.27, -0.5,0.5);
   RooPolynomial* mBkg = new RooPolynomial("PromptMassBkg","background",*mass,RooArgList(*c));
   
-  RooRealVar* npc= new RooRealVar("npc","Slope", -0.00015, -0.01,0.01);
+  RooRealVar* npc= new RooRealVar("npc","Slope", -0.27, -0.5,0.5);
   RooPolynomial *npmBkg = new RooPolynomial("NonPromptMassBkg","Background",*mass,RooArgList(*npc));
   // Lifetime uncertainty model
   RooRealVar *tMean = new RooRealVar("tMean","mean of gaussian",0,-9.,9.);
   RooRealVar *tSigma = new RooRealVar("tSigma","Scale Factor 1",0.1,0.005,3.0);
-  RooGaussModel *tGauss = new RooGaussModel("tGauss2","Gaussian",*tau,*tMean,*tSigma);
+  RooGaussModel *tGauss = new RooGaussModel("PromptTauSig","Gaussian",*tau,*tMean,*tSigma);
 
   // Signal lifetime model
   RooRealVar *fittedTau = new RooRealVar("fittedTau", "lifetime", 1.53,1.0,2.0);
-  RooDecay *tSig = new RooDecay("PromptTauSig", "exponential convoluted with gaussian", *tau,*fittedTau,*tGauss,RooDecay::SingleSided);
+  RooDecay *tSig = new RooDecay("NonPromptTauSig", "exponential convoluted with gaussian", *tau,*fittedTau,*tGauss,RooDecay::SingleSided);
 
   // Background lifetime model
   RooRealVar *bkgTau1 = new RooRealVar("bkgTau1", "lifetime", 1.2,0.1,3.);
@@ -92,43 +92,49 @@ RooAbsPdf* build_model(RooRealVar* mass, RooRealVar* tau){
   return new RooAddPdf("model","model",RooArgList(*sigModel,*bkgModel),*sigFrac);
 }
 RooFitResult* Fit(RooAbsPdf* model,RooDataSet& data){
-  return model->fitTo(data,RooFit::NumCPU(4,kTRUE),RooFit::Save());
+  return model->fitTo(data,RooFit::NumCPU(sysconf(_SC_NPROCESSORS_ONLN),kTRUE),RooFit::Save());
 }
 static void add_component(RooPlot* frame,RooAbsPdf* model,
-			  const char* key, const char* comp_name, const Int_t color){
-  char components[100];
-  char name[100];
-  //eg PromptMassSig,PromptMassBkg
-  snprintf(components,100,"%s%sSig,%s%sBkg",comp_name,key,comp_name,key);
-  //eg PromptMass
-  snprintf(name,100,"%s%s",comp_name,key);
-  model->plotOn(frame,RooFit::Components(components),
+			  const char* comp_name, 
+			  const Int_t color){
+  model->plotOn(frame,RooFit::Components(comp_name),
 		RooFit::LineWidth(2),
 		RooFit::LineColor(color),
 		RooFit::LineStyle(2),
-		RooFit::Name(name));
+		RooFit::Name(comp_name));
 }
-static void add_leg_comp(TLegend* leg,RooPlot* frame, const char* key, const char* comp_name){
-  char name[100];
-  snprintf(name,100,"%s%s",comp_name,key);
-  RooCurve * curve = frame->getCurve(name);
+static void add_leg_comp(TLegend* leg,RooPlot* frame, const char* comp_name){
+  //char name[100];
+  //snprintf(name,100,"%s%s",comp_name,key);
+  RooCurve * curve = frame->getCurve(comp_name);
   leg->AddEntry(curve,comp_name,"l");
 }
 static void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model, const char* key,const char* title){
   RooPlot* frame = var->frame();
+  TLegend* leg = new TLegend(0.7,0.85,1.0,1.0);
+  leg->SetBorderSize(0);
+  leg->SetFillColor(0);
+
   data->plotOn(frame,RooFit::Name("PlotData"));
   model->plotOn(frame,
 		RooFit::LineColor(kBlue),
 		RooFit::LineWidth(2),
-		RooFit::NumCPU(4,kTRUE),
+		RooFit::NumCPU(sysconf(_SC_NPROCESSORS_ONLN),kTRUE),
 		RooFit::Name("PlotModel"));
-  add_component(frame,model,key,"Prompt", kAzure);
-  add_component(frame,model,key,"NonPrompt",kViolet);
-  TLegend* leg = new TLegend(0.7,0.85,1.0,1.0);
-  leg->SetBorderSize(0);
-  leg->SetFillColor(0);
-  add_leg_comp(leg,frame,key,"Prompt");
-  add_leg_comp(leg,frame,key,"NonPrompt");
+
+  char name[100];
+  const char* comps[]={"Prompt","NonPrompt"};
+  const char* types[]={"Sig","Bkg"};
+  Int_t colors[]={kAzure,kRed,kGreen,kViolet};
+  for(size_t i = 0; i < sizeof(comps)/sizeof(*comps); i++){
+    for(size_t j=0; j < sizeof(types)/sizeof(*types); j++){
+      snprintf(name,100,"%s%s%s",comps[i],key,types[j]);
+      MSG_DEBUG(name);
+      add_component(frame,model,name, colors[i+j]);
+      add_leg_comp(leg,frame,name);
+    }
+  }
+
   TCanvas canv(key,key,600,600);
   frame->Draw();
   leg->Draw();

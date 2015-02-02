@@ -32,7 +32,7 @@ make-stack-plots: $(HISTO_DEPS) bin/make-stack-plots.o
 	$(CC) $^ -o $@ $(LDFLAGS) 
 make-plots: $(HISTO_DEPS) bin/make-plots.o
 	$(CC) $^ -o $@ $(LDFLAGS)
-fit-and-sbs: src/fit-utils.o bin/fit-and-sbs.o 
+fit-and-sbs: src/fit-utils.o src/sbs-utils.o bin/fit-and-sbs.o 
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) 
 %.o: %.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@

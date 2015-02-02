@@ -1,6 +1,7 @@
 #include <iostream>
 #include "root-sugar.hh"
 #include "fit-utils.hh"
+#include "sbs-utils.hh"
 
 #include "TFile.h"
 #include "TTree.h"
@@ -28,12 +29,23 @@ int main(const int argc, const char* argv[]){
   TTree* tree = retrieve<TTree>(file,argv[2]);
 
   RooDataSet data("data","data",RooArgSet(*mass,*tau),RooFit::Import(*tree));
-
   RooFitResult* result = Fit(model,data);
   if (result){
     result->Print();
   }
   print_fit_results(model,&data,mass,tau);
+  const char* variables[] = {"jet_pt","jet_z","jet_e",
+			   "jpsi_pt","tau1","tau2",
+			   "tau3","tau21","tau32"};
+  add_region(mass,"SB",2.6,2.9);
+  add_region(mass,"Sig",3.0,3.2);
+  add_region(mass,"SB",3.3,3.5);
   
+  add_region(tau,"Sig",-1.,1.);
+  add_region(tau,"SB",-1e5,-1);
+  add_region(tau,"SB",1,1e5);
+
+  do_sbs(variables,sizeof(variables)/sizeof(*variables),
+	 tree,model,mass,tau,"_sbs.pdf");
   return 0;
 }
