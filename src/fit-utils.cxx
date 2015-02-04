@@ -129,7 +129,6 @@ static void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model, const
   for(size_t i = 0; i < sizeof(comps)/sizeof(*comps); i++){
     for(size_t j=0; j < sizeof(types)/sizeof(*types); j++){
       snprintf(name,100,"%s%s%s",comps[i],key,types[j]);
-      MSG_DEBUG(name);
       add_component(frame,model,name, colors[i+j]);
       add_leg_comp(leg,frame,name);
     }

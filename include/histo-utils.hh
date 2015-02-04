@@ -6,6 +6,7 @@ class TH1;
 class TH2D;
 class TTree;
 class TLegend;
+class TVirtualPad;
 
 template<class T1,class T2>
 inline std::vector<T1> map_keys(std::map<T1,T2>& inputMap){
@@ -31,6 +32,7 @@ std::vector<std::string> add_prefix(std::string prefix, std::vector<std::string>
 std::string str_join(std::string base, const char* strings[],size_t start, size_t end);
 void draw_histo(TTree* tree,const char* branch_name, const char* hist_name, 
 		const char* cut_expr);
+TLegend* init_legend(double x1=0.75,double y1=0.68, double x2=0.99,double y2=0.92);
 void remove_axis(TAxis* axis);
 void set_pad_margins(TVirtualPad* pad,int pad_pos,int N_hists,int n_col=3,int n_row=2,bool y_axis=true);
 TLegend* make_legend(double x, double y, double width, double height);

@@ -257,10 +257,7 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
 		 const char* cut_branches[], const size_t nCuts){
   TCanvas canv(("stk_canv_"+plot).c_str(), "Stack", 600,600);
   TLatex decorator;
-  TLegend leg(0.75,0.68,0.99,0.92);
-  leg.SetFillColor(0);
-  leg.SetFillStyle(0);
-  leg.SetBorderSize(0);
+  TLegend& leg=*init_legend();
 
   decorator.SetTextSize(0.04);
   TH1* master = make_normal_hist(base_hist,samples["master"],plot,"weight","_nom");
@@ -294,10 +291,7 @@ void print_cut_stack(std::map<std::string,TTree*>& samples,
   std::map<std::string,std::string> leg_map;
   init_leg_names(leg_map);
   TLatex decorator;
-  TLegend leg(0.25,0.72,0.35,0.9);
-  leg.SetFillColor(0);
-  leg.SetFillStyle(0);
-  leg.SetBorderSize(0);
+  TLegend& leg=*init_legend(0.25,0.72,0.35,0.9);
 
   decorator.SetTextSize(0.1);
   canv.Divide(3,2);

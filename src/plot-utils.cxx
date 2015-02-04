@@ -49,10 +49,7 @@ void print_ratio_hist(std::map<std::string,TTree*>& samples, const std::string& 
   TCanvas canv(("plt_canv_"+plot).c_str(), "Plot", 600,600);
   
   TLatex decorator;
-  TLegend leg(0.75,0.68,0.99,0.92);
-  leg.SetFillColor(0);
-  leg.SetFillStyle(0);
-  leg.SetBorderSize(0);
+  TLegend& leg=*init_legend();
   decorator.SetTextSize(0.04);
   const char* cb[]={""};
   THStack* stack = make_stack(base_hist,samples,cb,0,plot,leg,target_lumi);

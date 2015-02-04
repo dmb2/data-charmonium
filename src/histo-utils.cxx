@@ -65,6 +65,14 @@ void remove_axis(TAxis* axis){
   axis->SetTitle("");
   axis->SetLabelOffset(999);
 }
+TLegend* init_legend(double x1,double y1, double x2,double y2){
+  TLegend* leg = new TLegend(x1,y1,x2,y2);
+  leg->SetFillColor(0);
+  leg->SetFillStyle(0);
+  leg->SetBorderSize(0);
+  return leg;
+}
+
 void set_pad_margins(TVirtualPad* pad,int pad_pos, int N_hists,int n_col,int n_row, bool y_axis){
   pad->SetRightMargin(0);
   pad->SetTopMargin(0.05);
