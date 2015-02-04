@@ -3,8 +3,10 @@
 
 #include "TTree.h"
 #include "TCanvas.h"
+#include "TLegend.h"
 #include "THStack.h"
 #include "TH1D.h"
+#include "TColor.h"
 
 #include "RooAbsPdf.h"
 #include "RooRealVar.h"
@@ -83,30 +85,48 @@ void cache_integrals(std::map<std::string,double>& region_integrals,
   }
 }
 void add_region(RooRealVar* var, const char* type, double min, double max){
-  char name[200];
-  snprintf(name,200,"%-3s %.4g < %s < %.4g",type, min,var->GetName(),max);
+  char name[400];
+  snprintf(name,400,"%-3s %.4g < %s && %s < %.4g",type, min,var->GetName(),var->GetName(),max);
   var->setRange(name,min,max);
 }
 void print_sbs_result(TTree* tree, const std::map<std::string,double>& ratios, 
-		      const char* var_name, const char* suffix){
+		      TH1* base_hist, const char* suffix){
   TCanvas c1("Canvas","Canvas",600,600);
   char cut_expr[512];
+  char clone_name[100];
   TLegend& leg = *init_legend();
-  
+  // std::map<std::string,std::string> leg_map;
   THStack stack;
   TH1* hist=NULL;
+  char region_idx='A';
+  char leg_name[2];
+  std::vector<int> colors;
+  colors.reserve(5);
+  colors.push_back(TColor::GetColor(27,158,119));
+  colors.push_back(TColor::GetColor(217,95,2));
+  colors.push_back(TColor::GetColor(117,112,179));
+  colors.push_back(TColor::GetColor(231,41,138));
+  colors.push_back(TColor::GetColor(102,166,30));
   for(std::map<std::string,double>::const_iterator it=ratios.begin();
       it!=ratios.end(); ++it){
     snprintf(cut_expr,512,"%.4g*(%s)",it->second,it->first.c_str());
-    // hist = (TH1*)base_hist->Clone((var_name+"_sbs").c_str());
-    // draw_histo(tree,var_name,hist->GetName(),cut_expr);
-    // stack.Add(hist);
-    // style_hist(hist,&leg,color_map[name])
-    // MSG_DEBUG(cut_expr);
+    snprintf(clone_name,100,"%s_%c_sbs",base_hist->GetName(),region_idx);
+    // MSG_DEBUG(clone_name);
+    hist = (TH1*)base_hist->Clone(clone_name);
+    MSG_DEBUG(cut_expr);
+    draw_histo(tree,base_hist->GetName(),hist->GetName(),cut_expr);
+    stack.Add(hist);
+    hist->SetLineColor(colors[region_idx-'A']);
+    hist->SetFillColor(colors[region_idx-'A']);
+    snprintf(leg_name,2,"%c",region_idx);
+    leg.AddEntry(hist,leg_name,"f");
+    // MSG_DEBUG(hist->Integral())
+    region_idx++;
   }
   stack.Draw();
+  leg.Draw();
   char outname[256];
-  snprintf(outname,256,"%s%s",var_name,suffix);
+  snprintf(outname,256,"%s%s",base_hist->GetName(),suffix);
   c1.SaveAs(outname);
 }
 void do_sbs(const char** variables, const size_t n_vars,
@@ -136,14 +156,14 @@ void do_sbs(const char** variables, const size_t n_vars,
   double signal_yield = get_signal_yield(model,mass,tau);
   for(std::map<std::string,double>::iterator it=region_ratios.begin();
       it!=region_ratios.end(); ++it){
-    MSG_DEBUG("Before: "<<it->second);
+    // MSG_DEBUG("Before: "<<it->second);
     it->second=signal_yield/it->second;
-    MSG_DEBUG("After: "<<it->second);
+    // MSG_DEBUG("After: "<<it->second);
   }
   // MSG_DEBUG(signal_yield);
   // MSG_DEBUG("Calculated a Signal-to-Sideband ratio of: "<<sig_yield/sb_yield);
   for(size_t i=0; i < n_vars; i++){
-    MSG_DEBUG("Now subtracting: "<< variables[i]);
-    print_sbs_result(tree,region_ratios,variables[i],suffix);
+    // MSG_DEBUG("Now subtracting: "<< variables[i]);
+    print_sbs_result(tree,region_ratios,HistBook[variables[i]],suffix);
   }
 }
