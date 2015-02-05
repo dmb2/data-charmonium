@@ -16,13 +16,27 @@
 *.lib
 
 # images
-*.pdf 
+*.pdf
 *.png
 
 # ROOT
-*.root
+*.root*
 
 # Log files
 *.log
 *.aux
 *.out
+
+# Conf files
+*.conf
+*.txt
+
+# Made binaries
+cut-flow-plots
+fit-and-sbs
+make-plots
+make-stack-plots
+simple-parser-test
+skim-tree
+skim-truth-tree
+truth-study-plots

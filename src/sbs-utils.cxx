@@ -31,17 +31,26 @@ std::string snip_str(const std::string& base,const std::string& to_remove){
   return base;
 }
 */
-void set_integral_limits(RooRealVar* var, const char* range_name, const char* key){
-  var->setRange(range_name,var->getBinning(key).binLow(0),var->getBinning(key).binHigh(0));
+void set_integral_limits(RooRealVar* var, const char* range_name,
+			 const char* key){
+  var->setRange(range_name,
+		var->getBinning(key).binLow(0),
+		var->getBinning(key).binHigh(0));
 }
 
-std::pair<std::string,double> do_integral(RooAbsPdf* PDF, RooRealVar* var1, RooRealVar* var2, const char* v1_range, const char* v2_range){
+std::pair<std::string,double> do_integral(RooAbsPdf* PDF,
+					  RooRealVar* var1,
+					  RooRealVar* var2,
+					  const char* v1_range,
+					  const char* v2_range){
   double result(0.);
   char range_name[256];
   snprintf(range_name,256,"(%s) && (%s)",v1_range+4,v2_range+4);
   set_integral_limits(var1,range_name,v1_range);
   set_integral_limits(var2,range_name,v2_range);
-  result = PDF->createIntegral(RooArgSet(*var1,*var2),RooArgSet(*var1,*var2),range_name)->getVal();
+  result = PDF->createIntegral(RooArgSet(*var1,*var2),
+			       RooArgSet(*var1,*var2),
+			       range_name)->getVal();
   return std::pair<std::string,double>(range_name,result);
 }
 
@@ -53,7 +62,7 @@ double get_signal_yield(RooAbsPdf* PDF, RooRealVar* var1, RooRealVar* var2){
       ri!=range1.end(); ++ri){
     for(std::list<std::string>::const_iterator rj = range2.begin();
     	rj != range2.end(); ++rj){
-      if(ri->find("Sig")!=std::string::npos && 
+      if(ri->find("Sig")!=std::string::npos &&
 	 rj->find("Sig")!=std::string::npos){
       	// MSG_DEBUG(*ri << " "<<*rj);
       	return do_integral(PDF,var1,var2,ri->c_str(),rj->c_str()).second;
@@ -63,7 +72,7 @@ double get_signal_yield(RooAbsPdf* PDF, RooRealVar* var1, RooRealVar* var2){
 
   return 0;
 }
-void cache_integrals(std::map<std::string,double>& region_integrals, 
+void cache_integrals(std::map<std::string,double>& region_integrals,
 		     RooAbsPdf *PDF, RooRealVar* var1,RooRealVar* var2){
   std::list<std::string> range1 = var1->getBinningNames();
   std::list<std::string> range2 = var2->getBinningNames();
@@ -72,24 +81,27 @@ void cache_integrals(std::map<std::string,double>& region_integrals,
     if(*ri==""){
       continue;
     }
-    for(std::list<std::string>::const_iterator rj=range2.begin(); 
+    for(std::list<std::string>::const_iterator rj=range2.begin();
 	rj!=range2.end(); ++rj){
       if(*rj==""){
       	continue;
       }
-      if(ri->find("Sig")==std::string::npos || 
+      if(ri->find("Sig")==std::string::npos ||
 	 rj->find("Sig")==std::string::npos){
-      	region_integrals.insert(do_integral(PDF,var1,var2,ri->c_str(),rj->c_str()));
+      	region_integrals.insert(do_integral(PDF,var1,var2,
+					    ri->c_str(),
+					    rj->c_str()));
       }
     }
   }
 }
 void add_region(RooRealVar* var, const char* type, double min, double max){
   char name[400];
-  snprintf(name,400,"%-3s %.4g < %s && %s < %.4g",type, min,var->GetName(),var->GetName(),max);
+  snprintf(name,400,"%-3s %.4g < %s && %s < %.4g", type, min,
+	   var->GetName(), var->GetName(), max);
   var->setRange(name,min,max);
 }
-void print_sbs_result(TTree* tree, const std::map<std::string,double>& ratios, 
+void print_sbs_result(TTree* tree, const std::map<std::string,double>& ratios,
 		      TH1* base_hist, const char* suffix){
   TCanvas c1("Canvas","Canvas",600,600);
   char cut_expr[512];
@@ -130,9 +142,8 @@ void print_sbs_result(TTree* tree, const std::map<std::string,double>& ratios,
   c1.SaveAs(outname);
 }
 void do_sbs(const char** variables, const size_t n_vars,
-	    TTree* tree, RooAbsPdf* model, RooRealVar* mass, 
+	    TTree* tree, RooAbsPdf* model, RooRealVar* mass,
 	    RooRealVar* tau, const char* suffix){
-  
 
   TIterator *iter = model->getComponents()->createIterator();
   RooAbsArg* var = NULL;
