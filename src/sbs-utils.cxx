@@ -39,16 +39,48 @@ double get_yield(RooAbsPdf* PDF, RooRealVar* var, const char* key){
   }
   return yield;
 }
-void print_sbs_result(TTree* tree, TH1* base_hist, const char* suffix){
+void print_sbs_result(TTree* tree, TH1* base_hist, const char* suffix, 
+		      std::list<std::string> regions , double stsratio){
   TCanvas c1("Canvas","Canvas",600,600);
-  // char cut_expr[512];
-  // char clone_name[100];
+  char clone_name[100];
   TLegend& leg = *init_legend();
-  // std::map<std::string,std::string> leg_map;
-  THStack stack;
-  // TH1* hist=NULL;
+  std::map<std::string,std::string> leg_map;
+  // THStack stack;
+  snprintf(clone_name, 100, "%s_sbs",base_hist->GetName());
+  // snprintf(cut_expr, 512, "");
+  std::string sb_cut_expr;
+  std::string sig_cut_expr;
+  for(std::list<std::string>::const_iterator r = regions.begin();
+      r!=regions.end(); ++r){
+    if(*r == ""){
+      continue;
+    }
+    if(r->find("SB")!=std::string::npos){
+      if(sb_cut_expr.size() > 0){
+	sb_cut_expr = sb_cut_expr + " && (" + r->substr(4) + ")";
+      }
+      else{
+	sb_cut_expr = "(" + r->substr(4) + ")";
+      }
+    }
+    if(r->find("Sig")!=std::string::npos){
+      sig_cut_expr = sig_cut_expr + " && (" + r->substr(4) + ")";
+    }
+    else{
+      sig_cut_expr = "(" + r->substr(4) + ")";
+    }
+  }
+  MSG_DEBUG("Signal: "<<sig_cut_expr);
+  MSG_DEBUG("SideBand: "<<sb_cut_expr);
+  TH1* sig_hist = make_normal_hist(base_hist, tree, base_hist->GetName(),
+				   sig_cut_expr.c_str(),"_sbs_sig");
   
-  stack.Draw();
+  TH1* sb_hist  = make_normal_hist(base_hist, tree, base_hist->GetName(),
+				   sb_cut_expr.c_str(),"sbs_sb");
+  
+  sig_hist->Add(sb_hist,-stsratio);
+  sig_hist->Draw("H");
+  // stack.Draw();
   leg.Draw();
   char outname[256];
   snprintf(outname,256,"%s%s",base_hist->GetName(),suffix);
@@ -80,6 +112,6 @@ void do_sbs(const char** variables, const size_t n_vars,
   // MSG_DEBUG("Calculated a Signal-to-Sideband ratio of: "<<sig_yield/sb_yield);
   for(size_t i=0; i < n_vars; i++){
     // MSG_DEBUG("Now subtracting: "<< variables[i]);
-    print_sbs_result(tree,HistBook[variables[i]],suffix);
+    print_sbs_result(tree,HistBook[variables[i]],suffix,mass->getBinningNames(),sig_yield/sb_yield);
   }
 }
