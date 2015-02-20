@@ -68,8 +68,16 @@ void init_leg_names(std::map<std::string,std::string>& leg_map){
   leg_map["208004.trkMuonExtr.TRACKZ"]="#mu MS Extr., Jet TrackZ";
 
   leg_map["208004..LCTOPO"]="#mu, Jet LCTopo";
-  leg_map["208004..TOPOEM"]="#mu, Jet LopoEM";
+  leg_map["208004..TOPOEM"]="#mu, Jet TopoEM";
   leg_map["208004..TRACKZ"]="#mu, Jet TrackZ";
+
+  leg_map["LCTOPO"]="Jet LCTopo";
+  leg_map["MULCTOPO"]="Jet #mu+LCTopo";
+  leg_map["TOPOEM"]="Jet TopoEM";
+  leg_map["TRACKZ"]="Jet TrackZ";
+
+  leg_map["singlet.MULCTOPO"]="Singlet";
+  leg_map["octet.MULCTOPO"]="Octet";
 
   leg_map["master"]="Signal";
 }
@@ -108,6 +116,15 @@ void init_colors(std::map<std::string,int>& colors){
   colors["208004..LCTOPO"]=TColor::GetColor(254,204,92);
   colors["208004..TOPOEM"]=TColor::GetColor(194,230,153);
   colors["208004..TRACKZ"]=TColor::GetColor(215,181,216);
+
+
+  colors["LCTOPO"]=TColor::GetColor(55,126,184);
+  colors["MULCTOPO"]=TColor::GetColor(228,26,28); 
+  colors["TRACKZ"]=TColor::GetColor(77,175,74); 
+
+  colors["singlet.MULCTOPO"]=TColor::GetColor(228,26,28); 
+  colors["octet.MULCTOPO"]=TColor::GetColor(55,126,184);
+  
 
   colors["master"]=TColor::GetColor(0,0,0);
 }
