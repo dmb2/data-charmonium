@@ -88,7 +88,7 @@ void print_sbs_result(TTree* tree, TH1* base_hist, const char* suffix,
 }
 void do_sbs(const char** variables, const size_t n_vars,
 	    TTree* tree, RooAbsPdf* model, RooRealVar* mass,
-	    RooRealVar* tau, const char* suffix){
+	    const char* suffix){
 
   TIterator *iter = model->getComponents()->createIterator();
   RooAbsArg* var = NULL;

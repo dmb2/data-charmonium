@@ -247,7 +247,13 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     if(!CutDefReal["jet_pt"].pass(candJet.Pt(),w)){
       continue;
     };
-    z=(jpsi_pt)/(candJet.Pt()+jpsi_pt);
+    if(jet_type == "TRACKZ" || jet_type == "MULCTOPO"){
+      z=(jpsi_pt)/candJet.Pt();
+    }
+    else {
+      z=(jpsi_pt)/(candJet.Pt()+jpsi_pt);
+    }
+      
     if(jet_pt->size()==0){
       continue;
     }

@@ -203,10 +203,15 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
       n!=sample_names.end(); ++n){
     pad_pos = 1;
     const std::string& name = *n;
+    // MSG_DEBUG(name<<" "<<samples[name]<<" "<<plot<<" "<<weight_expr);
+
+
     TH1* HistZvsE = make_normal_hist(base_hist,samples[name],plot,
 				     weight_expr,name+"_2D_SLC");
-    std::vector<double> norm_factors = build_norm_factors(HistZvsE);
+
+    // std::vector<double> norm_factors = build_norm_factors(HistZvsE);
     // norm_hist(HistZvsE,norm_factors);
+
     THStack proj_stack(HistZvsE,"x");
     TH1* HistE = NULL;
     TIter next(proj_stack.GetHists());
@@ -222,6 +227,7 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
       }
       pad_pos++;
     }
+
   }
 
   TAxis* axis = base_hist->GetYaxis();
