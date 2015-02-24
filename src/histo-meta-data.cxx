@@ -80,6 +80,7 @@ void init_leg_names(std::map<std::string,std::string>& leg_map){
   leg_map["octet.MULCTOPO"]="Octet";
 
   leg_map["master"]="Signal";
+  leg_map["periodA"]="Period A Data";
 }
 void init_colors(std::map<std::string,int>& colors){
   // Octet colors
@@ -126,5 +127,6 @@ void init_colors(std::map<std::string,int>& colors){
   colors["octet.MULCTOPO"]=TColor::GetColor(55,126,184);
   
 
+  colors["periodA"]=TColor::GetColor(0,0,0);
   colors["master"]=TColor::GetColor(0,0,0);
 }

@@ -13,6 +13,7 @@
 #include "TTree.h"
 #include "TROOT.h"
 #include "TCanvas.h"
+#include "TH2D.h"
 
 #include "stack-utils.hh"
 #include "root-sugar.hh"
@@ -37,14 +38,13 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
 		    const char* cut_branches[], int cut_index, 
 		    const std::string& plot, TLegend& leg, double target_lumi ){
   std::vector<std::string> sample_names = map_keys(samples);
-  //const char* sample_names[]={"3PJ_8","3S1_8","1S0_8","3PJ_1","3S1_1"};
   std::map<std::string,int> color_map;
   init_colors(color_map);
   std::map<std::string,std::string> leg_map;
   init_leg_names(leg_map);
   THStack* stack = new THStack(("stack_"+plot).c_str(),base_hist->GetTitle());
   double total=0.;
-  size_t num_hists=sample_names.size();//sizeof(sample_names)/sizeof(*sample_names);
+  size_t num_hists=sample_names.size();
   TH1** hist_list = (TH1**)calloc(num_hists, sizeof(TH1*));
   string cut_expr;
   char cut_str[1024];
@@ -54,7 +54,7 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
     if(name=="master"){
       continue;
     }
-    // MSG_DEBUG("Processing: "<<name);
+
     TTree* const tree = samples[name];
     TH1* hist =(TH1*)base_hist->Clone((name+plot+"_"+cut_branches[cut_index]).c_str());
     hist_list[i]=hist;
@@ -89,13 +89,6 @@ void print_2D_stack(std::map<std::string,TTree*> samples,const std::string& plot
   // canv.cd(1);
   char weight_expr[256];
   snprintf(weight_expr,256,"weight*%.4g",target_lumi);
-  /*
-  Double_t Red[3]    = { 0.15, 0.50, 0.72};
-  Double_t Green[3]  = { 0.25, 0.71, 0.77};
-  Double_t Blue[3]   = { 1.00, 1.00, 1.0};
-  Double_t Length[3] = { 0.00, 0.50, 1.00 };
-  TColor::CreateGradientColorTable(3,Length,Red,Green,Blue,nb);
-  */
   Int_t nb=100;
   for(size_t i=0; i < n_samp; i++){
     TVirtualPad* pad = canv.cd(i+1);
@@ -124,15 +117,19 @@ void print_2D_stack(std::map<std::string,TTree*> samples,const std::string& plot
   replace(outname.begin(),outname.end(),':','_');
   canv.SaveAs(outname.c_str());
 }
-
-static std::vector<double> build_norm_factors(TH1 const *HistZvsE){
+void norm_stack(THStack& stack){
+  TIter next(stack.GetHists());
+  TH1* h = NULL;
+  while((h = dynamic_cast<TH1*>(next()))){
+    h->Scale(1/h->Integral());
+  }
+}
+static std::vector<double> build_norm_factors( const TH2D *HistZvsE){
   std::vector<double> result;
   result.reserve(HistZvsE->GetNbinsX());
-  // TH1* tmp = copy<TH1>(HistZvsE,"norm_factors");
-  THStack stack(HistZvsE,"y");
-  TIter next(stack.GetHists());
-  TH1* hist = NULL;
-  while((hist = dynamic_cast<TH1*>(next()))){
+  TH1D* hist=NULL;
+  for(size_t i = 1; i < HistZvsE->GetNbinsX()+1; i++){
+    hist=HistZvsE->ProjectionY("_px",i,i+1,"e");
     result.push_back(hist->Integral());
   }
   return result;
@@ -143,8 +140,9 @@ static void norm_hist(TH1* hist,const std::vector<double> norm_factors){
   double nf(0);
   for(size_t i = 0; i < norm_factors.size(); i++){
     nf = norm_factors.at(i);
-    bc = hist->GetBinContent(i)/(nf > 0 ? nf : 1.);
-    hist->SetBinContent(i,bc/norm_factors.at(i));
+    bc = hist->GetBinContent(i+1)/(nf > 0 ? nf : 1.);
+    // MSG_DEBUG("Bin Content:"<<bc<<" Norm Factor: "<<nf);
+    hist->SetBinContent(i+1,bc);
   }
 }
 //*/
@@ -197,19 +195,22 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
     const std::string& name = *n;
     TH1* HistZvsE = make_normal_hist(base_hist,samples[name],plot,
 				     weight_expr,name+"_2D_SLC");
-    // std::vector<double> norm_factors = build_norm_factors(HistZvsE);
+    std::vector<double> norm_factors = build_norm_factors(dynamic_cast<TH2D*>(HistZvsE));
+    MSG_DEBUG(norm_factors.size());
     THStack proj_stack(HistZvsE,"x");
     TH1* HistE = NULL;
     TIter next(proj_stack.GetHists());
     while((HistE = dynamic_cast<TH1*>(next()))){
+      norm_hist(HistE,norm_factors);
       paint_hist(HistE,canv.cd(pad_pos),
-		 pad_pos,n_col,n_row, n_bins_z,
-		 color_map[name]);
+    		 pad_pos,n_col,n_row, n_bins_z,
+    		 color_map[name]);
+
       if(HistE->GetMaximum() > max_vals.at(pad_pos-1)){
-	max_vals.at(pad_pos-1) = HistE->GetMaximum();
+    	max_vals.at(pad_pos-1) = HistE->GetMaximum();
       }
       if(pad_pos==1){
-	leg->AddEntry(HistE,leg_map[name].c_str(),"l");
+    	leg->AddEntry(HistE,leg_map[name].c_str(),"l");
       }
       pad_pos++;
     }
