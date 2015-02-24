@@ -39,52 +39,65 @@ double get_yield(RooAbsPdf* PDF, RooRealVar* var, const char* key){
   }
   return yield;
 }
-void print_sbs_result(TTree* tree, TH1* base_hist, const char* suffix, 
-		      std::list<std::string> regions , double stsratio){
-  TCanvas c1("Canvas","Canvas",600,600);
-  char clone_name[100];
-  TLegend& leg = *init_legend();
-  std::map<std::string,std::string> leg_map;
-  // THStack stack;
-  snprintf(clone_name, 100, "%s_sbs",base_hist->GetName());
-  // snprintf(cut_expr, 512, "");
-  std::string sb_cut_expr;
-  std::string sig_cut_expr;
+std::string make_cut_expr(const std::list<std::string>& regions, const std::string& key){
+  std::string expr;
   for(std::list<std::string>::const_iterator r = regions.begin();
       r!=regions.end(); ++r){
     if(*r == ""){
       continue;
     }
-    if(r->find("SB")!=std::string::npos){
-      if(sb_cut_expr.size() > 0){
-	sb_cut_expr = sb_cut_expr + " && (" + r->substr(4) + ")";
-      }
-      else{
-	sb_cut_expr = "(" + r->substr(4) + ")";
-      }
-    }
-    if(r->find("Sig")!=std::string::npos){
-      sig_cut_expr = sig_cut_expr + " && (" + r->substr(4) + ")";
-    }
-    else{
-      sig_cut_expr = "(" + r->substr(4) + ")";
+    if(r->find(key)!=std::string::npos){
+      expr = (expr.size() > 0) ? expr + " || " : "";
+      expr += "(" + r->substr(4) + ")";
     }
   }
-  MSG_DEBUG("Signal: "<<sig_cut_expr);
-  MSG_DEBUG("SideBand: "<<sb_cut_expr);
+  return expr;
+}
+void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
+		     const std::list<std::string> regions , const double stsratio){
+  //Top slice
+  TCanvas c1("Canvas","Canvas",600,600);
   TH1* sig_hist = make_normal_hist(base_hist, tree, base_hist->GetName(),
-				   sig_cut_expr.c_str(),"_sbs_sig");
-  
+				   make_cut_expr(regions,"Sig").c_str(),"_stk_sig");
   TH1* sb_hist  = make_normal_hist(base_hist, tree, base_hist->GetName(),
-				   sb_cut_expr.c_str(),"sbs_sb");
-  
-  sig_hist->Add(sb_hist,-stsratio);
-  sig_hist->Draw("H");
-  // stack.Draw();
+				   make_cut_expr(regions,"SB").c_str(),"stk_sb");
+  TLegend leg = *init_legend();
+  //Meat 
+  THStack stack("sbs_stack",base_hist->GetTitle());
+  stack.SetHistogram((TH1*)base_hist->Clone((std::string("stack_sbs")+base_hist->GetName()).c_str()));
+  sb_hist->SetFillStyle(1001);
+  sb_hist->SetFillColor(12);
+  sb_hist->SetLineColor(12);
+  sig_hist->SetLineColor(kBlack);
+  sig_hist->SetFillStyle(0);
+  sb_hist->Scale(stsratio);
+  stack.Add(sb_hist); stack.Add(sig_hist);
+  stack.Draw("H");
+
+  leg.AddEntry(sig_hist,"Signal","l");
+  leg.AddEntry(sb_hist,"Comb. Background","f");
   leg.Draw();
+
+  // Bottom slice
   char outname[256];
   snprintf(outname,256,"%s%s",base_hist->GetName(),suffix);
   c1.SaveAs(outname);
+}
+void print_sbs_result(TTree* tree, TH1* base_hist, const char* suffix, 
+		      const std::list<std::string> regions , const double stsratio){
+  TCanvas c1("Canvas","Canvas",600,600);
+  TH1* sig_hist = make_normal_hist(base_hist, tree, base_hist->GetName(),
+				   make_cut_expr(regions,"Sig").c_str(),"_sbs_sig");
+  TH1* sb_hist  = make_normal_hist(base_hist, tree, base_hist->GetName(),
+				   make_cut_expr(regions,"SB").c_str(),"sbs_sb");
+  // sig_hist->Add(sb_hist,-stsratio);
+  sig_hist->SetLineColor(kBlack);
+  sig_hist->SetFillStyle(0);
+  sig_hist->Draw("H");
+  char outname[256];
+  snprintf(outname,256,"%s%s",base_hist->GetName(),suffix);
+  c1.SaveAs(outname);
+
 }
 void do_sbs(const char** variables, const size_t n_vars,
 	    TTree* tree, RooAbsPdf* model, RooRealVar* mass,
@@ -112,6 +125,7 @@ void do_sbs(const char** variables, const size_t n_vars,
   // MSG_DEBUG("Calculated a Signal-to-Sideband ratio of: "<<sig_yield/sb_yield);
   for(size_t i=0; i < n_vars; i++){
     // MSG_DEBUG("Now subtracting: "<< variables[i]);
+    print_sbs_stack(tree,HistBook[variables[i]],"_stack_sbs.pdf",mass->getBinningNames(),sig_yield/sb_yield);
     print_sbs_result(tree,HistBook[variables[i]],suffix,mass->getBinningNames(),sig_yield/sb_yield);
   }
 }

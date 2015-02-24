@@ -8,6 +8,27 @@
 #define MSG_ERR(message) std::cerr<<"\033[31m"<<message<<"\033[0m"<<std::endl
 #define MSG_DEBUG(message) if(DEBUG_LEVEL > 0){std::cout<<"\033[32m"<<message<<"\033[0m"<<std::endl;}
 
+template<typename H> 
+H* copy(const TObject* obj,std::string new_name = ""){
+  H* new_obj = NULL;
+  if(new_name==""){
+    new_name = std::string(obj->GetName()) + "_copy";
+  }
+  try{
+    obj=dynamic_cast<H*>(obj->Clone(new_name.c_str()));
+    if(obj==NULL){
+      throw -3;
+    }
+  }
+  catch(int e){
+    new_obj = new H;
+    MSG_ERR("Could not clone "<<obj->ClassName()<<"::"<<obj->GetName()<<" to "<<
+	    new_obj->ClassName()<<"::"<<new_name);
+    delete new_obj;
+    exit(e);
+  }
+  return new_obj;
+}
 
 template <typename T>
 T* retrieve(TFile* file,const char* objname){

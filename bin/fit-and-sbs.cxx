@@ -11,6 +11,7 @@
 #include "RooFitResult.h"
 #include "RooDataSet.h"
 
+#include "AtlasStyle.hh"
 
 void usage(const char* name){
   MSG("Usage: "<<name<<" input.root tree_name");
@@ -21,6 +22,9 @@ int main(const int argc, const char* argv[]){
     usage(argv[0]);
     return 1;
   }
+  AtlasStyle style;
+  style.SetAtlasStyle();
+
   RooRealVar *mass = new RooRealVar("jpsi_m","jpsi_m",PDGMASS, PDGMASS-0.5, PDGMASS+0.5);
   RooRealVar *tau = new RooRealVar("jpsi_tau","Lifetime",-2.,5);
 

@@ -113,9 +113,9 @@ void init_colors(std::map<std::string,int>& colors){
   colors["208004.trkMS.TRACKZ"]=TColor::GetColor(221,28,119);
   colors["208004.trkMuonExtr.TRACKZ"]=TColor::GetColor(152,0,67);
 
-  colors["208004..LCTOPO"]=TColor::GetColor(254,204,92);
-  colors["208004..TOPOEM"]=TColor::GetColor(194,230,153);
-  colors["208004..TRACKZ"]=TColor::GetColor(215,181,216);
+  colors["208004..LCTOPO"]=TColor::GetColor(253,141,60);
+  colors["208004..TOPOEM"]=TColor::GetColor(120,198,121);
+  colors["208004..TRACKZ"]=TColor::GetColor(223,101,176);
 
 
   colors["LCTOPO"]=TColor::GetColor(55,126,184);
