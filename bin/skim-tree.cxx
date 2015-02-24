@@ -93,8 +93,9 @@ int main(const int argc, const char* argv[]){
   TFile OutFile(outFName.c_str(),"RECREATE");
   OutFile.cd();
   TTree OutTree("mini","mini");
-  // process_tree(Forest,CutDefReals,CutDefCats,OutTree,"","MULCTOPO",weight);
-  // print_cut_table(CutDefReals,CutDefCats);
+  process_tree(Forest,CutDefReals,CutDefCats,OutTree,"","MULCTOPO",weight);
+  print_cut_table(CutDefReals,CutDefCats);
+  /*
   char outName[100];
   std::vector<std::string> parts = split_string(inFName,"./");
   for(size_t j=0; j < sizeof(jet_systems)/sizeof(*jet_systems); j++){
@@ -110,11 +111,11 @@ int main(const int argc, const char* argv[]){
     OutFile.Write();
     OutFile.Close();
   }
-
-  // reset_cut_cat(CutDefReals);
-  // reset_cut_cat(CutDefCats);
-  // OutFile.Write();
-  // OutFile.Close();
+  */
+  reset_cut_cat(CutDefReals);
+  reset_cut_cat(CutDefCats);
+  OutFile.Write();
+  OutFile.Close();
   for(tree_collection::iterator it=Forest.begin(); it != Forest.end(); ++it){
     if(it->second) delete it->second;
   }
