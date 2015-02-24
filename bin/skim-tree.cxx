@@ -25,6 +25,22 @@ void reset_cut_cat(std::map<std::string, cut<T> >& CutCat){
     cut_pair->second.reset();
   }
 }
+std::vector<std::string> split_string(const std::string& input, const std::string& delims ){
+  std::vector<std::string> result;
+  char *tok;
+  char *buff = new char [input.size()];
+  strncpy(buff,input.c_str(),input.size());
+  tok = strtok(buff,delims.c_str());
+  while(tok){
+    // MSG_DEBUG(tok);
+    tok = strtok(NULL,delims.c_str());
+    if(tok){
+      result.push_back(tok);
+    }
+  }
+  if(buff) delete buff;
+  return result;
+}
 int main(const int argc, const char* argv[]){
   if(argc != 2 && argc != 5) {
     usage(argv[0]);
@@ -62,7 +78,7 @@ int main(const int argc, const char* argv[]){
   
   TFile* file = TFile::Open(inFName.c_str());
   tree_collection Forest; 
-  const char* treeNames[] = {"AUX","LCTOPO","TOPOEM","TRACKZ","MU","JPSI",
+  const char* treeNames[] = {"AUX","LCTOPO","TOPOEM","MULCTOPO","TRACKZ","MU","JPSI",
 			    "PRIVX","SEL_TRACKS", "TRIG"};
   for(size_t i=0; i < sizeof(treeNames)/sizeof(*(treeNames)); i++){
     Forest[std::string(treeNames[i])]=dynamic_cast<TTree*>(file->Get(treeNames[i]));//retrieve<TTree>(file,treeNames[i]);
@@ -72,17 +88,33 @@ int main(const int argc, const char* argv[]){
   }
   const double weight=xsec > 0 ? xsec/Forest["AUX"]->GetEntries() : 1.;
   // const char* muon_systems[] = {"","trkMS","trkMuonExtr","trkInnerExtr","trkComb"};
-  // const char* jet_systems[] = {"TRACKZ","LCTOPO","TOPOEM"};
-  MSG("Opening output file: "<<outFName);
+  const char* jet_systems[] = {"TRACKZ","LCTOPO","MULCTOPO"};
+  // MSG("Opening output file: "<<outFName);
   TFile OutFile(outFName.c_str(),"RECREATE");
   OutFile.cd();
   TTree OutTree("mini","mini");
-  process_tree(Forest,CutDefReals,CutDefCats,OutTree,"","LCTOPO",weight);
-  print_cut_table(CutDefReals,CutDefCats);
-  reset_cut_cat(CutDefReals);
-  reset_cut_cat(CutDefCats);
-  OutFile.Write();
-  OutFile.Close();
+  // process_tree(Forest,CutDefReals,CutDefCats,OutTree,"","MULCTOPO",weight);
+  // print_cut_table(CutDefReals,CutDefCats);
+  char outName[100];
+  std::vector<std::string> parts = split_string(inFName,"./");
+  for(size_t j=0; j < sizeof(jet_systems)/sizeof(*jet_systems); j++){
+    snprintf(outName,100,("%s.%s.mini.root"), parts.at(parts.size()-3).c_str(), jet_systems[j]);
+    MSG("Opening output file: "<<outName);
+    TFile OutFile(outName,"RECREATE");
+    OutFile.cd();
+    TTree OutTree("mini","mini");
+    process_tree(Forest,CutDefReals,CutDefCats,OutTree,"",jet_systems[j],weight);
+    print_cut_table(CutDefReals,CutDefCats);
+    reset_cut_cat(CutDefReals);
+    reset_cut_cat(CutDefCats);
+    OutFile.Write();
+    OutFile.Close();
+  }
+
+  // reset_cut_cat(CutDefReals);
+  // reset_cut_cat(CutDefCats);
+  // OutFile.Write();
+  // OutFile.Close();
   for(tree_collection::iterator it=Forest.begin(); it != Forest.end(); ++it){
     if(it->second) delete it->second;
   }
