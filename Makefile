@@ -20,7 +20,7 @@ debug:
 # KISS
 simple-parser-test: bin/simple-parser-test.o src/simple-parser.o
 	$(CC) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
-skim-tree:  $(SKIM_DEPS) bin/skim-tree.o src/cut-flow-studies.o
+skim-tree:  $(SKIM_DEPS) bin/skim-tree.o src/analyze-tree.o
 	$(CC) $^ -o $@ $(LDFLAGS) 
 skim-truth-tree:  $(SKIM_DEPS) bin/skim-truth-tree.o src/truth-studies.o
 	$(CC) $^ -o $@ $(LDFLAGS) 
