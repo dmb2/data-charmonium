@@ -23,73 +23,23 @@ RooAbsPdf* build_model(RooRealVar* mass, RooRealVar* tau){
   MSG("Constructing model");
   // Fraction of signal and background events
   RooRealVar *sigFrac = new RooRealVar("sigFrac","Fraction of signal events",0.5,0.,1.);
-  RooRealVar *sigPromptFrac = new RooRealVar("sigPromptFrac","Fraction of signal events",0.5,0.,1.);
-  RooRealVar *bkgPromptFrac = new RooRealVar("bkgPromptFrac","Fraction of signal events",0.5,0.,1.);
 	
   // Signal mass model - Gaussian
-  RooRealVar *mMean = new RooRealVar("mMean","mean of gaussian",PDGMASS,PDGMASS-0.02,PDGMASS+0.02);
-  RooRealVar *mSigma = new RooRealVar("mSigma","Scale Factor 1",0.005,0.0,0.05);
-  RooGaussian *mSig = new RooGaussian("PromptMassSig","signal p.d.f.",*mass,*mMean,*mSigma); 
+  RooRealVar *mass_mean = new RooRealVar("mass_mean","Mean of J/Psi Mass peak",PDGMASS,PDGMASS-0.02,PDGMASS+0.02,"GeV");
+  RooRealVar *mass_sigma = new RooRealVar("mass_sigma","Sigma of J/Psi peak",0.005,0.0,0.05,"GeV");
+  RooGaussian *mass_gauss = new RooGaussian("mass_gauss", "J/Psi mass_gauss Peak",*mass, *mass_mean, *mass_sigma);
 
-  RooGaussian *npmSig = new RooGaussian("NonPromptMassSig","signal p.d.f.",*mass,*mMean,*mSigma); 
+  RooRealVar *res_sigma = new RooRealVar("res_sigma","Resolution Sigma",0.050,0.0,0.1,"GeV");
+  RooGaussian *res_gauss = new RooGaussian("res_gauss","Resolution function",*mass,*mass_mean,*res_sigma);
+  RooRealVar *resFrac = new RooRealVar("resFrac","Fraction of resolution gaussian",0.01,0.,0.50);
+  RooAddPdf *Signal = new RooAddPdf("Signal","Signal+Gaussian",RooArgSet(*mass_gauss,*res_gauss),*resFrac);
 
-  /*
-  char gen_pdf_str[100];
-  snprintf(gen_pdf_str,100,"1+(5*(@0-%.4g))*@1+((5*(@0-%.4g))*(5*(@0-%.4g)))*@2",PDGMASS,PDGMASS,PDGMASS);
-  RooRealVar *c0 = new RooRealVar("c0","Bkg coeff c0",0.3,  0.0, 1.0) ;
-  RooRealVar *c1 = new RooRealVar("c1","Bkg coeff c1",0.,  -3.0, 3.0) ;
-  RooGenericPdf *mBkg = new RooGenericPdf("PromptMassBkg","Background",gen_pdf_str,RooArgList(*mass,*c0,*c1));
-	
-  RooRealVar *npc0 = new RooRealVar("npc0","Bkg coeff c0",0.3,  0.0, 1.0) ;
-  RooRealVar *npc1 = new RooRealVar("npc1","Bkg coeff c1",0.,  -3.0, 3.0) ;
-  RooGenericPdf *npmBkg = new RooGenericPdf("NonPromptMassBkg","Background",gen_pdf_str,RooArgList(*mass,*npc0,*npc1));
-  */	
   // ** Example **  Background mass model - 1st order polnomial
-  RooRealVar* c= new RooRealVar("c","Slope", -0.27, -0.5,0.5);
-  RooPolynomial* mBkg = new RooPolynomial("PromptMassBkg","background",*mass,RooArgList(*c));
+  // RooRealVar* c0 = new RooRealVar("c0","Intercept", 20, 0, 40);
+  RooRealVar* c1 = new RooRealVar("c1","Slope", -0.27, -0.5,0.5);
+  RooPolynomial *Background = new RooPolynomial("Background","Background",*mass,RooArgList(*c1));
   
-  RooRealVar* npc= new RooRealVar("npc","Slope", -0.27, -0.5,0.5);
-  RooPolynomial *npmBkg = new RooPolynomial("NonPromptMassBkg","Background",*mass,RooArgList(*npc));
-  // Lifetime uncertainty model
-  RooRealVar *tMean = new RooRealVar("tMean","mean of gaussian",0,-9.,9.);
-  RooRealVar *tSigma = new RooRealVar("tSigma","Scale Factor 1",0.1,0.005,3.0);
-  RooGaussModel *tGauss = new RooGaussModel("PromptTauSig","Gaussian",*tau,*tMean,*tSigma);
-
-  // Signal lifetime model
-  RooRealVar *fittedTau = new RooRealVar("fittedTau", "lifetime", 1.53,1.0,2.0);
-  RooDecay *tSig = new RooDecay("NonPromptTauSig", "exponential convoluted with gaussian", *tau,*fittedTau,*tGauss,RooDecay::SingleSided);
-
-  // Background lifetime model
-  RooRealVar *bkgTau1 = new RooRealVar("bkgTau1", "lifetime", 1.2,0.1,3.);
-  RooDecay *bkgDecay1 = new RooDecay("bkgDecay1", "exponential convoluted with gaussian", *tau,*bkgTau1,*tGauss,RooDecay::SingleSided);
-  RooRealVar *bkgTau2 = new RooRealVar("bkgTau2", "lifetime", 0.2,0.1,3.);
-  RooDecay *bkgDecay2 = new RooDecay("bkgDecay2", "exponential convoluted with gaussian", *tau,*bkgTau2,*tGauss,RooDecay::SingleSided);
-  RooRealVar *nonPromptRatio = new RooRealVar("nonPromptRatio", "Ratio between background decays", 0.25,0.,1.);
-  RooRealVar *promptRatio = new RooRealVar("promptRatio", "Ratio between background decays", 0.8,0.,1.);
-  RooAddPdf *tNonPrompt = new RooAddPdf("NonPromptTauBkg", "background model", RooArgList(*bkgDecay1,*bkgDecay2), *nonPromptRatio);
-
-  RooGaussian *promptGauss = new RooGaussian("prompt1","prompt particles",*tau,*tMean,*tSigma);
-  RooRealVar *bkgTau3 = new RooRealVar("bkgTau3", "lifetime", 0.15,0.1,3.);
-  RooDecay *bkgDecay3 = new RooDecay("bkgDecay3", "exponential convoluted with gaussian", *tau,*bkgTau3,*tGauss,RooDecay::DoubleSided);
-  RooAddPdf *tPrompt = new RooAddPdf("PromptTauBkg", "background model", RooArgList(*promptGauss,*bkgDecay3), *promptRatio);
-
-  //signal prompt - mSig * tGauss
-  RooProdPdf *sigPrompt = new RooProdPdf("sigPrompt", "signal Prompt Model", RooArgSet(*mSig,*tGauss));
-  
-  //background prompt - mBkg * tPrompt
-  RooProdPdf *bkgPrompt = new RooProdPdf("bkgPrompt", "background Prompt Model", RooArgSet(*mBkg,*tPrompt));
-  
-  //signal non prompt - mSig * tSig
-  RooProdPdf *sigNonPrompt = new RooProdPdf("sigNonPrompt", "signal NonPrompt Model", RooArgSet(*npmSig,*tSig));
-  
-  //background non prompt - npmBkg * tNonPrompt
-  RooProdPdf *bkgNonPrompt = new RooProdPdf("bkgNonPrompt", "background NonPrompt Model", RooArgSet(*npmBkg,*tNonPrompt));
-	
-  //Complete model - Makes a 2D fit
-  RooAddPdf *sigModel = new RooAddPdf("sigModel", "signal Model", RooArgSet(*sigPrompt,*sigNonPrompt),*sigPromptFrac);
-  RooAddPdf *bkgModel = new RooAddPdf("bkgModel", "background Model", RooArgSet(*bkgPrompt,*bkgNonPrompt),*bkgPromptFrac);
-
-  return new RooAddPdf("model","model",RooArgList(*sigModel,*bkgModel),*sigFrac);
+  return new RooAddPdf("model","model",RooArgList(*Signal,*Background),*sigFrac);
 }
 RooFitResult* Fit(RooAbsPdf* model,RooDataSet& data){
   return model->fitTo(data,RooFit::NumCPU(sysconf(_SC_NPROCESSORS_ONLN),kTRUE),RooFit::Save());
@@ -122,17 +72,10 @@ static void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model, const
 		RooFit::NumCPU(sysconf(_SC_NPROCESSORS_ONLN),kTRUE),
 		RooFit::Name("PlotModel"));
 
-  char name[100];
-  const char* comps[]={"Prompt","NonPrompt"};
-  const char* types[]={"Sig","Bkg"};
-  Int_t colors[]={kAzure,kRed,kGreen,kViolet};
-  for(size_t i = 0; i < sizeof(comps)/sizeof(*comps); i++){
-    for(size_t j=0; j < sizeof(types)/sizeof(*types); j++){
-      snprintf(name,100,"%s%s%s",comps[i],key,types[j]);
-      add_component(frame,model,name, colors[i+j]);
-      add_leg_comp(leg,frame,name);
-    }
-  }
+  add_component(frame,model,"Signal",kAzure);
+  add_component(frame,model,"Background",kRed);
+  add_leg_comp(leg,frame,"Signal");
+  add_leg_comp(leg,frame,"Background");
 
   TCanvas canv(key,key,600,600);
   frame->Draw();
@@ -140,11 +83,10 @@ static void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model, const
   frame->SetTitle(title);
   char OFName[100];
   snprintf(OFName,100,"%s_fit_final.pdf",key);
-  canv.SetLogy(std::string(key)=="Tau");
   canv.SaveAs(OFName);
 }
 
 void print_fit_results(RooAbsPdf* model,RooDataSet* data, RooRealVar* mass, RooRealVar *tau) {
-  print_plot(mass,data,model,"Mass",";J/#psi Mass [GeV]");
-  print_plot(tau,data,model,"Tau",";J/#psi Proper Decay Time [ps]");
+  print_plot(mass,data,model,"mass",";J/#psi Mass [GeV]");
+  // print_plot(tau,data,model,"Tau",";J/#psi Proper Decay Time [ps]");
 }

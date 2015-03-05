@@ -113,12 +113,12 @@ void do_sbs(const char** variables, const size_t n_vars,
 
   while((var = dynamic_cast<RooAbsArg*>(iter->Next()))){
     std::string name(var->GetName());
-    if(name.find("bkgModel")!=std::string::npos){
+    if(name.find("Background")!=std::string::npos){
       bkg=dynamic_cast<RooAbsPdf*>(var);
     }
   }
   if(bkg == NULL){
-    MSG_ERR("Could not find \"bkgModel\" in the model PDF!");
+    MSG_ERR("Could not find \"Background\" in the model PDF!");
   }
   double sig_yield = get_yield(bkg, mass,"Sig");
   double sb_yield = get_yield(bkg, mass, "SB");
