@@ -33,7 +33,7 @@ submit_dset(){
     OUT_DS=$(echo $1 | awk -F '.' '{ print "user.davidb." $2 "." $3 ".mini-"}')
     OUT_DS+="${TAG}/"
     shift 2
-    echo pathena BPhysAnalysisMasterAuto.py \
+    pathena BPhysAnalysisMasterAuto.py \
             --inDS="${IN_DS}"\
             --outDS="${OUT_DS}"\
             --extOutFile="ntuple.root"\
