@@ -18,52 +18,7 @@ using std::cerr;
 using std::endl;
 using namespace std;
 bool verbose=true;
-std::vector<TLorentzVector> buildMuons(const std::vector<double>* pt, const std::vector<double>* eta,
-				       const std::vector<double>* phi, const std::vector<double>* e){
-  std::vector<TLorentzVector> muons;
-  muons.reserve(pt->size());
-  TLorentzVector tmp;
-  for(size_t i =0; i < pt->size(); i++){
-    tmp.SetPtEtaPhiE(pt->at(i), eta->at(i), phi->at(i), e->at(i));
-    muons.push_back(tmp);
-  }
-  return muons;
-}
 
-TLorentzVector buildJPsiCand(const std::vector<TLorentzVector>& muons, const std::vector<int>& charge){
-  std::vector<TLorentzVector> dimuon_pairs;
-  TLorentzVector cand;
-  for(size_t i = 0; i < muons.size(); i++){
-    for(size_t j = i; j < muons.size(); j++){
-      cand = muons.at(i) + muons.at(j);
-      if(charge.at(i)*charge.at(j) < 0 && cand.M() > 2e3 && cand.M() < 6e3 ){
-	dimuon_pairs.push_back(cand);
-      }
-    }
-  }
-  size_t idx=0;
-  double max_pt=0;
-  if(dimuon_pairs.size()==0){
-    return TLorentzVector(0,0,0,0);
-  } 
-  for(std::vector<TLorentzVector>::const_iterator jpsi=dimuon_pairs.begin();
-      jpsi!=dimuon_pairs.end(); ++jpsi){
-    if(jpsi->Pt() > max_pt){
-      idx = jpsi-dimuon_pairs.begin();
-      max_pt = jpsi->Pt();
-    }
-
-  }
-  return dimuon_pairs.at(idx);
-}
-double get_impact_sig(const std::vector<double>& d0, const std::vector<double>& d0_err,
-		      const std::vector<int>& idx){
-  if(idx.size() != 2){
-    MSG_ERR("Expected two track indices, got: "<<idx.size()<<" returning 99.");
-    return 99;
-  }
-  return pow(d0[idx[0]]/d0_err[idx[0]],2)+pow(d0[idx[1]]/d0_err[idx[1]],2);
-}
 int process_tree(tree_collection& Forest, real_cuts& CutDefReal, 
 		 category_cuts& CutDefCat, TTree& OutTree, 
 		 const char* muon_system, const std::string& jet_type, const double weight){
@@ -160,6 +115,16 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 
   setup_four_vector_output(OutTree,jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
 
+  int has_trigger=0, has_num_jets=0, has_jpsi_pt=0, has_jpsi_eta=0,
+    has_jet_eta=0, has_delta_r=0, has_jet_pt=0;
+  OutTree.Branch("mu_trigger_p",&has_trigger);
+  OutTree.Branch("num_jets_p",&has_num_jets);
+  OutTree.Branch("jpsi_pt_p",&has_jpsi_pt);
+  OutTree.Branch("jpsi_eta_p",&has_jpsi_eta);
+  OutTree.Branch("delta_r_p", &has_delta_r);
+  OutTree.Branch("jet_eta_p",&has_jet_eta);
+  OutTree.Branch("jet_pt_p",&has_jet_pt);
+
   double w=weight;
   OutTree.Branch("weight", &w);
 
@@ -183,10 +148,9 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     idx=0; jpsi_idx=0; delta_r=-1.; z=-1.;
     jets.clear(); jets.reserve(jet_pt->size());
     CutDefCat["nominal"].pass();
-    if(!CutDefCat["trigger"].pass(passed_trigger(*EF_trigger_names),w)){
-      continue;
-    };
-    if(!CutDefCat["num_jets"].pass(int(jet_pt->size()),w)){
+    has_trigger=CutDefCat["trigger"].pass(passed_trigger(*EF_trigger_names),w);
+    has_num_jets=CutDefCat["num_jets"].pass(int(jet_pt->size()),w);
+    if(!has_num_jets){
       continue;
     };
     std::vector<size_t> good_indices = filter_by_pt(*jet_pt, CutDefReal["jet_pt"].cut_value());
@@ -224,40 +188,22 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     else{
       continue;
     }
-    if(!CutDefReal["jpsi_pt"].pass(jpsi_pt,w)){
-      continue;
-    }
-    if(!CutDefReal["jpsi_eta"].pass(fabs(jpsi_eta),w)){
-      continue;
-    }
-
+    has_jpsi_pt=CutDefReal["jpsi_pt"].pass(jpsi_pt,w);
+    has_jpsi_pt=CutDefReal["jpsi_eta"].pass(fabs(jpsi_eta),w);
     delta_r=find_closest(jets,candJet,candJPsi,idx);
     //jpsi_s = get_impact_sig(*mu_d0,*mu_d0_err,);
     jpsi_lxy = (vtx_lxy->size() > 0) ? vtx_lxy->at(0).at(0) : -99999.;
     jpsi_tau = jpsi_lxy*(3096.915*GeV)/jpsi_pt;
-    // if(!CutDefReal["jpsi_lxy"].pass(fabs(jpsi_lxy),w)){
-    //   continue;
-    // };
-    if(!CutDefReal["delta_r"].pass(delta_r,w)){
-      continue;
-    };
-    if(!CutDefReal["jet_eta"].pass(fabs(candJet.Eta()),w)){
-      continue;
-    };
-    if(!CutDefReal["jet_pt"].pass(candJet.Pt(),w)){
-      continue;
-    };
+    has_delta_r=CutDefReal["delta_r"].pass(delta_r,w);
+    has_jet_eta=CutDefReal["jet_eta"].pass(fabs(candJet.Eta()),w);
+    has_jet_pt=CutDefReal["jet_pt"].pass(candJet.Pt(),w);
     if(jet_type == "TRACKZ" || jet_type == "MULCTOPO"){
       z=(jpsi_pt)/candJet.Pt();
     }
     else {
       z=(jpsi_pt)/(candJet.Pt()+jpsi_pt);
     }
-      
-    if(jet_pt->size()==0){
-      continue;
-    }
-
+    
     tau1=jet_tau1->at(idx);
     tau2=jet_tau2->at(idx);
     tau3=jet_tau3->at(idx);
@@ -270,6 +216,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 
     if(do_truth){
       idx=0;
+      t_jpsi_pt*=GeV;
+      t_jpsi_E*=GeV;
       TLorentzVector tvec(0,0,0,0);
       tvec.SetPtEtaPhiE(t_jpsi_pt,t_jpsi_eta,t_jpsi_phi, t_jpsi_E);
       t_jpsi_rap=tvec.Rapidity();

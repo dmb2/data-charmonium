@@ -161,13 +161,17 @@ TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 }
 
 void print_hist(TTree* tree, const std::string& plot, 
-		TH1* base_hist, const std::string suffix, 
+		TH1* base_hist, const char* cut_branches[],size_t nCuts, 
+		const std::string suffix, 
 		TH1* (*make_hist)(TH1*,TTree*,const std::string&, const char*,
 				  const std::string&)){
   TCanvas canv(("canv_"+plot).c_str(),"Plot",600,600);
   TLatex decorator;
   decorator.SetTextSize(0.04);
-  TH1* hist = make_hist(base_hist,tree,plot,"_nom","weight");
+  const std::string weight_expr=("weight*"+str_join("*",cut_branches,
+						    0,nCuts));
+
+  TH1* hist = make_hist(base_hist,tree,plot,weight_expr.c_str(),"_nom");
   hist->Draw("H");
   decorator.DrawLatexNDC(0.,0.05,hist->GetTitle());
   canv.SaveAs((plot+suffix).c_str());
