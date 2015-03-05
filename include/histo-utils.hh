@@ -53,7 +53,8 @@ TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 		      const char* weight_expr="weight",
 		      const std::string& name_suffix="_NOM");
 void print_hist(TTree* tree, const std::string& plot, 
-		TH1* base_hist, const std::string suffix, 
+		TH1* base_hist, const char* cut_branches[],size_t nCuts, 
+		const std::string suffix, 
 		TH1* (*make_hist)(TH1*,TTree*,const std::string&, const char*,
 				  const std::string&));
 void print_cut_hist(TTree* tree,const char* cut_branches[],size_t nCuts, 

@@ -73,3 +73,12 @@ double find_closest(const std::vector<double>& pt,
 std::vector<size_t> filter_by_pt(const std::vector<double>& pt,
 				 const double ptMin);
 int passed_trigger(std::vector<std::string>& trigger_names);
+std::vector<TLorentzVector> buildMuons(const std::vector<double>* pt, 
+				       const std::vector<double>* eta,
+				       const std::vector<double>* phi, 
+				       const std::vector<double>* e);
+TLorentzVector buildJPsiCand(const std::vector<TLorentzVector>& muons,
+			     const std::vector<int>& charge);
+double get_impact_sig(const std::vector<double>& d0, 
+		      const std::vector<double>& d0_err,
+		      const std::vector<int>& idx);

@@ -41,6 +41,22 @@ std::vector<std::string> split_string(const std::string& input, const std::strin
   if(buff) delete buff;
   return result;
 }
+void process(const char* outName, tree_collection& Forest,
+	     real_cuts& CutDefReals, category_cuts& CutDefCats,
+	     const char* mu_system, const char* jet_system,
+	     double weight){
+    MSG("Opening output file: "<<outName);
+    TFile OutFile(outName,"RECREATE");
+    OutFile.cd();
+    TTree OutTree("mini","mini");
+    process_tree(Forest,CutDefReals,CutDefCats,OutTree,mu_system,jet_system,weight);
+    print_cut_table(CutDefReals,CutDefCats);
+    reset_cut_cat(CutDefReals);
+    reset_cut_cat(CutDefCats);
+    OutFile.Write();
+    OutFile.Close();
+}
+
 int main(const int argc, const char* argv[]){
   if(argc != 2 && argc != 5) {
     usage(argv[0]);
@@ -89,33 +105,15 @@ int main(const int argc, const char* argv[]){
   const double weight=xsec > 0 ? xsec/Forest["AUX"]->GetEntries() : 1.;
   // const char* muon_systems[] = {"","trkMS","trkMuonExtr","trkInnerExtr","trkComb"};
   const char* jet_systems[] = {"TRACKZ","LCTOPO","MULCTOPO"};
-  MSG("Opening output file: "<<outFName);
-  TFile OutFile(outFName.c_str(),"RECREATE");
-  OutFile.cd();
-  TTree OutTree("mini","mini");
-  process_tree(Forest,CutDefReals,CutDefCats,OutTree,"","MULCTOPO",weight);
-  print_cut_table(CutDefReals,CutDefCats);
-  /*
+  //process(outFName,Forest,CutDefReals, CutDefCats, "","MULCTOPO",weight);
+  ///*
   char outName[100];
   std::vector<std::string> parts = split_string(inFName,"./");
   for(size_t j=0; j < sizeof(jet_systems)/sizeof(*jet_systems); j++){
     snprintf(outName,100,("%s.%s.mini.root"), parts.at(parts.size()-3).c_str(), jet_systems[j]);
-    MSG("Opening output file: "<<outName);
-    TFile OutFile(outName,"RECREATE");
-    OutFile.cd();
-    TTree OutTree("mini","mini");
-    process_tree(Forest,CutDefReals,CutDefCats,OutTree,"",jet_systems[j],weight);
-    print_cut_table(CutDefReals,CutDefCats);
-    reset_cut_cat(CutDefReals);
-    reset_cut_cat(CutDefCats);
-    OutFile.Write();
-    OutFile.Close();
+    process(outName,Forest,CutDefReals, CutDefCats, "",jet_systems[j],weight);
   }
-  */
-  reset_cut_cat(CutDefReals);
-  reset_cut_cat(CutDefCats);
-  OutFile.Write();
-  OutFile.Close();
+  //*/
   for(tree_collection::iterator it=Forest.begin(); it != Forest.end(); ++it){
     if(it->second) delete it->second;
   }

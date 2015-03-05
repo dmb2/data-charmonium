@@ -53,6 +53,7 @@ int main(const int argc, const char* argv[]){
   for(vector<string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
     const std::string& plot = *p;
     print_hist(CutTree,plot,HistBook[plot],
+	       cut_branches, nCuts,
 	       "_nominal.png", make_normal_hist);
     print_cut_hist(CutTree, cut_branches, nCuts, plot, 
 		   HistBook[plot], pretty_cNames,
@@ -60,10 +61,11 @@ int main(const int argc, const char* argv[]){
     print_cut_hist(CutTree, cut_branches, nCuts, plot, 
 		   HistBook[plot], pretty_cNames,
 		   "_normal.png" , make_normal_hist);
-    if(plot=="pileup"){ 
+    if(plot=="pileup" || plot == "jpsi_lxy"){ 
       continue;
     }
     print_hist(CutTree,plot,HistBook2D[plot+"_rsp"],
+	       cut_branches, nCuts,
 	       "_nominal_response.png", make_response_hist);
     print_cut_hist(CutTree, cut_branches, nCuts, plot, 
 		   HistBook2D[plot+"_rsp"], pretty_cNames,
