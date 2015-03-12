@@ -134,8 +134,8 @@ TLorentzVector buildJPsiCand(const std::vector<TLorentzVector>& muons, const std
 double get_impact_sig(const std::vector<double>& d0, const std::vector<double>& d0_err,
 		      const std::vector<int>& idx){
   if(idx.size() != 2){
-    MSG_ERR("Expected two track indices, got: "<<idx.size()<<" returning 99.");
-    return 99;
+    MSG_ERR("Expected two track indices, got: "<<idx.size()<<" returning -1.");
+    return -1;
   }
   return pow(d0[idx[0]]/d0_err[idx[0]],2)+pow(d0[idx[1]]/d0_err[idx[1]],2);
 }

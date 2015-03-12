@@ -78,7 +78,7 @@ make_config(){
 #usage: make_mini DSID.foobar.root
 make_mini(){
     samp=$(echo $1 | sed 's/.root//g')
-    ./skim-tree ${samp}_config.conf
+    skim-tree ${samp}_config.conf
 }
 
 #usage: proc_files dir cmd [cmd opts]

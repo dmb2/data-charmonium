@@ -26,10 +26,15 @@ HISTO_DEPS:=src/histo-utils.o src/AtlasStyle.o\
 all: $(BINS)
 
 # KISS
+# this is why root sucks
+src/dict.cxx: include/LinkDef.h
+	rootcint -f $@ -c $(CXXFLAGS) -p $^
+src/libDict.so: src/dict.cxx
+	$(CC) -shared -fPIC -o$@ $(CXXFLAGS) $^
 bin/simple-parser-test: bin/simple-parser-test.o src/simple-parser.o src/Cut.o
 	$(CC) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
-bin/skim-tree:  $(SKIM_DEPS) bin/skim-tree.o src/analyze-tree.o
-	$(CC) $^ -o $@ $(LDFLAGS) 
+bin/skim-tree:  $(SKIM_DEPS) bin/skim-tree.o src/analyze-tree.o src/libDict.so
+	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -l Dict
 bin/skim-tree-response: $(SKIM_DEPS) bin/skim-tree.o src/cut-flow-studies.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 bin/skim-truth-tree:  $(SKIM_DEPS) bin/skim-truth-tree.o src/truth-studies.o
@@ -47,4 +52,4 @@ bin/fit-and-sbs: src/fit-utils.o src/sbs-utils.o $(HISTO_DEPS) bin/fit-and-sbs.o
 %.o: %.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@
 clean:
-	-rm $(BINS) bin/*.o src/*.o
+	-rm $(BINS) bin/*.o src/*.o src/dict.cxx src/dict.h src/libDict.so
