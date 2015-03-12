@@ -3,41 +3,19 @@
 #include <utility>
 #include <algorithm>
 #include <vector>
-void cut_container::add_cut(cut<int> Cut, const std::string name){
-  if(std::find(m_cutOrder.begin(),m_cutOrder.end(),name)==m_cutOrder.end()){
-    m_cutOrder.push_back(name);
-    m_cCutDefs[name]=Cut;
-  }
-  else{
-    printf("Cut: %s already added to container!",name.c_str());
-  }
-}
-void cut_container::add_cut(cut<double> Cut, const std::string name){
-  if(std::find(m_cutOrder.begin(),m_cutOrder.end(),name)==m_cutOrder.end()){
-    m_cutOrder.push_back(name);
-    m_rCutDefs[name]=Cut;
-  }
-  else{
-    printf("Cut: %s already added to container!",name.c_str());
-  }
-}
+
 void cut_container::print_cut_table(){
   printf("|----------+----------+--------+-----------|\n");
   printf("| Cut Name | Cut Val  |  Count |  Weighted |\n");
   printf("|----------+----------+--------+-----------|\n");
   for(std::vector<std::string>::const_iterator CutName=m_cutOrder.begin();
       CutName!=m_cutOrder.end(); ++CutName){
-    if(m_cCutDefs.find(*CutName)!=m_cCutDefs.end()){
-      print_cut_summary(*CutName,m_cCutDefs[*CutName]);
-    }
-    else{
-      if(m_rCutDefs.find(*CutName)!=m_rCutDefs.end()){
-	print_cut_summary(*CutName,m_rCutDefs[*CutName]);
-      }
-    }
+    printf("%s\n",CutName->c_str());
+    // print_cut_summary(*CutName,m_cuts[*CutName]);
   }
   printf("|----------+----------+--------+-----------|\n");
 }
+
 void print_cut_summary(std::string CutName, cut<int> Cut){
   printf("| %-8s | %8d | %6d | %9.3g |\n",
 	 CutName.c_str(), 

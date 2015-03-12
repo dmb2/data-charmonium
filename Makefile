@@ -26,7 +26,7 @@ HISTO_DEPS:=src/histo-utils.o src/AtlasStyle.o\
 all: $(BINS)
 
 # KISS
-simple-parser-test: bin/simple-parser-test.o src/simple-parser.o
+simple-parser-test: bin/simple-parser-test.o src/simple-parser.o src/Cut.o
 	$(CC) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 skim-tree:  $(SKIM_DEPS) bin/skim-tree.o src/analyze-tree.o
 	$(CC) $^ -o $@ $(LDFLAGS) 

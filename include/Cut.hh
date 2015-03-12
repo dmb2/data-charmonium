@@ -3,6 +3,26 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <algorithm>
+// Type erasure for our cut container, cf:
+// http://www.cplusplus.com/articles/oz18T05o/
+class Selector{
+  struct SelectorBase{
+    virtual ~SelectorBase(){}
+  };
+  template<typename T> struct SelectorModel : SelectorBase {
+    SelectorModel(const T& t) : selector(t){}
+    virtual ~SelectorModel(){}
+  private:
+    T selector;
+  };
+  SelectorBase* selector;
+public:
+  Selector():selector(NULL){}
+  template<typename T> Selector(const T& sel):
+    selector(new SelectorModel<T>(sel)){}
+  // ~Selector(){if(selector) delete selector;}
+};
 
 template<class cut_type>
 class cut{
@@ -120,22 +140,24 @@ class cut_container{
 public:
   cut_container(){};
   ~cut_container(){};
-  
-  /*
-  template<typename T>
-  cut<T>& get_cut(const std::string name){ std::cout<<"Don't know how to retrieve cut!"<<std::endl;}
-  cut<int>& get_cut(const std::string name){ return m_cCutDefs[name]; };
-  cut<double>& get_cut(const std::string name){return m_rCutDefs[name];};
-  */
-
-  void add_cut(cut<int> Cut, const std::string name);
-  void add_cut(cut<double> Cut, const std::string name);
-  void get_cut(cut<int>& Cut, const std::string name)  { Cut = m_cCutDefs[name]; };
-  void get_cut(cut<double>& Cut, const std::string name)  { Cut = m_rCutDefs[name]; };
   void print_cut_table();
+  /*
+  const Selector& operator[](const std::string name)const{
+    return m_cuts[name];
+  }
+  */
+  Selector& operator[](const std::string name) {
+    //search for name in m_cuts, if not found add it, and update the
+    //m_cutOrder, else return it
+    if(std::find(m_cutOrder.begin(),m_cutOrder.end(),name)==m_cutOrder.end()){
+      m_cutOrder.push_back(name);
+    }
+    return m_cuts[name];
+  }
 private:
-  real_cuts m_rCutDefs;
-  category_cuts m_cCutDefs;
+  std::map<std::string,Selector> m_cuts;
+  // real_cuts m_rCutDefs;
+  // category_cuts m_cCutDefs;
   std::vector<std::string> m_cutOrder;
 };
 

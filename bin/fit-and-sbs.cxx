@@ -38,13 +38,22 @@ int main(const int argc, const char* argv[]){
     result->Print();
   }
   print_fit_results(model,&data,mass,tau);
+  //this sucks
+  double mass_width = dynamic_cast<RooRealVar*>(result->floatParsFinal().find("mass_sigma"))->getVal();
+  double mass_mean = dynamic_cast<RooRealVar*>(result->floatParsFinal().find("mass_mean"))->getVal();
+
   const char* variables[] = {"jet_pt","jet_z","jet_e",
 			   "jpsi_pt","tau1","tau2",
 			   "tau3","tau21","tau32"};
-  //FIXME use fixed number of std dev from mean of J/\psi mass
-  add_region(mass, "SB",2.6,3.0);
-  add_region(mass,"Sig",3.0,3.2);
-  add_region(mass,"SB",3.2,3.5);
+  add_region(mass, "SB", 
+	     mass_mean - 11*mass_width,
+	     mass_mean -  3*mass_width);
+  add_region(mass,"Sig",
+	     mass_mean - 3*mass_width,
+	     mass_mean + 3*mass_width);
+  add_region(mass,"SB",
+	     mass_mean + 3*mass_width,
+	     mass_mean + 8*mass_width);
   
   do_sbs(variables,sizeof(variables)/sizeof(*variables),
   	 tree,model,mass,"_sbs.pdf");

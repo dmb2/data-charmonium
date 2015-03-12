@@ -104,3 +104,26 @@ void get_opts(const char* opt_fname,std::map<std::string,std::string>& value_opt
     }
   }
 }
+void get_opts(const char* opt_fname,std::map<std::string,std::string>& value_opts,
+	      cut_container& cuts){
+  std::cout<<"Using config file: "<<opt_fname<<std::endl;
+  std::ifstream file(opt_fname);
+  std::vector<std::vector<std::string > > options;
+  parse_file(file,options);
+  for(std::vector<std::vector<std::string > >::const_iterator opt_line = options.begin(); 
+      opt_line!=options.end(); ++opt_line){
+    
+    const std::vector<std::string>&  opt = *opt_line;
+    if(opt.size()==2){
+      value_opts[opt[0]]=opt[1];
+    }
+    else if(opt.size()==4){
+      if(opt[3]=="cat"){
+	cuts[opt[0]]=cut<int>(atoi(opt[2].c_str()), opt[1]);
+      }
+      else if(opt[3]=="real"){
+	cuts[opt[0]]=cut<double>(atof(opt[2].c_str()), opt[1]);
+      }
+    }
+  }  
+}

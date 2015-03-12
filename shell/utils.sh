@@ -36,7 +36,7 @@ submit_dset(){
     OUT_DS+="${TAG}/"
     shift 2
     pathena BPhysAnalysisMasterAuto.py \
-        --inDS="${IN_DS}"\
+            --inDS="${IN_DS}"\
             --outDS="${OUT_DS}"\
             --extOutFile="ntuple.root"\
             $@
