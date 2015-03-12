@@ -13,10 +13,10 @@ CXXFLAGS= $(shell root-config --ldflags)\
 	$(shell fastjet-config --cxxflags)\
 	$(DFLAGS) $(WFLAGS) -ansi
 
-BINS:=skim-tree skim-truth-tree cut-flow-plots\
-	truth-study-plots simple-parser-test\
-	make-stack-plots make-plots fit-and-sbs\
-	skim-tree-response
+BINS:=bin/skim-tree bin/skim-truth-tree bin/cut-flow-plots\
+	bin/truth-study-plots bin/simple-parser-test\
+	bin/make-stack-plots bin/make-plots bin/fit-and-sbs\
+	bin/skim-tree-response
 
 SKIM_DEPS:=src/tree-utils.o src/simple-parser.o src/Cut.o 
 HISTO_DEPS:=src/histo-utils.o src/AtlasStyle.o\
@@ -26,23 +26,23 @@ HISTO_DEPS:=src/histo-utils.o src/AtlasStyle.o\
 all: $(BINS)
 
 # KISS
-simple-parser-test: bin/simple-parser-test.o src/simple-parser.o src/Cut.o
+bin/simple-parser-test: bin/simple-parser-test.o src/simple-parser.o src/Cut.o
 	$(CC) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
-skim-tree:  $(SKIM_DEPS) bin/skim-tree.o src/analyze-tree.o
+bin/skim-tree:  $(SKIM_DEPS) bin/skim-tree.o src/analyze-tree.o
 	$(CC) $^ -o $@ $(LDFLAGS) 
-skim-tree-response: $(SKIM_DEPS) bin/skim-tree.o src/cut-flow-studies.o
+bin/skim-tree-response: $(SKIM_DEPS) bin/skim-tree.o src/cut-flow-studies.o
 	$(CC) $^ -o $@ $(LDFLAGS)
-skim-truth-tree:  $(SKIM_DEPS) bin/skim-truth-tree.o src/truth-studies.o
+bin/skim-truth-tree:  $(SKIM_DEPS) bin/skim-truth-tree.o src/truth-studies.o
 	$(CC) $^ -o $@ $(LDFLAGS) 
-cut-flow-plots: bin/cut-flow-plots.o $(HISTO_DEPS)
+bin/cut-flow-plots: bin/cut-flow-plots.o $(HISTO_DEPS)
 	$(CC) $^ -o $@ $(LDFLAGS) 
-truth-study-plots: $(HISTO_DEPS) bin/truth-study-plots.o 
+bin/truth-study-plots: $(HISTO_DEPS) bin/truth-study-plots.o 
 	$(CC) $^ -o $@ $(LDFLAGS) 
-make-stack-plots: $(HISTO_DEPS) bin/make-stack-plots.o 
+bin/make-stack-plots: $(HISTO_DEPS) bin/make-stack-plots.o 
 	$(CC) $^ -o $@ $(LDFLAGS) 
-make-plots: $(HISTO_DEPS) bin/make-plots.o
+bin/make-plots: $(HISTO_DEPS) bin/make-plots.o
 	$(CC) $^ -o $@ $(LDFLAGS)
-fit-and-sbs: src/fit-utils.o src/sbs-utils.o $(HISTO_DEPS) bin/fit-and-sbs.o 
+bin/fit-and-sbs: src/fit-utils.o src/sbs-utils.o $(HISTO_DEPS) bin/fit-and-sbs.o 
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) 
 %.o: %.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@

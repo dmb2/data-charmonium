@@ -57,29 +57,29 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 
   char muon_prefix[50];
   snprintf(muon_prefix,50,std::string(muon_system)=="" ? "MU_MU%s": "MU_MU_%s",muon_system);
-  setup_pt_eta_phi_e(Forest["MU"],mu_pt,mu_eta,mu_phi,mu_E,muon_prefix);
-  Forest["MU"]->SetBranchAddress("MU_MU_charge",&mu_charge);
+  setup_pt_eta_phi_e(Forest["Mu"],mu_pt,mu_eta,mu_phi,mu_E,muon_prefix);
+  Forest["Mu"]->SetBranchAddress("MU_MU_charge",&mu_charge);
   Forest["AUX"]->SetBranchAddress("AvgIntPerXing",&pileup);
 
   const char* vtx_names[] = {"px","py","pz","mass"};
-  setup_four_vector(Forest["JPSI"],vtx_px,vtx_py,vtx_pz,vtx_m,"VTX",vtx_names);
-  Forest["JPSI"]->SetBranchAddress("VTX_pt",&vtx_pt);
-  Forest["JPSI"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
+  setup_four_vector(Forest["JPsi"],vtx_px,vtx_py,vtx_pz,vtx_m,"VTX",vtx_names);
+  Forest["JPsi"]->SetBranchAddress("VTX_pt",&vtx_pt);
+  Forest["JPsi"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
 
   Forest["TRIG"]->SetBranchAddress("TRIG_EF_trigger_name",&EF_trigger_names);
-  Forest["SEL_TRACKS"]->SetBranchAddress("SEL_TRACKS_TRKS_BS_d0",&mu_d0);
-  Forest["SEL_TRACKS"]->SetBranchAddress("SEL_TRACKS_TRKS_BS_d0Err",&mu_d0_err);
-
+  // Forest["SEL_TRACKS"]->SetBranchAddress("SEL_TRACKS_TRKS_BS_d0",&mu_d0);
+  // Forest["SEL_TRACKS"]->SetBranchAddress("SEL_TRACKS_TRKS_BS_d0Err",&mu_d0_err);
+  
   setup_pt_eta_phi_e(Forest[jet_type], jet_pt, jet_eta, jet_phi, jet_E, "JET");
   Forest[jet_type]->SetBranchAddress("JET_tau1",&jet_tau1);
   Forest[jet_type]->SetBranchAddress("JET_tau2",&jet_tau2);
   Forest[jet_type]->SetBranchAddress("JET_tau3",&jet_tau3);
   if(do_truth){
     setup_pt_eta_phi_e(Forest["AUX"], t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
-    setup_pt_eta_phi_e(Forest["TRUTH"], t_jet_pt, t_jet_eta, t_jet_phi, t_jet_E, "JET");
-    Forest["TRUTH"]->SetBranchAddress("JET_tau1",&t_jet_tau1);
-    Forest["TRUTH"]->SetBranchAddress("JET_tau2",&t_jet_tau2);
-    Forest["TRUTH"]->SetBranchAddress("JET_tau3",&t_jet_tau3);
+    setup_pt_eta_phi_e(Forest["TruthJets"], t_jet_pt, t_jet_eta, t_jet_phi, t_jet_E, "JET");
+    Forest["TruthJets"]->SetBranchAddress("JET_tau1",&t_jet_tau1);
+    Forest["TruthJets"]->SetBranchAddress("JET_tau2",&t_jet_tau2);
+    Forest["TruthJets"]->SetBranchAddress("JET_tau3",&t_jet_tau3);
   }
 
   setup_four_vector_output(OutTree,cand_jet_pt, cand_jet_eta, 

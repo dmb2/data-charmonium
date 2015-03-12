@@ -1,3 +1,7 @@
+# Set up path to have ./bin on top, could have unintended consquences
+# outside of this analysis if your working in a directory that has bin
+# with binaries in it
+export PATH=./bin:$PATH
 # Helper functions for bookkeeping, should be sourced not executed 
 
 # usage: proc_file foo.txt echo [cmd opts]

@@ -13,10 +13,6 @@
 #include "Units.hh"
 
 using namespace Units;
-using std::cout;
-using std::cerr;
-using std::endl;
-using namespace std;
 bool verbose=true;
 
 int process_tree(tree_collection& Forest, real_cuts& CutDefReal, 
@@ -28,12 +24,15 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   std::vector<std::string>* EF_trigger_names=NULL;
   double pileup(0.);
   double tau1(0),tau2(0),tau3(0),tau21(0),tau32(0);
-  // double jpsi_s(0.);
+  double jpsi_s(0.);
   double z(0.), delta_r(999.);
   double jpsi_lxy(0.);
   double jpsi_tau(0.);
+
   double jpsi_m(0.), jpsi_rap(0.);
   double jpsi_pt(0.), jpsi_eta(0.), jpsi_phi(0.), jpsi_E(0.);
+  double cand_psi_m(0.);
+  double cand_jet_m(0.), emfrac(0.);
   double cand_jet_pt(0.), cand_jet_eta(0.),cand_jet_phi(0.), cand_jet_E(0.);
   // std::vector<std::vector<int> > *mu_trk_idx = NULL;
   std::vector<double> *mu_d0 = NULL;
@@ -42,13 +41,16 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   std::vector<int> *mu_charge=NULL;
   std::vector<double> *mu_pt=NULL, *mu_eta=NULL, *mu_phi=NULL, *mu_E=NULL;
   std::vector<std::vector<double> > *vtx_lxy=NULL; std::vector<double> *vtx_pt=NULL;
-  std::vector<double> *vtx_px=NULL, *vtx_py=NULL, *vtx_pz=NULL, *vtx_m=NULL;
+  std::vector<double> *psi_m=NULL, *psi_pt=NULL;
+  std::vector<double> *vtx_px=NULL, *vtx_py=NULL, *vtx_pz=NULL, *vtx_e=NULL;
+  std::vector<double> *jet_emfrac=NULL;
   std::vector<double> *jet_tau1=NULL, *jet_tau2=NULL, *jet_tau3=NULL;
   std::vector<double> *jet_pt=NULL, *jet_eta=NULL, *jet_phi=NULL, *jet_E=NULL;
-
+  
   double t_z(0.), t_delta_r(0.);
   double t_jpsi_m(0.), t_jpsi_rap(0.);
   double t_jpsi_pt(0.), t_jpsi_eta(0.),t_jpsi_phi(0.), t_jpsi_E(0.);
+  double cand_t_jet_m(0.);
   double cand_t_jet_pt(0.), cand_t_jet_eta(0.), cand_t_jet_phi(0.), cand_t_jet_E(0.);
 
   double t_tau1(0),t_tau2(0),t_tau3(0),t_tau21(0),t_tau32(0);
@@ -58,29 +60,33 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 
   char muon_prefix[50];
   snprintf(muon_prefix,50,std::string(muon_system)=="" ? "MU_MU%s": "MU_MU_%s",muon_system);
-  setup_pt_eta_phi_e(Forest["MU"],mu_pt,mu_eta,mu_phi,mu_E,muon_prefix);
-  Forest["MU"]->SetBranchAddress("MU_MU_charge",&mu_charge);
+  setup_pt_eta_phi_e(Forest["Mu"],mu_pt,mu_eta,mu_phi,mu_E,muon_prefix);
+  Forest["Mu"]->SetBranchAddress("MU_MU_charge",&mu_charge);
   Forest["AUX"]->SetBranchAddress("AvgIntPerXing",&pileup);
 
-  const char* vtx_names[] = {"px","py","pz","mass"};
-  setup_four_vector(Forest["JPSI"],vtx_px,vtx_py,vtx_pz,vtx_m,"VTX",vtx_names);
-  Forest["JPSI"]->SetBranchAddress("VTX_pt",&vtx_pt);
-  Forest["JPSI"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
+  Forest["JPsi2Trk"]->SetBranchAddress("VTX_m",&psi_m);
+  Forest["JPsi2Trk"]->SetBranchAddress("VTX_pt",&psi_pt);
+  const char* vtx_names[] = {"px","py","pz","e"};
+  setup_four_vector(Forest["JPsi"],vtx_px,vtx_py,vtx_pz,vtx_e,"VTX",vtx_names);
+  Forest["JPsi"]->SetBranchAddress("VTX_pt",&vtx_pt);
+  Forest["JPsi"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
 
   Forest["TRIG"]->SetBranchAddress("TRIG_EF_trigger_name",&EF_trigger_names);
-  // Forest["SEL_TRACKS"]->SetBranchAddress("SEL_TRACKS_TRKS_BS_d0",&mu_d0);
-  // Forest["SEL_TRACKS"]->SetBranchAddress("SEL_TRACKS_TRKS_BS_d0Err",&mu_d0_err);
+  Forest["MuTracks"]->SetBranchAddress("MuTracks_TRKS_BS_d0",&mu_d0);
+  Forest["MuTracks"]->SetBranchAddress("MuTracks_TRKS_BS_d0Err",&mu_d0_err);
 
   setup_pt_eta_phi_e(Forest[jet_type], jet_pt, jet_eta, jet_phi, jet_E, "JET");
   Forest[jet_type]->SetBranchAddress("JET_tau1",&jet_tau1);
   Forest[jet_type]->SetBranchAddress("JET_tau2",&jet_tau2);
   Forest[jet_type]->SetBranchAddress("JET_tau3",&jet_tau3);
+  Forest[jet_type]->SetBranchAddress("JET_emfrac",&jet_emfrac);
   if(do_truth){
     setup_pt_eta_phi_e(Forest["AUX"], t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
-    setup_pt_eta_phi_e(Forest["TRUTH"], t_jet_pt, t_jet_eta, t_jet_phi, t_jet_E, "JET");
-    Forest["TRUTH"]->SetBranchAddress("JET_tau1",&t_jet_tau1);
-    Forest["TRUTH"]->SetBranchAddress("JET_tau2",&t_jet_tau2);
-    Forest["TRUTH"]->SetBranchAddress("JET_tau3",&t_jet_tau3);
+    const std::string t_jet_type = jet_type!="MuonLCTopoJets" ? "MuonTruthJets" : "TruthJets";
+    setup_pt_eta_phi_e(Forest[t_jet_type], t_jet_pt, t_jet_eta, t_jet_phi, t_jet_E, "JET");
+    Forest[t_jet_type]->SetBranchAddress("JET_tau1",&t_jet_tau1);
+    Forest[t_jet_type]->SetBranchAddress("JET_tau2",&t_jet_tau2);
+    Forest[t_jet_type]->SetBranchAddress("JET_tau3",&t_jet_tau3);
   }
 
   setup_four_vector_output(OutTree,cand_jet_pt, cand_jet_eta, 
@@ -98,9 +104,11 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     OutTree.Branch("truth_tau32",&t_tau32);
 		        
     OutTree.Branch("truth_jet_z",&t_z);
+    OutTree.Branch("truth_jet_m",&cand_t_jet_m);
     OutTree.Branch("truth_delta_r",&t_delta_r);
   }
-  // OutTree.Branch("jpsi_s",&jpsi_s);
+  OutTree.Branch("psi_m",&cand_psi_m);
+  OutTree.Branch("jpsi_s",&jpsi_s);
   OutTree.Branch("jpsi_lxy",&jpsi_lxy);
   OutTree.Branch("jpsi_tau",&jpsi_tau);
   OutTree.Branch("jpsi_m",&jpsi_m);
@@ -112,6 +120,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   OutTree.Branch("tau21",&tau21);
   OutTree.Branch("tau32",&tau32);
   OutTree.Branch("jet_z",&z);
+  OutTree.Branch("jet_emfrac",&emfrac);
+  OutTree.Branch("jet_m",&cand_jet_m);
   OutTree.Branch("delta_r",&delta_r);
 
   setup_four_vector_output(OutTree,jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
@@ -121,7 +131,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 
   Long64_t nEntries = Forest["AUX"]->GetEntries();
   if(verbose) {
-    cout<<"Got "<<nEntries<< " entries in input tree"<<endl;
+    MSG("Got "<<nEntries<< " entries in input tree");
   }
   std::vector<TLorentzVector> jets;
   TLorentzVector candJet(0,0,0,0);
@@ -134,7 +144,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     retrieve_values(Forest,entry);
 
     if(entry%squawk_every==0 && verbose){
-      cout <<"Processing entry "<<entry<<endl;
+      MSG("Processing entry "<<entry);
     }
     idx=0; jpsi_idx=0; delta_r=-1.; z=-1.;
     jets.clear(); jets.reserve(jet_pt->size());
@@ -163,13 +173,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 	  jpsi_idx=i;
 	}
       }
-      // FIXME
-      double E = TMath::Sqrt(pow(vtx_m->at(jpsi_idx),2)
-			     + pow(vtx_px->at(jpsi_idx),2)
-			     + pow(vtx_py->at(jpsi_idx),2)
-			     + pow(vtx_pz->at(jpsi_idx),2));
-
-      candJPsi.SetPxPyPzE(vtx_px->at(jpsi_idx)*GeV, vtx_py->at(jpsi_idx)*GeV, vtx_pz->at(jpsi_idx)*GeV, E*GeV);
+      candJPsi.SetPxPyPzE(vtx_px->at(jpsi_idx)*GeV, vtx_py->at(jpsi_idx)*GeV, vtx_pz->at(jpsi_idx)*GeV, vtx_e->at(jpsi_idx)*GeV);
       // candJPsi=buildJPsiCand(buildMuons(mu_pt,mu_eta,mu_phi,mu_E),*mu_charge);
       jpsi_pt=candJPsi.Pt();
       jpsi_eta=candJPsi.Eta();
@@ -186,6 +190,15 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     }
     if(!CutDefReal["jpsi_eta"].pass(fabs(jpsi_eta),w)){
       continue;
+    }
+    if(psi_m->size() > 0){
+      double tmp_psi_pt(0.);
+      for(size_t i = 0; i < psi_m->size(); i++){
+	if(psi_pt->at(i) > tmp_psi_pt){
+	  tmp_psi_pt=psi_pt->at(i);
+	  cand_psi_m = psi_m->at(i);
+	}
+      }
     }
 
     delta_r=find_closest(jets,candJet,candJPsi,idx);
@@ -204,7 +217,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     if(!CutDefReal["jet_pt"].pass(candJet.Pt(),w)){
       continue;
     };
-    if(jet_type == "TRACKZ" || jet_type == "MULCTOPO"){
+    if(jet_type == "TrackZJets" || jet_type == "MuonLCTopoJets"){
       z=(jpsi_pt)/candJet.Pt();
     }
     else {
@@ -215,6 +228,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       continue;
     }
 
+    emfrac=jet_emfrac->at(idx);
     tau1=jet_tau1->at(idx);
     tau2=jet_tau2->at(idx);
     tau3=jet_tau3->at(idx);
@@ -222,6 +236,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     tau32= (tau3*tau2 > 0) ? tau3/tau2 : -1.;
     tau21= (tau2*tau1 > 0) ? tau2/tau1 : -1.;
 
+    cand_jet_m = candJet.M();
     store_four_vector(candJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
     // jpsi -> mu+ track index, mu- track index -> S
 
@@ -236,6 +251,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       t_delta_r=find_closest(*t_jet_pt,*t_jet_eta,*t_jet_phi,*t_jet_E, 
 			    candTruthJet, candJet,idx);
       t_z=t_jpsi_pt/(candTruthJet.Pt()+t_jpsi_pt);
+      cand_t_jet_m=candTruthJet.M();
       store_four_vector(candTruthJet, cand_t_jet_pt, cand_t_jet_eta, 
 			cand_t_jet_phi, cand_t_jet_E);
       if(t_jet_tau1->size()==0){
