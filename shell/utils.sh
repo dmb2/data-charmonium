@@ -1,7 +1,7 @@
 # Helper functions for bookkeeping, should be sourced not executed 
 
-# usage: proc_file_by_line foo.txt echo [cmd opts]
-proc_file_by_line(){
+# usage: proc_file foo.txt echo [cmd opts]
+proc_file(){
     local LINE; local FILE; local CMD;
     FILE=$1
     CMD=$2
@@ -14,15 +14,17 @@ proc_file_by_line(){
 	done
 }
 
-# usage: proc_file_by_line samples.txt get_and_manage
+# usage: proc_file samples.txt get_and_manage
 get_and_manage(){
     local DSET; local TAG; local LABEL;
-    DSET=$1
+    DSET=$(echo $1 | sed 's,/$,_EXT0,g')
     TAG=$(echo $DSET | awk -F '.' '{print $5}' | awk -F '-' '{print $1}')
-    LABEL=$(echo $DSET | awk -F '.' '{print $5}' | awk -F '-' '{print $2 "-" $3}' | sed 's,_EXT0/,,g')
-    rucio-get $DSET
+    LABEL=$(echo $DSET | awk -F '.' '{print $5}' | awk -F '-' '{print $2 "-" $3}' | sed 's,_EXT0,,g')
+    rucio download user.davidb:$DSET
+    mkdir -p $DSET; 
+    mv user.davidb/*.root* $DSET
     dset-manage -r root://eosatlas.cern.ch//eos/atlas/user/d/davidb/charm/NTUP -t $TAG -l $LABEL $DSET
-    rm -rf $(echo $DSET | sed 's,/,*,g')
+    rm -rf $DSET
 }
 
 # usage: submit_dset dset_name/ tag [--pathena-opts]
@@ -76,6 +78,7 @@ make_mini(){
 }
 
 #usage: proc_files dir cmd [cmd opts]
+#usage: proc_files dir make_mini [opts]
 proc_files(){
     local DIR; local CMD;
     DIR=$1

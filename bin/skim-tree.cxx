@@ -94,10 +94,11 @@ int main(const int argc, const char* argv[]){
   
   TFile* file = TFile::Open(inFName.c_str());
   tree_collection Forest; 
-  const char* treeNames[] = {"AUX","LCTOPO","TOPOEM","MULCTOPO","TRACKZ","MU","JPSI",
-			    "PRIVX","SEL_TRACKS", "TRIG"};
+  const char* treeNames[] = {"AUX","LCTOPO","TOPOEM","MU_TRACKS",
+			     "MULCTOPO","TRACKZ","MU",
+			     "JPSI", "PRIVX","TRIG"};
   for(size_t i=0; i < sizeof(treeNames)/sizeof(*(treeNames)); i++){
-    Forest[std::string(treeNames[i])]=dynamic_cast<TTree*>(file->Get(treeNames[i]));//retrieve<TTree>(file,treeNames[i]);
+    Forest[std::string(treeNames[i])]=retrieve<TTree>(file,treeNames[i]);
   }
   if(xsec > 0){
     Forest["TRUTH"]=retrieve<TTree>(file,"TRUTH");
@@ -105,8 +106,8 @@ int main(const int argc, const char* argv[]){
   const double weight=xsec > 0 ? xsec/Forest["AUX"]->GetEntries() : 1.;
   // const char* muon_systems[] = {"","trkMS","trkMuonExtr","trkInnerExtr","trkComb"};
   const char* jet_systems[] = {"TRACKZ","LCTOPO","MULCTOPO"};
-  //process(outFName,Forest,CutDefReals, CutDefCats, "","MULCTOPO",weight);
-  ///*
+  process(outFName.c_str(),Forest,CutDefReals, CutDefCats, "","MULCTOPO",weight);
+  /*
   char outName[100];
   std::vector<std::string> parts = split_string(inFName,"./");
   for(size_t j=0; j < sizeof(jet_systems)/sizeof(*jet_systems); j++){

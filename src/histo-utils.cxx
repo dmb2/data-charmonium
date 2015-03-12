@@ -13,6 +13,7 @@
 #include "TColor.h"
 
 #include "histo-utils.hh"
+// #include "root-sugar.hh"
 
 using namespace std;
 
@@ -149,7 +150,7 @@ TH1* make_response_hist(TH1* base_hist,TTree* tree,const std::string& plot,
   // Suppress compiler warnings, yes that is what I want.
   if(weight_expr != NULL && name_suffix != ""){};
   TH1* hist = (TH1*)base_hist->Clone((plot + "_rsp_NOM").c_str());
-  draw_histo(tree,(plot + ":truth_"+plot).c_str(), hist->GetName(), "");
+  draw_histo(tree,(plot + ":truth_"+plot).c_str(), hist->GetName(), weight_expr);
   return hist;
 }
 TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot,
@@ -170,9 +171,9 @@ void print_hist(TTree* tree, const std::string& plot,
   decorator.SetTextSize(0.04);
   const std::string weight_expr=("weight*"+str_join("*",cut_branches,
 						    0,nCuts));
-
+  // MSG_DEBUG(weight_expr);
   TH1* hist = make_hist(base_hist,tree,plot,weight_expr.c_str(),"_nom");
-  hist->Draw("H");
+  hist->Draw("H COLZ");
   decorator.DrawLatexNDC(0.,0.05,hist->GetTitle());
   canv.SaveAs((plot+suffix).c_str());
 }
@@ -199,7 +200,7 @@ void print_cut_hist(TTree* tree,const char* cut_branches[],size_t nCuts,
   for(size_t i = 0; i < nCuts; i++){
     set_pad_margins(canv.cd(i+1),i+1,nCuts);
     TH1* hist = make_hist(base_hist,tree, cut_branches, i,plot);
-    hist->Draw("BOX");
+    hist->Draw("COLZ");
     if( i < 3){ //top row
       remove_axis(hist->GetXaxis());
     }

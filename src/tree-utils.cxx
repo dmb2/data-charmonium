@@ -8,7 +8,13 @@ using namespace Units;
 
 void retrieve_values(tree_collection& forest, Long64_t entry){
   for(tree_collection::iterator it=forest.begin(); it != forest.end(); ++it){
-    it->second->GetEntry(entry);
+    if(it->second){
+      it->second->GetEntry(entry);
+    }
+    else{
+      MSG_ERR("Could not retrieve entry: "<< entry<<" from "<<it->first);
+      exit(-2);
+    }
   }
 }
 void initialize_forest(tree_collection& forest){
