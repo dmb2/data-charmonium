@@ -46,10 +46,19 @@ void init_cut_names(std::map<std::string,std::string>& cut_names){
 }
 void init_leg_names(std::map<std::string,std::string>& leg_map){
   leg_map["1S0_8"]="^{1}S^{(8)}_{0}";
-  leg_map["3S1_1"]="^{3}S^{(1)}_{1}";
   leg_map["3S1_8"]="^{3}S^{(1)}_{8}";
-  leg_map["3PJ_1"]="^{3}P^{(1)}_{J}";
   leg_map["3PJ_8"]="^{3}P^{(8)}_{J}";
+
+  leg_map["3S1_1"]="^{3}S^{(1)}_{1}";
+  leg_map["3PJ_1"]="^{3}P^{(1)}_{J}";
+
+  leg_map["208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8"]="^{1}S^{(8)}_{0}";
+  leg_map["208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"]="^{3}S^{(1)}_{8}";
+  leg_map["208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8"]="^{3}P^{(8)}_{J}";
+							                        
+  leg_map["208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1"]="^{3}S^{(1)}_{1}";
+  leg_map["208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1"]="^{3}P^{(1)}_{J}";
+
 
   leg_map["108601.PythiaBc_Bc_JPsi_mu2p5mu2p5_Pi"]="B_{c}#rightarrow J/#psi #pi";
   leg_map["108606.PythiaBc_Bc_JPsi_mu2p5mu2p5_3Pi"]="B_{c}#rightarrow J/#psi 3#pi";
@@ -95,7 +104,16 @@ void init_colors(std::map<std::string,int>& colors){
   colors["3PJ_8"]=TColor::GetColor(49,130,189);
   // Singlet colors
   colors["3S1_1"]=TColor::GetColor(252,146,114);
-  colors["3PJ_1"]=TColor::GetColor(222,45,38);
+  colors["3PJ_1"]=TColor::GetColor(222,45,38);  
+
+  // Octet colors
+  colors["208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8"]=TColor::GetColor(222,235,247);
+  colors["208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"]=TColor::GetColor(158,202,225);
+  colors["208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8"]=TColor::GetColor(49,130,189); 
+  // Singlet colors
+  colors["208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1"]=TColor::GetColor(252,146,114);
+  colors["208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1"]=TColor::GetColor(222,45,38);  
+
   // non-prompt BKG Colors
   colors["108601.PythiaBc_Bc_JPsi_mu2p5mu2p5_Pi"]=TColor::GetColor(186,228,179);
   colors["108606.PythiaBc_Bc_JPsi_mu2p5mu2p5_3Pi"]=TColor::GetColor(116,196,118);
