@@ -25,8 +25,6 @@ get_and_manage(){
     TAG=$(echo $DSET | awk -F '.' '{print $5}' | awk -F '-' '{print $1}')
     LABEL=$(echo $DSET | awk -F '.' '{print $5}' | awk -F '-' '{print $2 "-" $3}' | sed 's,_EXT0,,g')
     rucio download user.davidb:$DSET
-    mkdir -p $DSET; 
-    mv user.davidb/*.root* $DSET
     dset-manage -r root://eosatlas.cern.ch//eos/atlas/user/d/davidb/charm/NTUP -t $TAG -l $LABEL $DSET
     rm -rf $DSET
 }
