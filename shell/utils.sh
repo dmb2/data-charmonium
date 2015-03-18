@@ -44,9 +44,9 @@ submit_dset(){
             $@
 }
 
-#usage: make_config DSID.foobar.root
+#usage: make_config DSID.foobar.root base.conf
 make_config(){
-    local xsecs; local DSID;
+    local xsecs; local DSID; local BASECONF;
     declare -A xsecs
     xsecs["208003"]=55717
     xsecs["208004"]=1361.5
@@ -65,10 +65,11 @@ make_config(){
     xsecs["208028"]=8256.2234 
     xsecs["singlet"]=586.9
     xsecs["octet"]=8284.3
+    BASECONF=$2
     DSID=$(echo $1 | awk -F '.' '{print $1}')
     samp=$(echo $1 | sed 's/.root//g')
     echo ${samp}
-    sed s/SAMP/${samp}/g AnalysisCutsMC_BKG.conf > ${samp}_config.conf
+    sed s/SAMP/${samp}/g $BASECONF > ${samp}_config.conf
     sigma=${xsecs[${DSID}]}
     sed -i s/XSEC/$sigma/g ${samp}_config.conf 
 }

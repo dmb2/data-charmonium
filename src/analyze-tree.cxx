@@ -19,7 +19,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 		 category_cuts& CutDefCat, TTree& OutTree, 
 		 const char* muon_system, const std::string& jet_type, 
 		 const double weight){
-  bool do_truth=(weight != 1.0);
+  bool is_MC=(weight != 1.0);
   unsigned int squawk_every = 1e3;
   std::vector<std::string>* EF_trigger_names=NULL;
   double pileup(0.);
@@ -81,7 +81,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   Forest[jet_type]->SetBranchAddress("JET_tau2",&jet_tau2);
   Forest[jet_type]->SetBranchAddress("JET_tau3",&jet_tau3);
   Forest[jet_type]->SetBranchAddress("JET_emfrac",&jet_emfrac);
-  if(do_truth){
+  if(is_MC){
     setup_pt_eta_phi_e(Forest["AUX"], t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
     const std::string t_jet_type = jet_type=="MuonLCTopoJets" ? "MuonTruthJets" : "TruthJets";
     // MSG_DEBUG("Setting up with tree: "<<t_jet_type<<" using jet type: "<<jet_type);
@@ -93,7 +93,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 
   setup_four_vector_output(OutTree,cand_jet_pt, cand_jet_eta, 
 			   cand_jet_phi, cand_jet_E, "jet");
-  if(do_truth){
+  if(is_MC){
     setup_four_vector_output(OutTree,cand_t_jet_pt, cand_t_jet_eta, 
 			     cand_t_jet_phi, cand_t_jet_E, "truth_jet");
     OutTree.Branch("truth_jpsi_rap",&t_jpsi_rap);
@@ -151,7 +151,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     idx=0; jpsi_idx=0; delta_r=-1.; z=-1.;
     jets.clear(); jets.reserve(jet_pt->size());
     CutDefCat["nominal"].pass();
-    if(!CutDefCat["trigger"].pass(passed_trigger(*EF_trigger_names),w)){
+    if(!CutDefCat["trigger"].pass(is_MC || passed_trigger(*EF_trigger_names),w)){
       continue;
     };
     if(!CutDefCat["num_jets"].pass(int(jet_pt->size()),w)){
@@ -202,7 +202,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 	}
       }
     }
-
+    cand_psi_m*=GeV;
     delta_r=find_closest(jets,candJet,candJPsi,idx);
     jpsi_s = (mu_trk_idx->size()> 0)? get_impact_sig(*mu_d0,*mu_d0_err,mu_trk_idx->at(jpsi_idx)) : -99.;
     jpsi_lxy = (vtx_lxy->size() > 0) ? vtx_lxy->at(0).at(0) : -99999.;
@@ -242,7 +242,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     store_four_vector(candJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
     // jpsi -> mu+ track index, mu- track index -> S
 
-    if(do_truth){
+    if(is_MC){
       idx=0;
       t_jpsi_pt*=GeV;
       t_jpsi_E*=GeV;
