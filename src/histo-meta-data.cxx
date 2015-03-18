@@ -91,8 +91,11 @@ void init_leg_names(std::map<std::string,std::string>& leg_map){
   leg_map["TopoEMJets"]="Jet TopoEM";
   leg_map["TrackZJets"]="Jet TrackZ";
 
-  leg_map["singlet.MULCTopoJets"]="Singlet";
-  leg_map["octet.MULCTopoJets"]="Octet";
+  leg_map["singlet.MuonLCTopoJets"]="Singlet";
+  leg_map["octet.MuonLCTopoJets"]="Octet";
+
+  leg_map["singlet"]="Singlet";
+  leg_map["octet"]="Octet";
 
   leg_map["master"]="Signal";
   leg_map["periodA"]="Period A Data";
@@ -149,6 +152,9 @@ void init_colors(std::map<std::string,int>& colors){
 
   colors["singlet.MuonLCTopoJets"]=TColor::GetColor(228,26,28); 
   colors["octet.MuonLCTopoJets"]=TColor::GetColor(55,126,184);
+
+  colors["singlet"]=TColor::GetColor(228,26,28); 
+  colors["octet"]=TColor::GetColor(55,126,184);
   
 
   colors["periodA"]=TColor::GetColor(0,0,0);
