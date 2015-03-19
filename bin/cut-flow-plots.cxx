@@ -5,6 +5,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TCanvas.h"
+#include "TColor.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TStyle.h"
@@ -15,12 +16,12 @@
 #include "root-sugar.hh"
 #include "histo-utils.hh"
 #include "histo-meta-data.hh"
+#include "color.hh"
 
 using namespace std;
 void usage(const char* name){
   cout <<"Usage: "<< name << " input_file.root"<<endl;
 }
-
 int main(const int argc, const char* argv[]){
   if(argc!=2){
     usage(argv[0]);
@@ -28,7 +29,8 @@ int main(const int argc, const char* argv[]){
   }
   AtlasStyle style;
   style.SetAtlasStyle();
-  gStyle->SetFrameLineWidth(0.0);
+  double stops[]={0.0,0.25,0.5,0.75,1.0};
+  heat_gradient(gStyle,stops,sizeof(stops)/sizeof(*stops));
   TTree* CutTree = retrieve<TTree>(argv[1],"mini");
 
   const char* cut_branches[]={"num_jets_p", /*"mu_trigger_p",*/
