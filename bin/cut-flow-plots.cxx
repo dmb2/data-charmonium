@@ -31,7 +31,7 @@ int main(const int argc, const char* argv[]){
   gStyle->SetFrameLineWidth(0.0);
   TTree* CutTree = retrieve<TTree>(argv[1],"mini");
 
-  const char* cut_branches[]={"num_jets_p", "mu_trigger_p",
+  const char* cut_branches[]={"num_jets_p", /*"mu_trigger_p",*/
 			      "jpsi_pt_p", /*"jpsi_eta_p",*/
 			      "delta_r_p", "jet_eta_p",
 			      "jet_pt_p"};
@@ -48,10 +48,13 @@ int main(const int argc, const char* argv[]){
     setup_hist(hist);
     HistBook2D[plot+"_rsp"]=setup_response_hist(hist);
   }
-
-  vector<string> plots = map_keys(HistBook);
+  const char* plot_names[] = {"jet_pt","jet_eta","jet_e","jet_z"};
+  vector<string> plots(plot_names,plot_names + sizeof(plot_names)/sizeof(*plot_names));// = map_keys(HistBook);
+  
+  const char* skip_plots[]={"pileup","jpsi_lxy", "psi_m","jpsi_s","jet_emfrac"};
   for(vector<string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
     const std::string& plot = *p;
+    /*
     print_hist(CutTree,plot,HistBook[plot],
 	       cut_branches, nCuts,
 	       "_nominal.png", make_normal_hist);
@@ -61,9 +64,14 @@ int main(const int argc, const char* argv[]){
     print_cut_hist(CutTree, cut_branches, nCuts, plot, 
 		   HistBook[plot], pretty_cNames,
 		   "_normal.png" , make_normal_hist);
-    if(plot=="pileup" || plot == "jpsi_lxy"){ 
-      continue;
+    */
+    bool skip=false;
+    for(size_t i=0; i < sizeof(skip_plots)/sizeof(*skip_plots); i++){
+      if(plot == std::string(skip_plots[i])){
+	skip=true;
+      }
     }
+    if(skip) continue;
     print_hist(CutTree,plot,HistBook2D[plot+"_rsp"],
 	       cut_branches, nCuts,
 	       "_nominal_response.png", make_response_hist);

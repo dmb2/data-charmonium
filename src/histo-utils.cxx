@@ -13,7 +13,7 @@
 #include "TColor.h"
 
 #include "histo-utils.hh"
-// #include "root-sugar.hh"
+#include "root-sugar.hh"
 
 using namespace std;
 
@@ -169,8 +169,8 @@ void print_hist(TTree* tree, const std::string& plot,
   TCanvas canv(("canv_"+plot).c_str(),"Plot",600,600);
   TLatex decorator;
   decorator.SetTextSize(0.04);
-  const std::string weight_expr=("weight*"+str_join("*",cut_branches,
-						    0,nCuts));
+  const std::string weight_expr="weight*"+str_join("*",cut_branches,
+						    0,nCuts);
   // MSG_DEBUG(weight_expr);
   TH1* hist = make_hist(base_hist,tree,plot,weight_expr.c_str(),"_nom");
   hist->Draw("H COLZ");
