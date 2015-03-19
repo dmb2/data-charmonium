@@ -161,12 +161,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     idx=0; jpsi_idx=0; delta_r=-1.; z=-1.;
     jets.clear(); jets.reserve(jet_pt->size());
     CutDefCat["nominal"].pass();
-    if(!CutDefCat["trigger"].pass(is_MC || passed_trigger(*EF_trigger_names),w)){
-      continue;
-    };
-    if(!CutDefCat["num_jets"].pass(int(jet_pt->size()),w)){
-      continue;
-    };
+    has_trigger = CutDefCat["trigger"].pass(is_MC || passed_trigger(*EF_trigger_names),w);
+    has_num_jets = CutDefCat["num_jets"].pass(int(jet_pt->size()),w);
     std::vector<size_t> good_indices = filter_by_pt(*jet_pt, CutDefReal["jet_pt"].cut_value());
     // MSG_DEBUG("num jets: "<<jet_pt->size()<<" filtered: "<<good_indices.size());
     for(std::vector<size_t>::const_iterator itr=good_indices.begin();

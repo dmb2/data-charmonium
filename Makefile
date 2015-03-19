@@ -35,8 +35,8 @@ bin/simple-parser-test: bin/simple-parser-test.o src/simple-parser.o src/Cut.o
 	$(CC) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 bin/skim-tree:  $(SKIM_DEPS) bin/skim-tree.o src/analyze-tree.o src/libDict.so
 	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -l Dict
-bin/skim-tree-response: $(SKIM_DEPS) bin/skim-tree.o src/cut-flow-studies.o
-	$(CC) $^ -o $@ $(LDFLAGS)
+bin/skim-tree-response: $(SKIM_DEPS) bin/skim-tree.o src/cut-flow-studies.o src/libDict.so
+	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -l Dict
 bin/skim-truth-tree:  $(SKIM_DEPS) bin/skim-truth-tree.o src/truth-studies.o
 	$(CC) $^ -o $@ $(LDFLAGS) 
 bin/cut-flow-plots: bin/cut-flow-plots.o $(HISTO_DEPS)

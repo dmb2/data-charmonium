@@ -107,8 +107,8 @@ int main(const int argc, const char* argv[]){
   const double weight=xsec > 0 ? xsec/Forest["AUX"]->GetEntries() : 1.;
   // const char* muon_systems[] = {"","trkMS","trkMuonExtr","trkInnerExtr","trkComb"};
   const char* jet_systems[] = {"TrackZJets","LCTopoJets","MuonLCTopoJets"};
-  process(outFName.c_str(),Forest,CutDefReals, CutDefCats, "","MuonLCTopoJets",weight);
-  /*
+  // process(outFName.c_str(),Forest,CutDefReals, CutDefCats, "","MuonLCTopoJets",weight);
+  ///*
   char outName[100];
   std::vector<std::string> parts = split_string(inFName,"./");
   for(size_t j=0; j < sizeof(jet_systems)/sizeof(*jet_systems); j++){

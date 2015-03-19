@@ -252,7 +252,12 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       t_jpsi_m=tvec.M();
       t_delta_r=find_closest(*t_jet_pt,*t_jet_eta,*t_jet_phi,*t_jet_E, 
 			    candTruthJet, candJet,idx);
-      t_z=t_jpsi_pt/(candTruthJet.Pt()+t_jpsi_pt);
+      if(jet_type == "TrackZJets" || jet_type == "MuonLCTopoJets"){
+	z=(t_jpsi_pt)/candTruthJet.Pt();
+      }
+      else {
+	t_z=(t_jpsi_pt)/(candTruthJet.Pt()+t_jpsi_pt);
+      }
       cand_t_jet_m=candTruthJet.M();
       store_four_vector(candTruthJet, cand_t_jet_pt, cand_t_jet_eta, 
 			cand_t_jet_phi, cand_t_jet_E);
