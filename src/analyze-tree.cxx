@@ -35,8 +35,11 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double cand_jet_m(0.), emfrac(0.);
   double cand_jet_pt(0.), cand_jet_eta(0.),cand_jet_phi(0.), cand_jet_E(0.);
   std::vector<std::vector<int> > *mu_trk_idx = NULL;
-  std::vector<double> *mu_d0 = NULL;
-  std::vector<double> *mu_d0_err = NULL;
+  std::vector<double> *mu_d0 = NULL, *mu_d0_err = NULL;
+  std::vector<double> *mu_qbyp = NULL;
+
+  double mup_d0(0.), mun_d0(0.);
+  double mup_d0_err(0.), mun_d0_err(0.);
   
   std::vector<int> *mu_charge=NULL;
   std::vector<double> *mu_pt=NULL, *mu_eta=NULL, *mu_phi=NULL, *mu_E=NULL;
@@ -73,6 +76,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   Forest["JPsi"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
 
   Forest["TRIG"]->SetBranchAddress("TRIG_EF_trigger_name",&EF_trigger_names);
+  Forest["MuTracks"]->SetBranchAddress("MuTracks_TRKS_qOverP",&mu_qbyp);
   Forest["MuTracks"]->SetBranchAddress("MuTracks_TRKS_d0",&mu_d0);
   Forest["MuTracks"]->SetBranchAddress("MuTracks_TRKS_d0Err",&mu_d0_err);
 
@@ -83,7 +87,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   Forest[jet_type]->SetBranchAddress("JET_emfrac",&jet_emfrac);
   if(is_MC){
     setup_pt_eta_phi_e(Forest["AUX"], t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
-    const std::string t_jet_type = jet_type=="MuonLCTopoJets" ? "MuonTruthJets" : "TruthJets";
+    const std::string t_jet_type = (jet_type=="MuonLCTopoJets" || jet_type=="TrackZJets") ? "MuonTruthJets" : "TruthJets";
     // MSG_DEBUG("Setting up with tree: "<<t_jet_type<<" using jet type: "<<jet_type);
     setup_pt_eta_phi_e(Forest[t_jet_type], t_jet_pt, t_jet_eta, t_jet_phi, t_jet_E, "JET");
     Forest[t_jet_type]->SetBranchAddress("JET_tau1",&t_jet_tau1);
@@ -125,6 +129,10 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   OutTree.Branch("jet_emfrac",&emfrac);
   OutTree.Branch("jet_m",&cand_jet_m);
   OutTree.Branch("delta_r",&delta_r);
+  OutTree.Branch("mup_d0",&mup_d0);
+  OutTree.Branch("mun_d0",&mun_d0);
+  OutTree.Branch("mup_d0_err",&mup_d0_err);
+  OutTree.Branch("mun_d0_err",&mun_d0_err);
 
   setup_four_vector_output(OutTree,jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
 
@@ -204,6 +212,12 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     }
     cand_psi_m*=GeV;
     delta_r=find_closest(jets,candJet,candJPsi,idx);
+    if(mu_trk_idx->size() > 0){
+      mup_d0 = mu_d0->at(mu_trk_idx->at(jpsi_idx)[0]);
+      mup_d0_err = mu_d0_err->at(mu_trk_idx->at(jpsi_idx)[0]);
+      mun_d0 = mu_d0->at(mu_trk_idx->at(jpsi_idx)[1]);
+      mun_d0_err = mu_d0_err->at(mu_trk_idx->at(jpsi_idx)[1]);
+    }
     jpsi_s = (mu_trk_idx->size()> 0)? get_impact_sig(*mu_d0,*mu_d0_err,mu_trk_idx->at(jpsi_idx)) : -99.;
     jpsi_lxy = (vtx_lxy->size() > 0) ? vtx_lxy->at(0).at(0) : -99999.;
     jpsi_tau = jpsi_lxy*(3096.915*GeV)/jpsi_pt;
