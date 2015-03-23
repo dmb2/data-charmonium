@@ -21,7 +21,7 @@ BINS:=bin/skim-tree bin/skim-truth-tree bin/cut-flow-plots\
 SKIM_DEPS:=src/tree-utils.o src/simple-parser.o src/Cut.o 
 HISTO_DEPS:=src/histo-utils.o src/AtlasStyle.o\
 	src/histo-meta-data.o src/stack-utils.o\
-	src/plot-utils.o
+	src/plot-utils.o src/color.o
 .PHONY: all clean 
 all: $(BINS)
 
