@@ -54,9 +54,38 @@ std::string make_cut_expr(const std::list<std::string>& regions, const std::stri
   return expr;
 }
 void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
-		     const std::list<std::string> regions , const double stsratio){
+		     const std::list<std::string> mass_regions, 
+		     const std::list<std::string> tau_regions,
+		     const double mass_stsR, const double np_frac
+		     /*, const double psi_br*/){
+  //Eventually this will cover:
+  // S = S' + R*SB(mass) + F*SB(tau) + Q*S(psi_m)
+  // S  == Observed signal in tau/mass signal region
+  // S' == Real prompt J/\psi contribution
+  // R  == Signal-to-Sideband ratio from mass fit
+  // SB(mass) == Mass side band hist
+  // F  == non-prompt fraction from fit
+  // SB(tau) == Tau sideband hist
+  // Q  == Branching fractions to estimate \psi(2S) contamination
+  // S(psi_m) = Signal of \psi(2S)
+  
+
   //Top slice
   TCanvas c1("Canvas","Canvas",600,600);
+  MSG_DEBUG(make_cut_expr(mass_regions,"Sig"));
+  MSG_DEBUG(make_cut_expr(tau_regions,"Sig"));
+
+  MSG_DEBUG(make_cut_expr(mass_regions,"SB"));
+  MSG_DEBUG(make_cut_expr(tau_regions,"SB"));
+  // Signal Hist
+
+  // Mass SB Hist
+  
+  // Tau SB Hist
+  
+  // Psi Mass Hist
+
+  /*
   TH1* sig_hist = make_normal_hist(base_hist, tree, base_hist->GetName(),
 				   make_cut_expr(regions,"Sig").c_str(),"_stk_sig");
   TH1* sb_hist  = make_normal_hist(base_hist, tree, base_hist->GetName(),
@@ -77,14 +106,15 @@ void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   leg.AddEntry(sig_hist,"Signal","l");
   leg.AddEntry(sb_hist,"Comb. Background","f");
   leg.Draw();
-
+  */
   // Bottom slice
   char outname[256];
   snprintf(outname,256,"%s%s",base_hist->GetName(),suffix);
   c1.SaveAs(outname);
 }
-void print_sbs_result(TTree* tree, TH1* base_hist, const char* suffix, 
-		      const std::list<std::string> regions , const double stsratio){
+/*
+void print_sbs_result(TTree* tree, TH1* base_hist, const char* suffix,
+                      const std::list<std::string> regions , const double stsratio){
   TCanvas c1("Canvas","Canvas",600,600);
   TH1* sig_hist = make_normal_hist(base_hist, tree, base_hist->GetName(),
 				   make_cut_expr(regions,"Sig").c_str(),"_sbs_sig");
@@ -99,8 +129,9 @@ void print_sbs_result(TTree* tree, TH1* base_hist, const char* suffix,
   c1.SaveAs(outname);
 
 }
+*/
 void do_sbs(const char** variables, const size_t n_vars,
-	    TTree* tree, RooAbsPdf* model, RooRealVar* mass,
+	    TTree* tree, RooAbsPdf* model, RooRealVar* mass, RooRealVar* tau,
 	    const char* suffix){
 
   TIterator *iter = model->getComponents()->createIterator();
@@ -125,7 +156,10 @@ void do_sbs(const char** variables, const size_t n_vars,
   // MSG_DEBUG("Calculated a Signal-to-Sideband ratio of: "<<sig_yield/sb_yield);
   for(size_t i=0; i < n_vars; i++){
     // MSG_DEBUG("Now subtracting: "<< variables[i]);
-    print_sbs_stack(tree,HistBook[variables[i]],"_stack_sbs.pdf",mass->getBinningNames(),sig_yield/sb_yield);
-    print_sbs_result(tree,HistBook[variables[i]],suffix,mass->getBinningNames(),sig_yield/sb_yield);
+    print_sbs_stack(tree,HistBook[variables[i]],suffix,
+		    mass->getBinningNames(),
+		    tau->getBinningNames(),
+		    sig_yield/sb_yield,1.0);
+    // print_sbs_result(tree,HistBook[variables[i]],suffix,mass->getBinningNames(),sig_yield/sb_yield);
   }
 }

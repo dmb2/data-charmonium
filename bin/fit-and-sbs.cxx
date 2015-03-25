@@ -54,8 +54,9 @@ int main(const int argc, const char* argv[]){
   add_region(mass,"SB",
 	     mass_mean + 3*mass_width,
 	     mass_mean + 8*mass_width);
-  
+  add_region(tau,"Sig", -1,0.25);
+  add_region(tau,"SB",0.25,50);
   do_sbs(variables,sizeof(variables)/sizeof(*variables),
-  	 tree,model,mass,"_sbs.pdf");
+  	 tree,model,mass,tau,"_sbs.pdf");
   return 0;
 }

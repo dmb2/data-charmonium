@@ -68,7 +68,7 @@ RooAddPdf* build_background(RooRealVar* mass, RooRealVar* tau,RooGaussModel* tau
   RooRealVar* bkg_prompt_lt = new RooRealVar("bkg_prompt_lt","Prompt Bkg Lifetime",0.15,0.1,3.0);
   RooDecay* prompt_decay = new RooDecay("prompt_decay","Prompt Background Decay",*tau,*bkg_prompt_lt,*tau_uncert,RooDecay::DoubleSided);
   RooRealVar *prompt_ratio = new RooRealVar("PromptRatio","Ratio between background decays",0.25,0.0,1.0);
-  RooAddPdf* prompt_tau = new RooAddPdf("PromptTauBkg","Prompt Tau Background", RooArgSet(*prompt_gauss,*prompt_decay),*prompt_ratio);
+  RooAddPdf* prompt_tau = new RooAddPdf("PromptBkgTau","Prompt Tau Background", RooArgSet(*prompt_gauss,*prompt_decay),*prompt_ratio);
 
   // Mass*Tau
   RooProdPdf *prompt_bkg = new RooProdPdf("PromptBkg","Prompt Background",RooArgSet(*prompt_mass,*prompt_tau));
@@ -91,6 +91,9 @@ RooAddPdf* build_background(RooRealVar* mass, RooRealVar* tau,RooGaussModel* tau
   // nonprompt_bkg + prompt_bkg
   return new RooAddPdf("Background","Background Model",RooArgSet(*prompt_bkg,*nonprompt_bkg),*PromptFrac);
 }
+double get_par_val(RooArgSet* pars,const char* name){
+  return dynamic_cast<RooRealVar*>(pars->find(name))->getVal();
+}
 
 RooAbsPdf* build_model(RooRealVar* mass, RooRealVar* tau){
   MSG("Constructing model");
@@ -99,9 +102,10 @@ RooAbsPdf* build_model(RooRealVar* mass, RooRealVar* tau){
 
   // Lifetime uncertainty function, shared among signal and
   // background, prompt and non-prompt components
+  // This also doubles as the tau signal, (ie delta fn (x) resolution)
   RooRealVar* mean_t = new RooRealVar("mean_t","Mean",0,-9.0,9.0);
   RooRealVar* sigma_t = new RooRealVar("sigma_t","Width",0.1,0.005,3.0);
-  RooGaussModel* tau_uncert = new RooGaussModel("tau_uncert","Tau Uncertainty",*tau,*mean_t,*sigma_t);
+  RooGaussModel* tau_uncert = new RooGaussModel("PromptTauSig","Tau Uncertainty",*tau,*mean_t,*sigma_t);
 
   RooAddPdf* Signal = build_signal(mass,tau,tau_uncert);
   RooAddPdf* Background = build_background(mass,tau,tau_uncert);
@@ -138,10 +142,22 @@ static void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model, const
 		RooFit::NumCPU(sysconf(_SC_NPROCESSORS_ONLN),kTRUE),
 		RooFit::Name("PlotModel"));
 
-  add_component(frame,model,"Signal",kAzure);
-  add_component(frame,model,"Background",kRed);
-  add_leg_comp(leg,frame,"Signal");
-  add_leg_comp(leg,frame,"Background");
+  if(std::string(key)=="mass"){
+    add_component(frame,model,"Signal",kAzure);
+    add_component(frame,model,"Background",kRed);
+    add_leg_comp(leg,frame,"Signal");
+    add_leg_comp(leg,frame,"Background");
+  }
+  if(std::string(key)=="tau"){
+    add_component(frame,model,"PromptBkgTau",kRed-3);
+    add_component(frame,model,"NonPromptBkgTau",kRed-1);
+    add_component(frame,model,"PromptTauSig",kAzure-3);
+    add_component(frame,model,"NonPromptSigTau",kAzure-1);
+    add_leg_comp(leg,frame,"PromptBkgTau");
+    add_leg_comp(leg,frame,"NonPromptBkgTau");
+    add_leg_comp(leg,frame,"PromptTauSig");
+    add_leg_comp(leg,frame,"NonPromptSigTau");
+  }
 
   TCanvas canv(key,key,600,600);
   frame->Draw();
@@ -149,6 +165,9 @@ static void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model, const
   frame->SetTitle(title);
   char OFName[100];
   snprintf(OFName,100,"%s_fit_final.pdf",key);
+  if(std::string(key)=="tau"){
+    canv.SetLogy(true);
+  }
   canv.SaveAs(OFName);
 }
 

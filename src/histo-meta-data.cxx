@@ -32,8 +32,9 @@ void init_hist_book(std::map<std::string,TH1D*>& HistBook){
   HistBook["jpsi_e"]=new TH1D("jpsi_e","J/#psi E;E [GeV]; evts/binwidth",50,0,600);
   HistBook["jpsi_m"]=new TH1D("jpsi_m","J/#psi Mass; M(#mu#mu) [GeV]; evts/binwidth",50,2.,4.);
   HistBook["jpsi_lxy"]=new TH1D("jpsi_lxy","J/#psi L_{xy}; L_{xy} [mm]; evts/binwidth",50,-4,10);
-  HistBook["jpsi_s"]=new TH1D("jpsi_s","Impact Parameter Significance;S;evts/binwidth",50,0,55000);
-  HistBook["mup_d0^2 + mun_d0^2"]=new TH1D("mup_d0^2 + mun_d0^2","Impact parameter quadrature",50,0,10);
+  // HistBook["jpsi_s"]=new TH1D("jpsi_s","Impact Parameter Significance;S;evts/binwidth",50,0,55000);
+  HistBook["jpsi_tau"]= new TH1D("jpsi_tau","J/#psi c#tau; c#tau; evts/binwidth",50,-1,5);
+  // HistBook["mup_d0^2 + mun_d0^2"]=new TH1D("mup_d0^2 + mun_d0^2","Impact parameter quadrature",50,0,10);
   //HistBook["1/mup_d0^2 + 1/mun_d0^2"]=new TH1D("1/mup_d0^2 + 1/mun_d0^2","Impact parameter quadrature",50,0,10);
 }
 void init_cut_names(std::map<std::string,std::string>& cut_names){
