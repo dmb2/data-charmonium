@@ -128,7 +128,7 @@ static std::vector<double> build_norm_factors( const TH2D *HistZvsE){
   std::vector<double> result;
   result.reserve(HistZvsE->GetNbinsX());
   TH1D* hist=NULL;
-  for(size_t i = 1; i < HistZvsE->GetNbinsX()+1; i++){
+  for(size_t i = 1; i < (size_t)HistZvsE->GetNbinsX()+1; i++){
     hist=HistZvsE->ProjectionY("_px",i,i+1,"e");
     result.push_back(hist->Integral());
   }
@@ -193,26 +193,22 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
       n!=sample_names.end(); ++n){
     pad_pos = 1;
     const std::string& name = *n;
-    TH1* HistZvsE = make_normal_hist(base_hist,samples[name],plot,
-				     weight_expr,name+"_2D_SLC");
-    std::vector<double> norm_factors = build_norm_factors(dynamic_cast<TH2D*>(HistZvsE));
-    MSG_DEBUG(norm_factors.size());
-    THStack proj_stack(HistZvsE,"x");
-    TH1* HistE = NULL;
-    TIter next(proj_stack.GetHists());
-    while((HistE = dynamic_cast<TH1*>(next()))){
+    TH2D* HistZvsE = dynamic_cast<TH2D*>(make_normal_hist(base_hist,
+							 samples[name],
+							 plot, weight_expr,
+							 name+"_2D_SLC"));
+    std::vector<double> norm_factors = build_norm_factors(HistZvsE);
+    TH1D* HistE=NULL;
+    for(size_t i=1; i < (size_t)HistZvsE->GetNbinsY()+1; i++){
+      HistE=HistZvsE->ProjectionX("_py",i,i+1,"e");
       norm_hist(HistE,norm_factors);
-      paint_hist(HistE,canv.cd(pad_pos),
-    		 pad_pos,n_col,n_row, n_bins_z,
-    		 color_map[name]);
-
-      if(HistE->GetMaximum() > max_vals.at(pad_pos-1)){
-    	max_vals.at(pad_pos-1) = HistE->GetMaximum();
+      paint_hist(HistE,canv.cd(i), i,n_col,n_row,n_bins_z,color_map[name]);
+      if(HistE->GetMaximum() > max_vals.at(i-1)){
+	max_vals.at(pad_pos-1)=HistE->GetMaximum();
       }
-      if(pad_pos==1){
-    	leg->AddEntry(HistE,leg_map[name].c_str(),"l");
+      if(i==1){
+	leg->AddEntry(HistE,leg_map[name].c_str(),"l");
       }
-      pad_pos++;
     }
   }
 
@@ -221,6 +217,7 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
 
   // resize hists so they all fit on the pads
   // also add the z ranges to the upper corner
+
   for(size_t i=1; i <= n_bins_z; i++){
     TVirtualPad* pad = canv.cd(i);
     zbl_ss.str("");

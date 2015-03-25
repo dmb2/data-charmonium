@@ -39,8 +39,8 @@ int main(const int argc, const char* argv[]){
   }
   print_fit_results(model,&data,mass,tau);
   //this sucks
-  double mass_width = dynamic_cast<RooRealVar*>(result->floatParsFinal().find("mass_sigma"))->getVal();
-  double mass_mean = dynamic_cast<RooRealVar*>(result->floatParsFinal().find("mass_mean"))->getVal();
+  double mass_width = dynamic_cast<RooRealVar*>(result->floatParsFinal().find("sigma_m"))->getVal();
+  double mass_mean = dynamic_cast<RooRealVar*>(result->floatParsFinal().find("mean_m"))->getVal();
 
   const char* variables[] = {"jet_pt","jet_z","jet_e",
 			   "jpsi_pt","tau1","tau2",

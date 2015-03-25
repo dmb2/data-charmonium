@@ -14,6 +14,7 @@
 #include "stack-utils.hh"
 #include "plot-utils.hh"
 #include "histo-meta-data.hh"
+#include "color.hh"
 #include "root-sugar.hh"
 
 #include "AtlasStyle.hh"
@@ -61,7 +62,9 @@ int main(const int argc, const char* argv[]){
   AtlasStyle style;
   style.SetAtlasStyle();
   gStyle->SetFrameLineWidth(0.0);
-  gStyle->SetPalette(1);
+  double stops[]={0.0,0.25,0.5,0.75,1.0};
+  heat_gradient(gStyle,stops,sizeof(stops)/sizeof(*stops));
+  // gStyle->SetPalette(1);
   print_plots(&argv[2],argc-2,atof(argv[1]));
   return 0;
 }
