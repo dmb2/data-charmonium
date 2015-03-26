@@ -91,7 +91,8 @@ RooAddPdf* build_background(RooRealVar* mass, RooRealVar* tau,RooGaussModel* tau
   // nonprompt_bkg + prompt_bkg
   return new RooAddPdf("Background","Background Model",RooArgSet(*prompt_bkg,*nonprompt_bkg),*PromptFrac);
 }
-double get_par_val(RooArgSet* pars,const char* name){
+double get_par_val(const RooAbsCollection* pars,const char* name){
+  //this sucks
   return dynamic_cast<RooRealVar*>(pars->find(name))->getVal();
 }
 
