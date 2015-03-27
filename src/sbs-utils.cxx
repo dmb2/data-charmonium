@@ -58,7 +58,7 @@ TH1* make_bkg_hist(TH1* base_hist, TTree* tree,
 		   const std::list<std::string>& sb_regions, 
 		   const std::list<std::string>&  sig_regions,
 		   const char* prefix, const double sf){
-  char cut_expr[500]; //someday this will be too small
+  char cut_expr[500];
   snprintf(cut_expr,sizeof cut_expr/sizeof *cut_expr,
 	   "(%s) && (%s)",
 	   make_cut_expr(sb_regions,"SB").c_str(),
@@ -89,10 +89,7 @@ void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   // Q  == Branching fractions to estimate \psi(2S) contamination
   // S(psi_m) = Signal of \psi(2S)
 
-  TCanvas c1("Canvas","Canvas",600,600);
   TLegend leg = *init_legend();
-  
-
   // Signal Hist
   const std::string signal_cut_expr = make_cut_expr(mass_regions,"Sig")+ " && "
     + make_cut_expr(tau_regions,"Sig");
@@ -100,33 +97,39 @@ void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
 				   signal_cut_expr.c_str(),"_stk_sig");
 
   // Mass SB Hist
-  TH1* mass_sb_hist =  make_bkg_hist(base_hist,tree,mass_regions,tau_regions,"mass_stk_sb",mass_stsR);
+  TH1* comb_hist =  make_bkg_hist(base_hist,tree,mass_regions,tau_regions,"mass_stk_sb",mass_stsR);
   // Tau SB Hist
-  TH1* tau_sb_hist = make_bkg_hist(base_hist,tree,tau_regions,mass_regions,"tau_stk_sb",np_frac);
+  TH1* nonprompt_hist = make_bkg_hist(base_hist,tree,tau_regions,mass_regions,"tau_stk_sb",np_frac);
 
   // Psi Mass Hist
   /* ADD ME */
-  //  TH1* psi_sig_hist = make_bkg_hist(base_hist,tree,psi_regions,"psi_stk_sig",psi_br);
+  //  TH1* psi_hist = make_bkg_hist(base_hist,tree,psi_regions,"psi_stk_sig",psi_br);
   THStack stack("sbs_stack",base_hist->GetTitle());
   stack.SetHistogram((TH1*)base_hist->Clone((std::string("stack_sbs")+base_hist->GetName()).c_str()));
   sig_hist->SetLineColor(kBlack);
   sig_hist->SetFillStyle(0);
   
-  style_bkg_hist(mass_sb_hist,12);
-  style_bkg_hist(tau_sb_hist,14);
-  //style_bkg_hist(psi_sig_hist,16);
-  stack.Add(tau_sb_hist);
-  stack.Add(mass_sb_hist); 
-  // stack.Add(psi_sig_hist);
+  style_bkg_hist(comb_hist,12);
+  style_bkg_hist(nonprompt_hist,14);
+  //style_bkg_hist(psi_hist,16);
+  stack.Add(nonprompt_hist);
+  stack.Add(comb_hist); 
+  // stack.Add(psi_hist);
+  leg.AddEntry(sig_hist,"Signal","l");
+  leg.AddEntry(comb_hist,"Comb. Background","f");
+  leg.AddEntry(nonprompt_hist,"Non-prompt Background","f");
+  //leg.AddEntry(psi_hist,"#psi(2S) Background","f");
+  TH1* sig_final = dynamic_cast<TH1*>(sig_hist->Clone((std::string("sf_")+base_hist->GetName()).c_str()));
+  sig_final->Add(comb_hist,-1);
+  sig_final->Add(nonprompt_hist,-1);
+  TCanvas c1("Canvas","Canvas",1200,600);
+  c1.Divide(2,1);
+  c1.cd(1);
   sig_hist->Draw("H");
   stack.Draw("H same");
-
-  leg.AddEntry(sig_hist,"Signal","l");
-  leg.AddEntry(mass_sb_hist,"Comb. Background","f");
-  leg.AddEntry(tau_sb_hist,"Non-prompt Background","f");
-  //leg.AddEntry(psi_sig_hist,"#psi(2S) Background","f");
   leg.Draw();
-  
+  c1.cd(2);
+  sig_final->Draw("H");
   char outname[256];
   snprintf(outname,256,"%s%s",base_hist->GetName(),suffix);
   c1.SaveAs(outname);
@@ -134,8 +137,6 @@ void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
 void do_sbs(const char** variables, const size_t n_vars,
 	    TTree* tree, RooAbsPdf* model, RooRealVar* mass, RooRealVar* tau,
 	    const char* suffix){
-
-
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
 
@@ -153,9 +154,7 @@ void do_sbs(const char** variables, const size_t n_vars,
   }
   double sig_yield = get_yield(bkg, mass,"Sig");
   double sb_yield = get_yield(bkg, mass, "SB");
-  // MSG_DEBUG("Calculated a Signal-to-Sideband ratio of: "<<sig_yield/sb_yield);
   for(size_t i=0; i < n_vars; i++){
-    // MSG_DEBUG("Now subtracting: "<< variables[i]);
     print_sbs_stack(tree,HistBook[variables[i]],suffix,
 		    mass->getBinningNames(),
 		    tau->getBinningNames(),

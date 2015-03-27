@@ -58,7 +58,9 @@ RooAddPdf* build_background(RooRealVar* mass, RooRealVar* tau,RooGaussModel* tau
   // PROMPT
   // -->Mass
   RooRealVar *PromptFrac = new RooRealVar("BkgPromptFrac","Fraction of prompt events",0.5,0.0,1.0);
-  RooGenericPdf* prompt_mass = build_mass_bkg("PromptBkgMass",mass,PDGMASS);
+  RooRealVar* Pc1 = new RooRealVar("Pc1","Slope", -0.27, -0.5,0.5);
+  RooPolynomial *prompt_mass = new RooPolynomial("PromptBkgMass","Mass Background",*mass,RooArgList(*Pc1));
+  // RooGenericPdf* prompt_mass = build_mass_bkg("PromptBkgMass",mass,PDGMASS);
   // -->Tau
   RooRealVar* mean_t = dynamic_cast<RooRealVar*>(tau_uncert->getVariables()->find("mean_t"));
   RooRealVar* sigma_t = dynamic_cast<RooRealVar*>(tau_uncert->getVariables()->find("sigma_t"));
@@ -74,7 +76,9 @@ RooAddPdf* build_background(RooRealVar* mass, RooRealVar* tau,RooGaussModel* tau
   RooProdPdf *prompt_bkg = new RooProdPdf("PromptBkg","Prompt Background",RooArgSet(*prompt_mass,*prompt_tau));
   // NON-PROMPT
   // -->Mass
-  RooGenericPdf* nonprompt_mass = build_mass_bkg("NonPromptBkgMass",mass,PDGMASS);
+  //RooGenericPdf* nonprompt_mass = build_mass_bkg("NonPromptBkgMass",mass,PDGMASS);
+  RooRealVar* NPc1 = new RooRealVar("NPc1","Slope", -0.27, -0.5,0.5);
+  RooPolynomial *nonprompt_mass = new RooPolynomial("NonPromptBkgMass","Mass Background",*mass,RooArgList(*NPc1));
   // -->Tau
   RooRealVar *nonprompt_ratio = new RooRealVar("NonPromptRatio","Ratio between background decays",0.25,0.0,1.0);
   RooRealVar *bkg_np_lt1 = new RooRealVar("bkg_np_lt1", "lifetime", 1.2,0.1,3.);
