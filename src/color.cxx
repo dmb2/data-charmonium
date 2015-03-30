@@ -5,6 +5,7 @@
 #include "TColor.h"
 #include "color.hh"
 #include <iostream>
+#include <algorithm>
 // Probably should move this somewhere more useful someday
 template<typename T>
 bool is_in(T x,T min,T max){
@@ -111,22 +112,21 @@ tcolor_list sequential(const double hue, const size_t n){
 }
 tcolor_list diverging(const double hue1, const double hue2, const size_t n){
   size_t m=n;
-  if(n%2==0){
-    std::cout<<" Warning! Even number of diverging colors requested, returning "<<n+1<<" colors instead"<<std::endl;;
+  if(n%2!=0){
     m++;
   }
+  else{
+    std::cout<<" Warning! Even number of diverging colors requested, returning "<<n-1<<" colors instead"<<std::endl;;
+  }
   tcolor_list part1 = sequential(hue1,m/2);
-  tcolor_list part2 = sequential(hue2,(m+1)/2);
+  tcolor_list part2 = sequential(hue2,m/2);
   tcolor_list result(m,0);
-  //part 1 and part 2 start at chroma=0, we want to reverse part1, and
-  //append part2 without the first element.
-  for(size_t i=0; i < m; i++){
-    if((m+1)/2-i > 0){
-      result[i]=part1[(m+1)/2-i];
-    }
-    else{
-      result[i]=part2[i-m/2];
-    }
+  std::reverse(part1.begin(),part1.end());
+  for(size_t i=0; i < m/2; i++){
+    result[i]=part1[i];
+  }
+  for(size_t i=m/2+1; i < m; i++){
+    result[i]=part2[i-m/2];
   }
   return result;
 }
@@ -161,6 +161,11 @@ void heat_gradient(TStyle* style, double* stops, const size_t n_stops){
 		     {0.0,60.}}; // hue
   set_gradient(style,pars,stops,n_stops);
 }
+void heat_gradient(TStyle* style){
+  double stops[]={0.0,0.25,0.5,0.75,1.0};
+  heat_gradient(style,stops,sizeof stops/sizeof *stops);
+}
+
 void rainbow_gradient(TStyle* style, double* stops, const size_t n_stops){
   hcl_params pars={{0.9,0.91},
 		   {0.85,0.95},
@@ -168,10 +173,18 @@ void rainbow_gradient(TStyle* style, double* stops, const size_t n_stops){
 		   {0.0,250.0}};
   set_gradient(style,pars,stops,n_stops);
 }
+void rainbow_gradient(TStyle* style){
+  double stops[]={0.0,0.25,0.5,0.75,1.0};
+  rainbow_gradient(style,stops,sizeof stops/sizeof *stops);
+}
 void single_gradient(TStyle* style, const double hue, double* stops, const size_t n_stops){
   hcl_params pars = {{0.3,1.0},
 		     {0.3,0.9},
 		     {1.5,1.5},
 		     {hue,hue}};
   set_gradient(style,pars,stops,n_stops);
+}
+void single_gradient(TStyle* style, const double hue){
+  double stops[]={0.0,0.25,0.5,0.75,1.0};
+  single_gradient(style,hue,stops,sizeof stops/sizeof *stops);
 }
