@@ -19,6 +19,7 @@
 #include "histo-utils.hh"
 #include "histo-meta-data.hh"
 #include "plot-utils.hh"
+#include "fit-utils.hh"
 
 void add_region(RooRealVar* var, const char* type, double min, double max){
   char name[400];
@@ -53,64 +54,95 @@ std::string make_cut_expr(const std::list<std::string>& regions, const std::stri
   }
   return expr;
 }
+TH1* make_bkg_hist(TH1* base_hist, TTree* tree, 
+		   const std::list<std::string>& sb_regions, 
+		   const std::list<std::string>&  sig_regions,
+		   const char* prefix, const double sf){
+  char cut_expr[500];
+  snprintf(cut_expr,sizeof cut_expr/sizeof *cut_expr,
+	   "(%s) && (%s)",
+	   make_cut_expr(sb_regions,"SB").c_str(),
+	   make_cut_expr(sig_regions,"Sig").c_str());
+  TH1* result = make_normal_hist(base_hist, tree, base_hist->GetName(),
+				 cut_expr,prefix);
+  result->Scale(sf);
+  return result;
+}
+void style_bkg_hist(TH1* hist,Int_t color){
+  hist->SetFillStyle(1001);
+  hist->SetFillColor(color);
+  hist->SetLineColor(color);
+}
 void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
-		     const std::list<std::string> regions , const double stsratio){
-  //Top slice
-  TCanvas c1("Canvas","Canvas",600,600);
-  TH1* sig_hist = make_normal_hist(base_hist, tree, base_hist->GetName(),
-				   make_cut_expr(regions,"Sig").c_str(),"_stk_sig");
-  TH1* sb_hist  = make_normal_hist(base_hist, tree, base_hist->GetName(),
-				   make_cut_expr(regions,"SB").c_str(),"stk_sb");
+		     const std::list<std::string> mass_regions, 
+		     const std::list<std::string> tau_regions,
+		     const double mass_stsR, const double np_frac
+		     /*, const double psi_br*/){
+  //Eventually this will cover:
+  // S = S' + R*SB(mass) + F*SB(tau) + Q*S(psi_m)
+  // S  == Observed signal in tau/mass signal region
+  // S' == Real prompt J/\psi contribution
+  // R  == Signal-to-Sideband ratio from mass fit
+  // SB(mass) == Mass side band hist
+  // F  == non-prompt fraction from fit
+  // SB(tau) == Tau sideband hist
+  // Q  == Branching fractions to estimate \psi(2S) contamination
+  // S(psi_m) = Signal of \psi(2S)
+
   TLegend leg = *init_legend();
-  //Meat 
+  // Signal Hist
+  const std::string signal_cut_expr = make_cut_expr(mass_regions,"Sig")+ " && "
+    + make_cut_expr(tau_regions,"Sig");
+  TH1* sig_hist = make_normal_hist(base_hist, tree, base_hist->GetName(),
+				   signal_cut_expr.c_str(),"_stk_sig");
+
+  // Mass SB Hist
+  TH1* comb_hist =  make_bkg_hist(base_hist,tree,mass_regions,tau_regions,"mass_stk_sb",mass_stsR);
+  // Tau SB Hist
+  TH1* nonprompt_hist = make_bkg_hist(base_hist,tree,tau_regions,mass_regions,"tau_stk_sb",np_frac);
+
+  // Psi Mass Hist
+  /* ADD ME */
+  //  TH1* psi_hist = make_bkg_hist(base_hist,tree,psi_regions,"psi_stk_sig",psi_br);
   THStack stack("sbs_stack",base_hist->GetTitle());
   stack.SetHistogram((TH1*)base_hist->Clone((std::string("stack_sbs")+base_hist->GetName()).c_str()));
-  sb_hist->SetFillStyle(1001);
-  sb_hist->SetFillColor(12);
-  sb_hist->SetLineColor(12);
   sig_hist->SetLineColor(kBlack);
   sig_hist->SetFillStyle(0);
-  sb_hist->Scale(stsratio);
-  stack.Add(sb_hist); stack.Add(sig_hist);
-  stack.Draw("H");
-
+  
+  style_bkg_hist(comb_hist,12);
+  style_bkg_hist(nonprompt_hist,14);
+  //style_bkg_hist(psi_hist,16);
+  stack.Add(nonprompt_hist);
+  stack.Add(comb_hist); 
+  // stack.Add(psi_hist);
   leg.AddEntry(sig_hist,"Signal","l");
-  leg.AddEntry(sb_hist,"Comb. Background","f");
-  leg.Draw();
-
-  // Bottom slice
-  char outname[256];
-  snprintf(outname,256,"%s%s",base_hist->GetName(),suffix);
-  c1.SaveAs(outname);
-}
-void print_sbs_result(TTree* tree, TH1* base_hist, const char* suffix, 
-		      const std::list<std::string> regions , const double stsratio){
-  TCanvas c1("Canvas","Canvas",600,600);
-  TH1* sig_hist = make_normal_hist(base_hist, tree, base_hist->GetName(),
-				   make_cut_expr(regions,"Sig").c_str(),"_sbs_sig");
-  TH1* sb_hist  = make_normal_hist(base_hist, tree, base_hist->GetName(),
-				   make_cut_expr(regions,"SB").c_str(),"sbs_sb");
-  // sig_hist->Add(sb_hist,-stsratio);
-  sig_hist->SetLineColor(kBlack);
-  sig_hist->SetFillStyle(0);
+  leg.AddEntry(comb_hist,"Comb. Background","f");
+  leg.AddEntry(nonprompt_hist,"Non-prompt Background","f");
+  //leg.AddEntry(psi_hist,"#psi(2S) Background","f");
+  TH1* sig_final = dynamic_cast<TH1*>(sig_hist->Clone((std::string("sf_")+base_hist->GetName()).c_str()));
+  sig_final->Add(comb_hist,-1);
+  sig_final->Add(nonprompt_hist,-1);
+  TCanvas c1("Canvas","Canvas",1200,600);
+  c1.Divide(2,1);
+  c1.cd(1);
   sig_hist->Draw("H");
+  stack.Draw("H same");
+  leg.Draw();
+  c1.cd(2);
+  sig_final->Draw("H");
   char outname[256];
   snprintf(outname,256,"%s%s",base_hist->GetName(),suffix);
   c1.SaveAs(outname);
-
 }
 void do_sbs(const char** variables, const size_t n_vars,
-	    TTree* tree, RooAbsPdf* model, RooRealVar* mass,
+	    TTree* tree, RooAbsPdf* model, RooRealVar* mass, RooRealVar* tau,
 	    const char* suffix){
+  std::map<std::string,TH1D*> HistBook;
+  init_hist_book(HistBook);
 
   TIterator *iter = model->getComponents()->createIterator();
   RooAbsArg* var = NULL;
   RooAbsPdf* bkg = NULL;
-
-  std::map<std::string,TH1D*> HistBook;
-  init_hist_book(HistBook);
-
-
   while((var = dynamic_cast<RooAbsArg*>(iter->Next()))){
     std::string name(var->GetName());
     if(name.find("Background")!=std::string::npos){
@@ -122,10 +154,11 @@ void do_sbs(const char** variables, const size_t n_vars,
   }
   double sig_yield = get_yield(bkg, mass,"Sig");
   double sb_yield = get_yield(bkg, mass, "SB");
-  // MSG_DEBUG("Calculated a Signal-to-Sideband ratio of: "<<sig_yield/sb_yield);
   for(size_t i=0; i < n_vars; i++){
-    // MSG_DEBUG("Now subtracting: "<< variables[i]);
-    print_sbs_stack(tree,HistBook[variables[i]],"_stack_sbs.pdf",mass->getBinningNames(),sig_yield/sb_yield);
-    print_sbs_result(tree,HistBook[variables[i]],suffix,mass->getBinningNames(),sig_yield/sb_yield);
+    print_sbs_stack(tree,HistBook[variables[i]],suffix,
+		    mass->getBinningNames(),
+		    tau->getBinningNames(),
+		    sig_yield/sb_yield,
+		    get_par_val(model->getVariables(),"NonPromptRatio"));
   }
 }

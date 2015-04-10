@@ -38,9 +38,8 @@ int main(const int argc, const char* argv[]){
     result->Print();
   }
   print_fit_results(model,&data,mass,tau);
-  //this sucks
-  double mass_width = dynamic_cast<RooRealVar*>(result->floatParsFinal().find("mass_sigma"))->getVal();
-  double mass_mean = dynamic_cast<RooRealVar*>(result->floatParsFinal().find("mass_mean"))->getVal();
+  double mass_width = get_par_val(&result->floatParsFinal(),"sigma_m");
+  double mass_mean = get_par_val(&result->floatParsFinal(),"mean_m");
 
   const char* variables[] = {"jet_pt","jet_z","jet_e",
 			   "jpsi_pt","tau1","tau2",
@@ -54,8 +53,9 @@ int main(const int argc, const char* argv[]){
   add_region(mass,"SB",
 	     mass_mean + 3*mass_width,
 	     mass_mean + 8*mass_width);
-  
+  add_region(tau,"Sig", -1,0.25);
+  add_region(tau,"SB",0.25,50);
   do_sbs(variables,sizeof(variables)/sizeof(*variables),
-  	 tree,model,mass,"_sbs.pdf");
+  	 tree,model,mass,tau,"_sbs.pdf");
   return 0;
 }
