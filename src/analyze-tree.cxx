@@ -214,14 +214,20 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     cand_psi_m*=GeV;
     delta_r=find_closest(jets,candJet,candJPsi,idx);
     /*
-    if(mu_trk_idx->size() > 0){
-      mup_d0 = mu_d0->at(mu_trk_idx->at(jpsi_idx)[0]);
-      mup_d0_err = mu_d0_err->at(mu_trk_idx->at(jpsi_idx)[0]);
-      mun_d0 = mu_d0->at(mu_trk_idx->at(jpsi_idx)[1]);
-      mun_d0_err = mu_d0_err->at(mu_trk_idx->at(jpsi_idx)[1]);
+    if(mu_d0->size() > 0 && mu_trk_idx->size() > 0 && mu_trk_idx->at(jpsi_idx).size() > 0){
+      const size_t mup_idx=mu_trk_idx->at(jpsi_idx)[0];
+      const size_t mun_idx=mu_trk_idx->at(jpsi_idx)[1];
+      if(mup_idx < mu_d0->size()){
+	mup_d0 = mu_d0->at(mup_idx);
+	mup_d0_err = mu_d0_err->at(mup_idx);
+      }
+      if(mun_idx < mu_d0->size()){
+	mun_d0 = mu_d0->at(mun_idx);
+	mun_d0_err = mu_d0_err->at(mun_idx);
+      }
     }
+    jpsi_s = (mu_trk_idx->size()> 0)? get_impact_sig(*mu_d0,*mu_d0_err,mu_trk_idx->at(jpsi_idx)) : -99.;
     */
-    // jpsi_s = (mu_trk_idx->size()> 0)? get_impact_sig(*mu_d0,*mu_d0_err,mu_trk_idx->at(jpsi_idx)) : -99.;
     jpsi_lxy = (vtx_lxy->size() > 0) ? vtx_lxy->at(0).at(0) : -99999.;
     jpsi_tau = jpsi_lxy*(3096.915*GeV)/jpsi_pt;
     // if(!CutDefReal["jpsi_lxy"].pass(fabs(jpsi_lxy),w)){

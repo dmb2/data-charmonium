@@ -19,7 +19,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 		 category_cuts& CutDefCat, TTree& OutTree, 
 		 const char* muon_system, const std::string& jet_type, 
 		 const double weight){
-  bool is_MC=(weight != 1.0);
+  const bool is_muon_jet = (jet_type=="MuonLCTopoJets" || jet_type=="TrackZJets");
+  const bool is_MC=(weight != 1.0);
   unsigned int squawk_every = 1e3;
   std::vector<std::string>* EF_trigger_names=NULL;
   double pileup(0.);
@@ -83,8 +84,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   Forest[jet_type]->SetBranchAddress("JET_emfrac",&jet_emfrac);
   if(is_MC){
     setup_pt_eta_phi_e(Forest["AUX"], t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
-    const std::string t_jet_type = (jet_type=="MuonLCTopoJets" || jet_type=="TrackZJets") ? "MuonTruthJets" : "TruthJets";
-    // MSG_DEBUG("Setting up with tree: "<<t_jet_type<<" using jet type: "<<jet_type);
+    const std::string t_jet_type =  is_muon_jet ? "MuonTruthJets" : "TruthJets";
+    MSG_DEBUG("Setting up with tree: "<<t_jet_type<<" using jet type: "<<jet_type);
     setup_pt_eta_phi_e(Forest[t_jet_type], t_jet_pt, t_jet_eta, t_jet_phi, t_jet_E, "JET");
     Forest[t_jet_type]->SetBranchAddress("JET_tau1",&t_jet_tau1);
     Forest[t_jet_type]->SetBranchAddress("JET_tau2",&t_jet_tau2);
@@ -216,12 +217,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     has_delta_r=CutDefReal["delta_r"].pass(delta_r,w);
     has_jet_eta=CutDefReal["jet_eta"].pass(fabs(candJet.Eta()),w);
     has_jet_pt=CutDefReal["jet_pt"].pass(candJet.Pt(),w);
-    if(jet_type == "TrackZJets" || jet_type == "MuonLCTopoJets"){
-      z=(jpsi_pt)/candJet.Pt();
-    }
-    else {
-      z=(jpsi_pt)/(candJet.Pt()+jpsi_pt);
-    }
+    z = is_muon_jet ? (jpsi_pt)/candJet.Pt() : (jpsi_pt)/(candJet.Pt()+jpsi_pt);
+
     if(jet_pt->size()==0){
       continue;
     }
@@ -248,12 +245,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       t_jpsi_m=tvec.M();
       t_delta_r=find_closest(*t_jet_pt,*t_jet_eta,*t_jet_phi,*t_jet_E, 
 			    candTruthJet, candJet,idx);
-      if(jet_type == "TrackZJets" || jet_type == "MuonLCTopoJets"){
-	t_z=(t_jpsi_pt)/candTruthJet.Pt();
-      }
-      else {
-	t_z=(t_jpsi_pt)/(candTruthJet.Pt()+t_jpsi_pt);
-      }
+      t_z = is_muon_jet ? (t_jpsi_pt)/candTruthJet.Pt() : (t_jpsi_pt)/(candTruthJet.Pt()+t_jpsi_pt);
       cand_t_jet_m=candTruthJet.M();
       store_four_vector(candTruthJet, cand_t_jet_pt, cand_t_jet_eta, 
 			cand_t_jet_phi, cand_t_jet_E);
