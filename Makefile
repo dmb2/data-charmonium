@@ -16,11 +16,11 @@ CXXFLAGS= $(shell root-config --ldflags)\
 BINS:=bin/skim-tree bin/skim-truth-tree bin/cut-flow-plots\
 	bin/truth-study-plots bin/simple-parser-test\
 	bin/make-stack-plots bin/make-plots bin/fit-and-sbs\
-	bin/skim-tree-response
+	bin/skim-tree-response bin/print-plot-panels
 
 SKIM_DEPS:=src/tree-utils.o src/simple-parser.o src/Cut.o 
-HISTO_DEPS:=src/histo-utils.o src/AtlasStyle.o\
-	src/histo-meta-data.o src/stack-utils.o\
+HISTO_DEPS:=src/stack-utils.o src/AtlasStyle.o\
+	src/histo-meta-data.o src/histo-utils.o\
 	src/plot-utils.o src/color.o
 .PHONY: all clean 
 all: $(BINS)
@@ -39,8 +39,10 @@ bin/skim-tree-response: $(SKIM_DEPS) bin/skim-tree.o src/cut-flow-studies.o src/
 	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -l Dict
 bin/skim-truth-tree:  $(SKIM_DEPS) bin/skim-truth-tree.o src/truth-studies.o
 	$(CC) $^ -o $@ $(LDFLAGS) 
-bin/cut-flow-plots: bin/cut-flow-plots.o $(HISTO_DEPS)
+bin/cut-flow-plots: $(HISTO_DEPS) bin/cut-flow-plots.o
 	$(CC) $^ -o $@ $(LDFLAGS) 
+bin/print-plot-panels: $(HISTO_DEPS) bin/print-plot-panels.o
+	$(CC) $^ -o $@ $(LDFLAGS)
 bin/truth-study-plots: $(HISTO_DEPS) bin/truth-study-plots.o 
 	$(CC) $^ -o $@ $(LDFLAGS) 
 bin/make-stack-plots: $(HISTO_DEPS) bin/make-stack-plots.o 

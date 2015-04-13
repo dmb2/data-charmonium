@@ -49,6 +49,8 @@ int main(const int argc, const char* argv[]){
     TH1D* hist = item->second;
     setup_hist(hist);
     HistBook2D[plot+"_rsp"]=setup_response_hist(hist);
+    HistBook2D[plot+"_rel_rsp"]=setup_rel_res_hist(hist);
+    HistBook2D[plot+"_res_dif"]=setup_res_dif_hist(hist);
   }
   const char* plot_names[] = {"jet_pt","jet_eta","jet_e","jet_z"};
   vector<string> plots(plot_names,plot_names + sizeof(plot_names)/sizeof(*plot_names));// = map_keys(HistBook);
@@ -76,10 +78,16 @@ int main(const int argc, const char* argv[]){
     if(skip) continue;
     print_hist(CutTree,plot,HistBook2D[plot+"_rsp"],
 	       cut_branches, nCuts,
-	       "_nominal_response.png", make_response_hist);
-    print_cut_hist(CutTree, cut_branches, nCuts, plot, 
-		   HistBook2D[plot+"_rsp"], pretty_cNames,
-		   "_response.png", make_response_hist);
+	       "_nominal_response.root", make_response_hist);
+    // print_cut_hist(CutTree, cut_branches, nCuts, plot, 
+    // 		   HistBook2D[plot+"_rsp"], pretty_cNames,
+    // 		   "_response.root", make_response_hist);
+    print_hist(CutTree,plot,HistBook2D[plot+"_rel_rsp"],
+    	       cut_branches, nCuts,
+    	       "_nominal_rel_res.root", make_rel_res_hist);
+    print_hist(CutTree,plot,HistBook2D[plot+"_res_dif"],
+    	       cut_branches, nCuts,
+    	       "_nominal_res_dif.root", make_res_dif_hist);
   }
   return 0;
 }

@@ -23,6 +23,32 @@ void setup_hist(TH1* hist){
   hist->SetLineWidth(1.);
   hist->SetDrawOption("H");
 }
+TH2D* setup_res_dif_hist(TH1* hist){
+  const TAxis* axis = hist->GetXaxis();
+  // MSG_DEBUG(hist->GetName());
+  double ymin=-50,ymax=125;
+  if(std::string(hist->GetName())=="jet_eta" ||
+     std::string(hist->GetName())=="jet_z" ){
+    ymin=-1; ymax=1;
+  }
+  TH2D* hist2D = new TH2D((string(hist->GetName())+ "res_dif").c_str(), hist->GetTitle(),
+			  axis->GetNbins(), axis->GetXmin(), axis->GetXmax(),
+			  50,ymin,ymax);
+  hist2D->GetXaxis()->SetTitle("Truth");
+  hist2D->GetYaxis()->SetTitle("Reco - Truth");
+  return hist2D;
+}
+
+TH2D* setup_rel_res_hist(TH1* hist){
+  const TAxis* axis = hist->GetXaxis();
+  TH2D* hist2D = new TH2D((string(hist->GetName())+ "rel_rsp").c_str(), hist->GetTitle(),
+			  axis->GetNbins(), axis->GetXmin(), axis->GetXmax(),
+			  50,-0.8,1.0);
+  hist2D->GetXaxis()->SetTitle("Truth");
+  hist2D->GetYaxis()->SetTitle("(Reco - Truth) / Truth");
+  return hist2D;
+}
+
 TH2D* setup_response_hist(TH1* hist){
   TColor* color = new TColor(1756,0.0,0.0,0.0,"tran_black",0.75);
   const TAxis* axis = hist->GetXaxis();
@@ -109,6 +135,7 @@ std::vector<std::pair<double,double> > make_roc_pairs(TH1* signal, TH1* backgrou
   }
   return result;
 }
+
 TH1* make_response_hist(TH1* base_hist, TTree* tree, 
 			const char* cut_branches[],size_t cut_index, 
 			const string& plot){
@@ -145,6 +172,27 @@ TH1* make_ratio_hist(TH1* base_hist, TTree* tree,
   ratio->SetMinimum(0.);
   return ratio;
 }
+TH1* make_res_dif_hist(TH1* base_hist,TTree* tree,const std::string& plot,
+			const char* weight_expr, const std::string& name_suffix){
+  // Suppress compiler warnings, yes that is what I want.
+  if(weight_expr != NULL && name_suffix != ""){};
+  std::string draw_expr = plot+"-"+"truth_"+plot;
+  // MSG_DEBUG(draw_expr+":truth_"+plot);
+  TH1* hist = (TH1*)base_hist->Clone((plot + "_res_dif").c_str());
+  draw_histo(tree,(draw_expr+":truth_"+plot).c_str(), hist->GetName(), weight_expr);
+  return hist;
+}
+
+TH1* make_rel_res_hist(TH1* base_hist,TTree* tree,const std::string& plot,
+			const char* weight_expr, const std::string& name_suffix){
+  // Suppress compiler warnings, yes that is what I want.
+  if(weight_expr != NULL && name_suffix != ""){};
+  std::string draw_expr = "("+plot+"- truth_"+plot+")/truth_"+plot;
+  TH1* hist = (TH1*)base_hist->Clone((plot + "_rel_res").c_str());
+  draw_histo(tree,(draw_expr+":truth_"+plot).c_str(), hist->GetName(), weight_expr);
+  return hist;
+}
+
 TH1* make_response_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 			const char* weight_expr, const std::string& name_suffix){
   // Suppress compiler warnings, yes that is what I want.

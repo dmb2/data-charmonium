@@ -27,6 +27,8 @@ inline std::vector<T2> map_values(std::map<T1,T2>& inputMap){
   return values;
 }
 void setup_hist(TH1* hist);
+TH2D* setup_res_dif_hist(TH1* hist);
+TH2D* setup_rel_res_hist(TH1* hist);
 TH2D* setup_response_hist(TH1* hist);
 std::vector<std::string> add_prefix(std::string prefix, std::vector<std::string> strings);
 std::string str_join(std::string base, const char* strings[],size_t start, size_t end);
@@ -46,6 +48,11 @@ TH1* make_normal_hist(TH1* base_hist, TTree* tree,
 TH1* make_ratio_hist(TH1* base_hist, TTree* tree,
 		     const char* cut_branches[],size_t cut_index, 
 		     const std::string& plot);
+TH1* make_res_dif_hist(TH1* base_hist,TTree* tree,const std::string& plot,
+		       const char* weight_expr, const std::string& name_suffix);
+TH1* make_rel_res_hist(TH1* base_hist,TTree* tree,const std::string& plot,
+		      const char* weight_expr="weight",
+		      const std::string& name_suffix="_NOM");
 TH1* make_response_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 		      const char* weight_expr="weight",
 		      const std::string& name_suffix="_NOM");
