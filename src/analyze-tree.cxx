@@ -34,7 +34,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double cand_psi_m(0.);
   double cand_jet_m(0.), emfrac(0.);
   double cand_jet_pt(0.), cand_jet_eta(0.),cand_jet_phi(0.), cand_jet_E(0.);
-  std::vector<std::vector<int> > *mu_trk_idx = NULL;
+  // std::vector<std::vector<int> > *mu_trk_idx = NULL;
   std::vector<double> *mu_d0 = NULL, *mu_d0_err = NULL;
   std::vector<double> *mu_qbyp = NULL;
 
@@ -71,7 +71,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   Forest["JPsi2Trk"]->SetBranchAddress("VTX_pt",&psi_pt);
   const char* vtx_names[] = {"px","py","pz","e"};
   setup_four_vector(Forest["JPsi"],vtx_px,vtx_py,vtx_pz,vtx_e,"VTX",vtx_names);
-  Forest["JPsi"]->SetBranchAddress("MUONS_index",&mu_trk_idx);
+  // Forest["JPsi"]->SetBranchAddress("MUONS_index",&mu_trk_idx);
   Forest["JPsi"]->SetBranchAddress("VTX_pt",&vtx_pt);
   Forest["JPsi"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
 
