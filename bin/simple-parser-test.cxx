@@ -30,7 +30,6 @@ int main(const int argc, const char* argv[]){
   get_opts(argv[1],value_opts, CutDefReals, CutDefCats);
   cut_container cuts;
   get_opts(argv[1],value_opts,cuts);
-  
   cuts.print_cut_table();
 
   return 0;

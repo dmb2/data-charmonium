@@ -3,19 +3,6 @@
 #include <utility>
 #include <algorithm>
 #include <vector>
-
-void cut_container::print_cut_table(){
-  printf("|----------+----------+--------+-----------|\n");
-  printf("| Cut Name | Cut Val  |  Count |  Weighted |\n");
-  printf("|----------+----------+--------+-----------|\n");
-  for(std::vector<std::string>::const_iterator CutName=m_cutOrder.begin();
-      CutName!=m_cutOrder.end(); ++CutName){
-    printf("%s\n",CutName->c_str());
-    // print_cut_summary(*CutName,m_cuts[*CutName]);
-  }
-  printf("|----------+----------+--------+-----------|\n");
-}
-
 void print_cut_summary(std::string CutName, cut<int> Cut){
   printf("| %-8s | %8d | %6d | %9.3g |\n",
 	 CutName.c_str(), 
@@ -30,6 +17,7 @@ void print_cut_summary(std::string CutName, cut<double> Cut){
 	 Cut.count(),
 	 Cut.weight());
 }
+
 static bool sort_fn(std::pair<int,std::string> a, std::pair<int,std::string> b){
     return a.first > b.first;
 }

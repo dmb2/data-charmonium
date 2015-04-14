@@ -4,28 +4,16 @@
 #include <map>
 #include <iostream>
 #include <algorithm>
-// Type erasure for our cut container, cf:
-// http://www.cplusplus.com/articles/oz18T05o/
 class Selector{
-  struct SelectorBase{
-    virtual ~SelectorBase(){}
-  };
-  template<typename T> struct SelectorModel : SelectorBase {
-    SelectorModel(const T& t) : selector(t){}
-    virtual ~SelectorModel(){}
-  private:
-    T selector;
-  };
-  SelectorBase* selector;
 public:
-  Selector():selector(NULL){}
-  template<typename T> Selector(const T& sel):
-    selector(new SelectorModel<T>(sel)){}
-  // ~Selector(){if(selector) delete selector;}
+  virtual bool pass(const double w) = 0;
+  // virtual unsigned int count() = 0;
+  virtual void reset() = 0;
 };
 
+
 template<class cut_type>
-class cut{
+class cut : public Selector{
 public:
   bool operator== (const cut_type& obs){
     return m_cut_val == obs;
@@ -135,29 +123,12 @@ typedef std::map<std::string, cut<int> > category_cuts;
 void print_cut_summary(std::string CutName, cut<int> Cut);
 void print_cut_summary(std::string CutName, cut<double> Cut);
 void print_cut_table(real_cuts& CutDefReals,category_cuts& CutDefCats);
-
 class cut_container{
 public:
-  cut_container(){};
-  ~cut_container(){};
-  void print_cut_table();
-  /*
-  const Selector& operator[](const std::string name)const{
-    return m_cuts[name];
-  }
-  */
-  Selector& operator[](const std::string name) {
-    //search for name in m_cuts, if not found add it, and update the
-    //m_cutOrder, else return it
-    if(std::find(m_cutOrder.begin(),m_cutOrder.end(),name)==m_cutOrder.end()){
-      m_cutOrder.push_back(name);
-    }
-    return m_cuts[name];
-  }
+  Selector& operator[](std::string key){};
+  void print_cut_table(){};
 private:
-  std::map<std::string,Selector> m_cuts;
-  // real_cuts m_rCutDefs;
-  // category_cuts m_cCutDefs;
-  std::vector<std::string> m_cutOrder;
+  real_cuts m_real_cuts;
+  category_cuts m_cat_cuts;
+  
 };
-

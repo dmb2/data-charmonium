@@ -104,6 +104,7 @@ void get_opts(const char* opt_fname,std::map<std::string,std::string>& value_opt
     }
   }
 }
+
 void get_opts(const char* opt_fname,std::map<std::string,std::string>& value_opts,
 	      cut_container& cuts){
   std::cout<<"Using config file: "<<opt_fname<<std::endl;
