@@ -76,9 +76,10 @@ void style_bkg_hist(TH1* hist,Int_t color){
 void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
 		     const std::list<std::string> mass_regions, 
 		     const std::list<std::string> tau_regions,
-		     const double mass_stsR, const double np_frac
-		     /*, const double psi_br*/){
-  //Eventually this will cover:
+		     const std::list<std::string> psi_regions,
+		     const double mass_stsR, const double np_frac, 
+		     const double psi_stsR){
+  //This covers:
   // S = S' + R*SB(mass) + F*SB(tau) + Q*S(psi_m)
   // S  == Observed signal in tau/mass signal region
   // S' == Real prompt J/\psi contribution
@@ -88,7 +89,8 @@ void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   // SB(tau) == Tau sideband hist
   // Q  == Branching fractions to estimate \psi(2S) contamination
   // S(psi_m) = Signal of \psi(2S)
-
+  const double jpsi_pi_br(0.3445);
+  MSG_DEBUG("Non-prompt fraction: "<<np_frac<<" Combinatoric Fraction: "<<mass_stsR<<" Psi(2S) fraction: "<<psi_stsR);
   TLegend leg = *init_legend();
   // Signal Hist
   const std::string signal_cut_expr = make_cut_expr(mass_regions,"Sig")+ " && "
@@ -102,8 +104,15 @@ void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   TH1* nonprompt_hist = make_bkg_hist(base_hist,tree,tau_regions,mass_regions,"tau_stk_sb",np_frac);
 
   // Psi Mass Hist
-  /* ADD ME */
-  //  TH1* psi_hist = make_bkg_hist(base_hist,tree,psi_regions,"psi_stk_sig",psi_br);
+  TH1* psi_hist = make_normal_hist(base_hist,tree,base_hist->GetName(),
+				   (signal_cut_expr + "&& "+ make_cut_expr(psi_regions,"Sig")).c_str(),
+				   "_stk_psi_sig");
+  TH1* psi_sb_hist = make_normal_hist(base_hist,tree,base_hist->GetName(),
+				      make_cut_expr(psi_regions, "SB").c_str(),"_stk_psi_sb");
+  psi_sb_hist->Scale(-psi_stsR);
+  psi_hist->Add(psi_sb_hist);
+  psi_hist->Scale(1/jpsi_pi_br);
+
   THStack stack("sbs_stack",base_hist->GetTitle());
   stack.SetHistogram((TH1*)base_hist->Clone((std::string("stack_sbs")+base_hist->GetName()).c_str()));
   sig_hist->SetLineColor(kBlack);
@@ -111,14 +120,14 @@ void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   
   style_bkg_hist(comb_hist,12);
   style_bkg_hist(nonprompt_hist,14);
-  //style_bkg_hist(psi_hist,16);
+  style_bkg_hist(psi_hist,16);
+  stack.Add(psi_hist);
   stack.Add(nonprompt_hist);
   stack.Add(comb_hist); 
-  // stack.Add(psi_hist);
   leg.AddEntry(sig_hist,"Signal","l");
   leg.AddEntry(comb_hist,"Comb. Background","f");
   leg.AddEntry(nonprompt_hist,"Non-prompt Background","f");
-  //leg.AddEntry(psi_hist,"#psi(2S) Background","f");
+  leg.AddEntry(psi_hist,"#psi(2S) Background","f");
   TH1* sig_final = dynamic_cast<TH1*>(sig_hist->Clone((std::string("sf_")+base_hist->GetName()).c_str()));
   sig_final->Add(comb_hist,-1);
   sig_final->Add(nonprompt_hist,-1);
@@ -134,31 +143,40 @@ void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   snprintf(outname,256,"%s%s",base_hist->GetName(),suffix);
   c1.SaveAs(outname);
 }
+RooAbsPdf* find_component(RooAbsPdf* PDF,const char* name){
+  TIterator *iter = PDF->getComponents()->createIterator();
+  RooAbsArg* var = NULL;
+  RooAbsPdf* comp = NULL;
+  while((var = dynamic_cast<RooAbsArg*>(iter->Next()))){
+    std::string name(var->GetName());
+    if(name.find(name)!=std::string::npos){
+      comp=dynamic_cast<RooAbsPdf*>(var);
+    }
+  }
+  if(comp == NULL){
+    MSG_ERR("Could not find \""<<name<<"\" in the model PDF!");
+  }
+  return comp;
+}
 void do_sbs(const char** variables, const size_t n_vars,
-	    TTree* tree, RooAbsPdf* model, RooRealVar* mass, RooRealVar* tau,
+	    TTree* tree, RooAbsPdf* model, 
+	    RooRealVar* mass, RooRealVar* tau,
+	    RooRealVar* psi_m, double psi_stsR, 
 	    const char* suffix){
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
-
-  TIterator *iter = model->getComponents()->createIterator();
-  RooAbsArg* var = NULL;
-  RooAbsPdf* bkg = NULL;
-  while((var = dynamic_cast<RooAbsArg*>(iter->Next()))){
-    std::string name(var->GetName());
-    if(name.find("Background")!=std::string::npos){
-      bkg=dynamic_cast<RooAbsPdf*>(var);
-    }
-  }
-  if(bkg == NULL){
-    MSG_ERR("Could not find \"Background\" in the model PDF!");
-  }
-  double sig_yield = get_yield(bkg, mass,"Sig");
-  double sb_yield = get_yield(bkg, mass, "SB");
+  RooAbsPdf* mass_bkg = find_component(model,"Background");
+  // double sig_yield = get_yield(mass_bkg, mass,"Sig");
+  // double sb_yield = get_yield(mass_bkg, mass, "SB");
+  RooAbsPdf* tau_sig = find_component(model,"NonPromptSigTau");
+  
   for(size_t i=0; i < n_vars; i++){
     print_sbs_stack(tree,HistBook[variables[i]],suffix,
 		    mass->getBinningNames(),
 		    tau->getBinningNames(),
-		    sig_yield/sb_yield,
-		    get_par_val(model->getVariables(),"NonPromptRatio"));
+		    psi_m->getBinningNames(),
+		    get_yield(mass_bkg, mass,"Sig")/get_yield(mass_bkg, mass, "SB"),
+		    get_yield(tau_sig,tau,"Sig")/get_yield(tau_sig,tau,"SB"),
+		    psi_stsR);
   }
 }

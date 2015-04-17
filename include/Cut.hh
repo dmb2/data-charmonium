@@ -125,7 +125,7 @@ void print_cut_summary(std::string CutName, cut<double> Cut);
 void print_cut_table(real_cuts& CutDefReals,category_cuts& CutDefCats);
 class cut_container{
 public:
-  Selector& operator[](std::string key){};
+  Selector& operator[](std::string key){return m_real_cuts[key]; };
   void print_cut_table(){};
 private:
   real_cuts m_real_cuts;
