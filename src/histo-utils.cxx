@@ -192,6 +192,15 @@ TH1* make_rel_res_hist(TH1* base_hist,TTree* tree,const std::string& plot,
   draw_histo(tree,(draw_expr+":truth_"+plot).c_str(), hist->GetName(), weight_expr);
   return hist;
 }
+TH1* make_profile_hist(TH1* base_hist,TTree* tree,const std::string& plot,
+			const char* weight_expr, const std::string& name_suffix){
+  TH1* hist = make_res_dif_hist(base_hist, tree, plot, weight_expr, name_suffix);
+  // const TAxis* x_axis = hist->GetXaxis();
+  // Project to a list of hists along x, gather mean, mean error,
+  // stddev, stddev err and make a TH1D that has a x and y axis
+  // corresponding to the profile.
+  return hist;
+}
 
 TH1* make_response_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 			const char* weight_expr, const std::string& name_suffix){

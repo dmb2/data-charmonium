@@ -89,7 +89,9 @@ void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   // SB(tau) == Tau sideband hist
   // Q  == Branching fractions to estimate \psi(2S) contamination
   // S(psi_m) = Signal of \psi(2S)
-  const double jpsi_pi_br(0.3445);
+
+  //BR(J/\psi->\mu\mu)/BR(\psi(2S)->J/\psi\pi\pi)
+  const double jpsi_pi_br(0.05961/0.3445);
   MSG_DEBUG("Non-prompt fraction: "<<np_frac<<" Combinatoric Fraction: "<<mass_stsR<<" Psi(2S) fraction: "<<psi_stsR);
   TLegend leg = *init_legend();
   // Signal Hist
@@ -111,7 +113,7 @@ void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
 				      make_cut_expr(psi_regions, "SB").c_str(),"_stk_psi_sb");
   psi_sb_hist->Scale(-psi_stsR);
   psi_hist->Add(psi_sb_hist);
-  psi_hist->Scale(1/jpsi_pi_br);
+  psi_hist->Scale(jpsi_pi_br);
 
   THStack stack("sbs_stack",base_hist->GetTitle());
   stack.SetHistogram((TH1*)base_hist->Clone((std::string("stack_sbs")+base_hist->GetName()).c_str()));

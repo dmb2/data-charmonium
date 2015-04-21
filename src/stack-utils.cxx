@@ -76,7 +76,7 @@ void print_2D_stack(std::map<std::string,TTree*> samples,const std::string& plot
 		    TH1* base_hist, const std::string& suffix, 
 		    const double target_lumi){
   const size_t n_samp = samples.size();
-  const size_t n_col = 2;
+  const size_t n_col = 3;
   //kind of dirty
   const size_t n_row = static_cast<size_t>(ceil(n_samp/(n_col+0.)));
   TCanvas canv(("2D_stk_canv_"+plot).c_str(),"2D Stack",600*n_col,600*n_row);
@@ -89,16 +89,14 @@ void print_2D_stack(std::map<std::string,TTree*> samples,const std::string& plot
   // canv.cd(1);
   char weight_expr[256];
   snprintf(weight_expr,256,"weight*%.4g",target_lumi);
-  Int_t nb=100;
   for(size_t i=0; i < n_samp; i++){
     TVirtualPad* pad = canv.cd(i+1);
-    set_pad_margins(pad,i+1,n_samp,n_col,n_row,false);
+    // set_pad_margins(pad,i+1,n_samp,n_col,n_row,false);
     pad->SetRightMargin(0.16);
     std::string& name = sample_names[i];
     TH1* hist = make_normal_hist(base_hist,samples[name],plot,
 				 weight_expr,name+"_2D_STK");
     canv.cd(i+1);
-    hist->SetContour(nb);
     hist->Draw("COLZ");
     /*
     if(i < (n_row - 2)*n_col + n_samp%n_col){

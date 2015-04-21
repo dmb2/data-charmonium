@@ -49,15 +49,19 @@ void print_ratio_hist(std::map<std::string,TTree*>& samples, const std::string& 
   TCanvas canv(("plt_canv_"+plot).c_str(), "Plot", 600,600);
   
   TLatex decorator;
-  TLegend& leg=*init_legend();
+  TLegend* leg=init_legend();
+  if(plot=="jet_z"){
+    delete leg;
+    leg = init_legend(0.25,0.68,0.4,0.92);
+  }
   decorator.SetTextSize(0.04);
   const char* cb[]={""};
-  THStack* stack = make_stack(base_hist,samples,cb,0,plot,leg,target_lumi);
+  THStack* stack = make_stack(base_hist,samples,cb,0,plot,*leg,target_lumi);
   canv.cd();
   norm_stack(*stack);
   stack->Draw("H nostack");
   remove_axis(stack->GetHistogram()->GetXaxis());
-  leg.Draw();
+  leg->Draw();
   decorator.DrawLatexNDC(0.,0.05,base_hist->GetTitle());
   TPad* rpad = split_canvas(&canv,0.3);
   draw_ratios(rpad,stack);
