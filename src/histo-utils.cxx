@@ -29,7 +29,7 @@ TH2D* setup_res_dif_hist(TH1* hist){
   double ymin=-50,ymax=125;
   if(std::string(hist->GetName())=="jet_eta" ||
      std::string(hist->GetName())=="jet_z" ){
-    ymin=-1; ymax=1;
+    ymin=-0.4; ymax=0.4;
   }
   TH2D* hist2D = new TH2D((string(hist->GetName())+ "res_dif").c_str(), hist->GetTitle(),
 			  axis->GetNbins(), axis->GetXmin(), axis->GetXmax(),
@@ -175,10 +175,10 @@ TH1* make_ratio_hist(TH1* base_hist, TTree* tree,
 TH1* make_res_dif_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 			const char* weight_expr, const std::string& name_suffix){
   // Suppress compiler warnings, yes that is what I want.
-  if(weight_expr != NULL && name_suffix != ""){};
+  if(weight_expr != NULL){};
   std::string draw_expr = plot+"-"+"truth_"+plot;
   // MSG_DEBUG(draw_expr+":truth_"+plot);
-  TH1* hist = (TH1*)base_hist->Clone((plot + "_res_dif").c_str());
+  TH1* hist = (TH1*)base_hist->Clone((plot + name_suffix+"_res_dif").c_str());
   draw_histo(tree,(draw_expr+":truth_"+plot).c_str(), hist->GetName(), weight_expr);
   return hist;
 }
@@ -190,15 +190,6 @@ TH1* make_rel_res_hist(TH1* base_hist,TTree* tree,const std::string& plot,
   std::string draw_expr = "("+plot+"- truth_"+plot+")/truth_"+plot;
   TH1* hist = (TH1*)base_hist->Clone((plot + "_rel_res").c_str());
   draw_histo(tree,(draw_expr+":truth_"+plot).c_str(), hist->GetName(), weight_expr);
-  return hist;
-}
-TH1* make_profile_hist(TH1* base_hist,TTree* tree,const std::string& plot,
-			const char* weight_expr, const std::string& name_suffix){
-  TH1* hist = make_res_dif_hist(base_hist, tree, plot, weight_expr, name_suffix);
-  // const TAxis* x_axis = hist->GetXaxis();
-  // Project to a list of hists along x, gather mean, mean error,
-  // stddev, stddev err and make a TH1D that has a x and y axis
-  // corresponding to the profile.
   return hist;
 }
 
@@ -217,7 +208,52 @@ TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot,
   draw_histo(tree,plot.c_str(), hist->GetName(), weight_expr);
   return hist;
 }
-
+static void style_err_hist(TH1D* hist,int color){
+  hist->SetFillColor(color);
+  hist->SetMarkerStyle(kDot);
+  hist->SetMarkerSize(0);
+}
+void print_profile_hist(TH1* base_hist,TTree* tree,const std::string& plot,
+			const std::string& suffix){
+  // Project to a list of hists along x, gather mean, mean error,
+  // stddev, stddev err and make a TH1D that has a x and y axis
+  // corresponding to the profile.
+  TH2D* hist2D = dynamic_cast<TH2D*>(make_res_dif_hist(base_hist, tree, plot, "", "_prof_"));
+  TAxis* x_axis = hist2D->GetXaxis();
+  TH1D mean_hist((base_hist->GetName()+std::string("_mean")).c_str(), base_hist->GetTitle(),
+	      x_axis->GetNbins(), x_axis->GetXmin(), x_axis->GetXmax());
+  TH1D* std_dev_hist=dynamic_cast<TH1D*>(mean_hist.Clone((base_hist->GetName()+ std::string("std_dev")).c_str()));
+  TH1D* sigma_up_hist=dynamic_cast<TH1D*>(mean_hist.Clone((base_hist->GetName()+ std::string("sigma_up")).c_str()));
+  TH1D* sigma_down_hist=dynamic_cast<TH1D*>(mean_hist.Clone((base_hist->GetName()+ std::string("sigma_down")).c_str()));
+  TH1D* hist=NULL;
+  for(size_t i= 1; i < (size_t)hist2D->GetNbinsX()+1; i++){
+    hist = hist2D->ProjectionY("_px",i,i+1,"e");
+    mean_hist.SetBinContent(i,hist->GetMean());
+    mean_hist.SetBinError(i,hist->GetMeanError());
+    std_dev_hist->SetBinContent(i,0);
+    std_dev_hist->SetBinError(i,hist->GetStdDev());
+    sigma_up_hist->SetBinContent(i,hist->GetMean()+hist->GetStdDevError());
+    sigma_up_hist->SetBinError(i,hist->GetStdDev());
+    sigma_down_hist->SetBinContent(i,hist->GetMean()-hist->GetStdDevError());
+    sigma_down_hist->SetBinError(i,hist->GetStdDev());
+    // MSG_DEBUG(hist->GetMean()<<" \\pm "<<hist->GetMeanError()<<" "<<hist->GetStdDev()<<" \\pm"<<hist->GetStdDevError());
+  }
+  TCanvas canv(("canv_"+plot).c_str(),"Plot",600,600);
+  TLatex decorator;
+  decorator.SetTextSize(0.04);
+  std_dev_hist->Add(&mean_hist);
+  int tred = TColor::GetColorTransparent(kRed,0.3);
+  style_err_hist(std_dev_hist,tred);
+  style_err_hist(sigma_up_hist,tred);
+  style_err_hist(sigma_down_hist,tred);
+  std_dev_hist->GetYaxis()->SetTitle("Reco - Truth");
+  std_dev_hist->Draw("e4");
+  sigma_down_hist->Draw("e4 same");
+  sigma_up_hist->Draw("e4 same");
+  mean_hist.Draw("e1 same");
+  decorator.DrawLatexNDC(0.,0.05,base_hist->GetTitle());
+  canv.SaveAs((plot+suffix).c_str());
+}
 void print_hist(TTree* tree, const std::string& plot, 
 		TH1* base_hist, const char* cut_branches[],size_t nCuts, 
 		const std::string suffix, 

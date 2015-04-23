@@ -1,4 +1,5 @@
 #include "fit-utils.hh"
+#include "histo-utils.hh"
 #include "root-sugar.hh"
 
 #include "RooFit.h"
@@ -66,16 +67,16 @@ RooAddPdf* build_background(RooRealVar* mass, RooRealVar* tau,RooGaussModel* tau
   RooPolynomial *prompt_mass = new RooPolynomial("PromptBkgMass","Mass Background",*mass,RooArgList(*Pc1));
   // RooGenericPdf* prompt_mass = build_mass_bkg("PromptBkgMass",mass,JPSIMASS);
   // -->Tau
-  // RooRealVar* mean_t = dynamic_cast<RooRealVar*>(tau_uncert->getVariables()->find("mean_t"));
-  // RooRealVar* sigma_t = dynamic_cast<RooRealVar*>(tau_uncert->getVariables()->find("sigma_t"));
-  // RooGaussian *prompt_gauss = new RooGaussian("prompt_gauss","Prompt Tau component",*tau,*mean_t,*sigma_t);
+  RooRealVar* mean_t = dynamic_cast<RooRealVar*>(tau_uncert->getVariables()->find("mean_t"));
+  RooRealVar* sigma_t = dynamic_cast<RooRealVar*>(tau_uncert->getVariables()->find("sigma_t"));
+  RooGaussian *prompt_gauss = new RooGaussian("prompt_gauss","Prompt Tau component",*tau,*mean_t,*sigma_t);
 
   //lt -> lifetime
   RooRealVar* bkg_prompt_lt = new RooRealVar("bkg_prompt_lt","Prompt Bkg Lifetime",0.15,0.0,3.0);
   //prompt_decay
-  RooDecay* prompt_tau = new RooDecay("PromptBkgTau","Prompt Background Decay",*tau,*bkg_prompt_lt,*tau_uncert,RooDecay::Flipped);
-  // RooRealVar *prompt_ratio = new RooRealVar("PromptRatio","Ratio between background decays",0.25,0.0,1.0);
-  // RooAddPdf* prompt_tau = new RooAddPdf("PromptBkgTau","Prompt Tau Background", RooArgSet(*prompt_gauss,*prompt_decay),*prompt_ratio);
+  RooDecay* prompt_decay = new RooDecay("prompt_decay","Prompt Background Decay",*tau,*bkg_prompt_lt,*tau_uncert,RooDecay::DoubleSided);
+  RooRealVar *prompt_ratio = new RooRealVar("PromptRatio","Ratio between background decays",0.25,0.0,1.0);
+  RooAddPdf* prompt_tau = new RooAddPdf("PromptBkgTau","Prompt Tau Background", RooArgSet(*prompt_gauss,*prompt_decay),*prompt_ratio);
 
   // Mass*Tau
   RooProdPdf *prompt_bkg = new RooProdPdf("PromptBkg","Prompt Background",RooArgSet(*prompt_mass,*prompt_tau));
@@ -86,10 +87,10 @@ RooAddPdf* build_background(RooRealVar* mass, RooRealVar* tau,RooGaussModel* tau
   RooPolynomial *nonprompt_mass = new RooPolynomial("NonPromptBkgMass","Mass Background",*mass,RooArgList(*NPc1));
   // -->Tau
   // RooRealVar *nonprompt_ratio = new RooRealVar("NonPromptRatio","Ratio between background decays",0.25,0.0,1.0);
-  RooRealVar *bkg_np_lt1 = new RooRealVar("bkg_np_lt1", "lifetime", 1.2,0.1,3.);
-  RooDecay *nonprompt_tau = new RooDecay("NonPromptBkgTau", "exponential convoluted with gaussian", *tau,*bkg_np_lt1,*tau_uncert,RooDecay::SingleSided);
-  // RooRealVar *bkg_np_lt2 = new RooRealVar("bkg_np_lt2", "lifetime", 0.2,0.0,3.);
-  // RooDecay *np_decay2 = new RooDecay("np_decay2", "exponential convoluted with gaussian", *tau,*bkg_np_lt2,*tau_uncert,RooDecay::SingleSided);
+  // RooRealVar *bkg_np_lt1 = new RooRealVar("bkg_np_lt1", "lifetime", 1.2,0.1,3.);
+  // RooDecay *np_decay1 = new RooDecay("np_decay2", "exponential convoluted with gaussian", *tau,*bkg_np_lt1,*tau_uncert,RooDecay::SingleSided);
+  RooRealVar *bkg_np_lt2 = new RooRealVar("bkg_np_lt2", "lifetime", 0.2,0.0,3.);
+  RooDecay *nonprompt_tau = new RooDecay("NonPromptBkgTau", "exponential convoluted with gaussian", *tau,*bkg_np_lt2,*tau_uncert,RooDecay::SingleSided);
 
   
   // RooAddPdf *nonprompt_tau = new RooAddPdf("NonPromptBkgTau","Non-Prompt Tau Background",RooArgSet(*np_decay1,*np_decay2),*nonprompt_ratio);
@@ -162,30 +163,30 @@ static void add_leg_comp(TLegend* leg,RooPlot* frame, const char* comp_name){
 }
 void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model, const char* key,const char* title){
   RooPlot* frame = var->frame(200);
-  TLegend* leg = new TLegend(0.7,0.85,1.0,1.0);
+  TLegend* leg = init_legend();//new TLegend(0.7,0.85,1.0,1.0);
   leg->SetBorderSize(0);
   leg->SetFillColor(0);
 
   data->plotOn(frame,RooFit::Name("PlotData"));
   model->plotOn(frame,
-		RooFit::LineColor(kBlue),
+		RooFit::LineColor(kRed),
 		RooFit::LineWidth(2),
 		RooFit::NumCPU(sysconf(_SC_NPROCESSORS_ONLN),kTRUE),
 		RooFit::Name("PlotModel"));
-
+  add_leg_comp(leg,frame,"PlotModel");
   if(std::string(key)=="mass" || std::string(key) == "psi_m"){
-    add_component(frame,model,"Signal",kAzure);
-    add_component(frame,model,"Background",kRed);
+    add_component(frame,model,"Signal",kRed);
+    add_component(frame,model,"Background",kBlue);
     add_leg_comp(leg,frame,"Signal");
     add_leg_comp(leg,frame,"Background");
   }
   if(std::string(key)=="tau"){
-    add_component(frame,model,"PromptBkgTau",kRed-3);
-    add_component(frame,model,"NonPromptBkgTau",kRed-1);
-    add_component(frame,model,"PromptTauSig",kAzure-3);
-    add_component(frame,model,"NonPromptSigTau",kAzure-1);
-    add_leg_comp(leg,frame,"PromptBkgTau");
-    add_leg_comp(leg,frame,"NonPromptBkgTau");
+    add_component(frame,model,"Background",kBlue);
+    // add_component(frame,model,"NonPromptBkgTau",kRed-1);
+    add_component(frame,model,"PromptTauSig",kMagenta);
+    add_component(frame,model,"NonPromptSigTau",kAzure);
+    add_leg_comp(leg,frame,"Background");
+    // add_leg_comp(leg,frame,"NonPromptBkgTau");
     add_leg_comp(leg,frame,"PromptTauSig");
     add_leg_comp(leg,frame,"NonPromptSigTau");
     frame->SetAxisRange(-1.1,3.0);

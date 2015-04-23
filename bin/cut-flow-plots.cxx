@@ -78,16 +78,11 @@ int main(const int argc, const char* argv[]){
     if(skip) continue;
     print_hist(CutTree,plot,HistBook2D[plot+"_rsp"],
 	       cut_branches, nCuts,
-	       "_nominal_response.root", make_response_hist);
-    // print_cut_hist(CutTree, cut_branches, nCuts, plot, 
-    // 		   HistBook2D[plot+"_rsp"], pretty_cNames,
-    // 		   "_response.root", make_response_hist);
-    // print_hist(CutTree,plot,HistBook2D[plot+"_rel_rsp"],
-    // 	       cut_branches, nCuts,
-    // 	       "_nominal_rel_res.root", make_rel_res_hist);
+	       "_res_cor.root", make_response_hist);
     print_hist(CutTree,plot,HistBook2D[plot+"_res_dif"],
     	       cut_branches, nCuts,
-    	       "_nominal_res_dif.root", make_res_dif_hist);
+    	       "_res_dif.root", make_res_dif_hist);
+    print_profile_hist(HistBook2D[plot+"_res_dif"], CutTree, plot, "_res_prof.root");
   }
   return 0;
 }

@@ -13,10 +13,7 @@ CXXFLAGS= $(shell root-config --ldflags)\
 	$(shell fastjet-config --cxxflags)\
 	$(DFLAGS) $(WFLAGS) -ansi
 
-BINS:=bin/skim-tree bin/skim-truth-tree bin/cut-flow-plots\
-	bin/truth-study-plots bin/simple-parser-test\
-	bin/make-stack-plots bin/make-plots bin/fit-and-sbs\
-	bin/skim-tree-response bin/print-plot-panels
+BINS:=$(patsubst %.cxx,%,$(wildcard bin/*.cxx))
 
 SKIM_DEPS:=src/tree-utils.o src/simple-parser.o src/Cut.o 
 HISTO_DEPS:=src/stack-utils.o src/AtlasStyle.o\

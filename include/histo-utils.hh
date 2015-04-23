@@ -3,6 +3,7 @@
 #include <vector>
 
 class TH1;
+class TAxis;
 class TH2D;
 class TTree;
 class TLegend;
@@ -59,6 +60,8 @@ TH1* make_response_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 		      const char* weight_expr="weight",
 		      const std::string& name_suffix="_NOM");
+void print_profile_hist(TH1* base_hist,TTree* tree,const std::string& plot,
+			const std::string& suffix);
 void print_hist(TTree* tree, const std::string& plot, 
 		TH1* base_hist, const char* cut_branches[],size_t nCuts, 
 		const std::string suffix, 

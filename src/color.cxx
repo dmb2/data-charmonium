@@ -4,13 +4,10 @@
 #include "TStyle.h"
 #include "TColor.h"
 #include "color.hh"
+#include "math.hh"
 #include <iostream>
 #include <algorithm>
-// Probably should move this somewhere more useful someday
-template<typename T>
-bool is_in(T x,T min,T max){
-  return (x >= min && x < max);
-}
+
 double scale_pos(double factor, double expt, double min, double max){
   return expt != 1.0 ? 
     (min+(pow(factor,expt)*(max-min))) : 
