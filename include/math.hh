@@ -4,10 +4,8 @@ template<typename T>
 bool is_in(T x,T min,T max){
   return (x >= min && x < max);
 }
-template<typename num_t>
 typedef struct {
-  //Always use a double for the error as sqrt is usually involved
-  num_t val;
+  double val;
   double err;
 } NumErr;
   

@@ -13,9 +13,11 @@ CXXFLAGS= $(shell root-config --ldflags)\
 	$(shell fastjet-config --cxxflags)\
 	$(DFLAGS) $(WFLAGS) -ansi
 
-BINS:=$(patsubst %.cxx,%,$(wildcard bin/*.cxx))
+BINS:=$(patsubst %.cxx,%,$(wildcard bin/*.cxx)) bin/skim-tree-response
+OBJS:=$(patsubst %.cxx,%.o,$(wildcard src/*.cxx))
 
 SKIM_DEPS:=src/tree-utils.o src/simple-parser.o src/Cut.o 
+
 HISTO_DEPS:=src/stack-utils.o src/AtlasStyle.o\
 	src/histo-meta-data.o src/histo-utils.o\
 	src/plot-utils.o src/color.o
@@ -36,15 +38,9 @@ bin/skim-tree-response: $(SKIM_DEPS) bin/skim-tree.o src/cut-flow-studies.o src/
 	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -l Dict
 bin/skim-truth-tree:  $(SKIM_DEPS) bin/skim-truth-tree.o src/truth-studies.o
 	$(CC) $^ -o $@ $(LDFLAGS) 
-bin/cut-flow-plots: $(HISTO_DEPS) bin/cut-flow-plots.o
-	$(CC) $^ -o $@ $(LDFLAGS) 
 bin/print-plot-panels: $(HISTO_DEPS) bin/print-plot-panels.o
 	$(CC) $^ -o $@ $(LDFLAGS)
-bin/truth-study-plots: $(HISTO_DEPS) bin/truth-study-plots.o 
-	$(CC) $^ -o $@ $(LDFLAGS) 
-bin/make-stack-plots: $(HISTO_DEPS) bin/make-stack-plots.o 
-	$(CC) $^ -o $@ $(LDFLAGS) 
-bin/make-plots: $(HISTO_DEPS) bin/make-plots.o
+bin/%-plots: $(HISTO_DEPS) bin/%-plots.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 bin/fit-and-sbs: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) bin/fit-and-sbs.o 
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) 
