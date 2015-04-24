@@ -20,7 +20,7 @@ SKIM_DEPS:=src/tree-utils.o src/simple-parser.o src/Cut.o
 
 HISTO_DEPS:=src/stack-utils.o src/AtlasStyle.o\
 	src/histo-meta-data.o src/histo-utils.o\
-	src/plot-utils.o src/color.o
+	src/plot-utils.o src/color.o src/math.o
 .PHONY: all clean 
 all: $(BINS)
 
@@ -43,7 +43,9 @@ bin/print-plot-panels: $(HISTO_DEPS) bin/print-plot-panels.o
 bin/%-plots: $(HISTO_DEPS) bin/%-plots.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 bin/fit-and-sbs: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) bin/fit-and-sbs.o 
-	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) 
+	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS)
+bin/test-err-prop: bin/test-err-prop.o src/math.o
+	$(CC) $^ -o $@ $(LDFLAGS)
 %.o: %.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@
 clean:

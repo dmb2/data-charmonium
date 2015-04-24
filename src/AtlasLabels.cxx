@@ -1,4 +1,4 @@
-#include "AtlasLabels.h"
+#include "AtlasLabels.hh"
 
 #include "TCanvas.h"
 #include "TLatex.h"

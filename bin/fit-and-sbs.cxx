@@ -16,7 +16,7 @@
 void usage(const char* name){
   MSG("Usage: "<<name<<" input.root tree_name");
 }
-double process_psi(RooRealVar* psi_m, RooDataSet& data){
+num_err process_psi(RooRealVar* psi_m, RooDataSet& data){
   // RooDataSet data("data","data",RooArgSet(*psi_m),RooFit::Import(tree));
   // data.reduce(jpsi_sig_expr.c_str());
   RooAbsPdf* model = build_psi_model(psi_m);
@@ -35,7 +35,7 @@ double process_psi(RooRealVar* psi_m, RooDataSet& data){
 	     mass_mean + 3*mass_width,
 	     mass_mean + 10*mass_width);
   RooAbsPdf* bkg = find_component(model,"Background");
-  return get_yield(bkg,psi_m,"Sig")/get_yield(bkg,psi_m,"SB");
+  return div(get_yield(bkg,psi_m,"Sig"),get_yield(bkg,psi_m,"SB"));
 }
 int main(const int argc, const char* argv[]){
   if(argc !=3){
@@ -75,7 +75,7 @@ int main(const int argc, const char* argv[]){
   RooDataSet psi_data("psi_data","jpsi_data",RooArgSet(*mass,*tau,*psi_m),RooFit::Import(*tree));
   const std::string jpsi_sig_expr = make_cut_expr(mass->getBinningNames(),"Sig") + " && "
     + make_cut_expr(tau->getBinningNames(),"Sig");
-  double psi_stsR = process_psi(psi_m, *dynamic_cast<RooDataSet*>(psi_data.reduce(jpsi_sig_expr.c_str())));
+  num_err psi_stsR = process_psi(psi_m, *dynamic_cast<RooDataSet*>(psi_data.reduce(jpsi_sig_expr.c_str())));
   result->Print();
 
   const char* variables[] = {"jet_pt","jet_z","jet_e",

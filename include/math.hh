@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cstdio>
+#include <string>
 template<typename T>
 bool is_in(T x,T min,T max){
   return (x >= min && x < max);
@@ -7,8 +8,14 @@ bool is_in(T x,T min,T max){
 typedef struct {
   double val;
   double err;
-} NumErr;
-  
+} num_err;
+std::string str_rep(const num_err x);
+num_err add(const num_err x, const num_err y);
+num_err sub(const num_err x, const num_err y);
+num_err mul(const num_err x, const num_err y);
+num_err div(const num_err x, const num_err y);
+
+
 // The good is the enemy of the better
 /*
 template <typename num_t>
