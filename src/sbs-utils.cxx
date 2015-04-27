@@ -1,5 +1,6 @@
 #include <vector>
-#include <map>
+#include <algorithm>
+#include <cmath>
 
 #include "TTree.h"
 #include "TF1.h"
@@ -28,32 +29,37 @@ void add_region(RooRealVar* var, const char* type, double min, double max){
 	   var->GetName(), var->GetName(), max);
   var->setRange(name,min,max);
 }
-num_err get_yield(RooAbsPdf* PDF, RooRealVar* var, const char* key){
+num_err get_yield(RooAbsPdf* PDF, RooRealVar* var, const char* key,const double* covmat){
   std::list<std::string> regions = var->getBinningNames();
-  RooAbsReal* integral=NULL;
   num_err yield={0.,0.};
-  double roo_yield(0.);
   RooArgList float_pars(*PDF->getParameters(RooArgSet(*var)));
   TF1* fn = PDF->asTF(RooArgList(*var),float_pars);
-  //FIXME add the damn error integral part
   if(fn==NULL){
     MSG_ERR("Could not properly cast PDF to TF1 "<<PDF->GetName()<<" for var: "<<var->GetName());
     exit(-3);
   }
   // RooArgSet prod(PDF);
+  num_err tmp_val;
   for(std::list<std::string>::const_iterator r = regions.begin();
       r!=regions.end(); ++r){
     if(r->find(key)!=std::string::npos){
-      MSG_DEBUG(*r);
+      // MSG_DEBUG(*r);
       //this "idiom" is the most opaquely obvious way to get these values out
-      yield.val+=fn->Integral(var->getMin(r->c_str()),
+      tmp_val.val=fn->Integral(var->getMin(r->c_str()),
 			      var->getMax(r->c_str()));
-      // MSG_DEBUG(var->getMax(r->c_str())<<" "<<var->getMin(r->c_str()));
-      integral=PDF->createIntegral(*var,RooFit::Range(r->c_str()));
-      roo_yield += integral->getVal();
+      tmp_val.err=fn->IntegralError(var->getMin(r->c_str()),
+				    var->getMax(r->c_str()),
+				    NULL,
+				    covmat);
+      if(!std::isfinite(tmp_val.err)){
+	MSG_ERR("WARNING: "<<str_rep(tmp_val)<<" has a spurious error, setting to 0");
+	tmp_val.err=0;
+      }
+      // MSG_DEBUG(str_rep(yield)<<" + "<<str_rep(tmp_val));
+      yield=add(yield,tmp_val);
+      // MSG_DEBUG(" = "<<str_rep(yield));
     }
   }
-  MSG_DEBUG("RooFit: "<<roo_yield<<" TF1: "<<yield.val);
   return yield;
 }
 std::string make_cut_expr(const std::list<std::string>& regions, const std::string& key){
@@ -70,6 +76,54 @@ std::string make_cut_expr(const std::list<std::string>& regions, const std::stri
   }
   return expr;
 }
+static void ensure_sumw2(TH1* hist){
+  if(hist->GetSumw2N()==0){
+    hist->Sumw2();
+  }
+}
+void scale_hist(TH1* hist, num_err scale_factor){
+  // Scales hist and propagates error correctly
+  ensure_sumw2(hist);
+  num_err bin_content={0.,0.};
+  switch(hist->GetDimension()){
+  case(1):
+    for(Int_t i = 0; i < hist->GetNbinsX(); i++){
+      bin_content.val=hist->GetBinContent(i);
+      bin_content.err=hist->GetBinError(i);
+      bin_content=mul(bin_content,scale_factor);
+      hist->SetBinContent(i,bin_content.val);
+      hist->SetBinError(i,bin_content.err);
+    }
+    break;
+  case(2):
+    for(Int_t i = 0; i < hist->GetNbinsX(); i++){
+      for(Int_t j = 0; j < hist->GetNbinsY(); j++){
+	bin_content.val=hist->GetBinContent(i,j);
+	bin_content.err=hist->GetBinError(i,j);
+	bin_content=mul(bin_content,scale_factor);
+	hist->SetBinContent(i,j,bin_content.val);
+	hist->SetBinError(i,j,bin_content.err);
+      }
+    }
+    break;
+  case(3):
+    for(Int_t i = 0; i < hist->GetNbinsX(); i++){
+      for(Int_t j = 0; j < hist->GetNbinsY(); j++){
+	for(Int_t k = 0; k < hist->GetNbinsY(); k++){
+	  bin_content.val=hist->GetBinContent(i,j,k);
+	  bin_content.err=hist->GetBinError(i,j,k);
+	  bin_content=mul(bin_content,scale_factor);
+	  hist->SetBinContent(i,j,k,bin_content.val);
+	  hist->SetBinError(i,j,k,bin_content.err);
+	}
+      }
+    }
+    break;
+  default:
+    MSG_ERR("ERROR: scaling not implemented for: "<<hist->ClassName());
+    return;
+  }
+}
 TH1* make_bkg_hist(TH1* base_hist, TTree* tree, 
 		   const std::list<std::string>& sb_regions, 
 		   const std::list<std::string>&  sig_regions,
@@ -79,27 +133,30 @@ TH1* make_bkg_hist(TH1* base_hist, TTree* tree,
 	   "(%s) && (%s)",
 	   make_cut_expr(sb_regions,"SB").c_str(),
 	   make_cut_expr(sig_regions,"Sig").c_str());
+  MSG_DEBUG(cut_expr);
   TH1* result = make_normal_hist(base_hist, tree, base_hist->GetName(),
 				 cut_expr,prefix);
-  result->Scale(sf.val);
+  scale_hist(result,sf);
+  // result->Scale(sf.val);
   return result;
 }
 void style_bkg_hist(TH1* hist,Int_t color){
+  hist->SetMarkerSize(0);
+  hist->SetMarkerStyle(kDot);
   hist->SetFillStyle(1001);
   hist->SetFillColor(color);
   hist->SetLineColor(color);
 }
-static void ensure_sumw2(TH1* hist){
-  if(hist->GetSumw2N()==0){
-    hist->Sumw2();
-  }
-}
 void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
-		     const std::list<std::string> mass_regions, 
-		     const std::list<std::string> tau_regions,
-		     const std::list<std::string> psi_regions,
-		     const num_err mass_stsR, const num_err np_frac, 
-		     const num_err psi_stsR){
+		     std::map<std::string,sb_info> sep_var_info, 
+		     const double lumi){
+  const std::list<std::string>& mass_regions=sep_var_info["mass"].regions; 
+  const std::list<std::string>& tau_regions=sep_var_info["tau"].regions;
+  const std::list<std::string>& psi_regions=sep_var_info["psi_m"].regions;
+  const num_err& mass_stsR=sep_var_info["mass"].sts_ratio;
+  const num_err& np_frac=sep_var_info["tau"].sts_ratio;
+  const num_err& psi_stsR=sep_var_info["psi_m"].sts_ratio;
+
   //This covers:
   // S = S' + R*SB(mass) + F*SB(tau) + Q*S(psi_m)
   // S  == Observed signal in tau/mass signal region
@@ -132,9 +189,10 @@ void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
 				   "_stk_psi_sig");
   TH1* psi_sb_hist = make_normal_hist(base_hist,tree,base_hist->GetName(),
 				      make_cut_expr(psi_regions, "SB").c_str(),"_stk_psi_sb");
-  psi_sb_hist->Scale(-psi_stsR.val);
-  psi_hist->Add(psi_sb_hist);
-  psi_hist->Scale(jpsi_pi_br);
+  scale_hist(psi_sb_hist,psi_stsR);
+  // psi_sb_hist->Scale(-psi_stsR.val);
+  psi_hist->Add(psi_sb_hist,-1);
+  psi_hist->Scale(-jpsi_pi_br);
 
   THStack stack("sbs_stack",base_hist->GetTitle());
   stack.SetHistogram((TH1*)base_hist->Clone((std::string("stack_sbs")+base_hist->GetName()).c_str()));
@@ -147,7 +205,7 @@ void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   stack.Add(psi_hist);
   stack.Add(nonprompt_hist);
   stack.Add(comb_hist); 
-  leg.AddEntry(sig_hist,"Signal","l");
+  leg.AddEntry(sig_hist,"Data","lp");
   leg.AddEntry(comb_hist,"Comb. Background","f");
   leg.AddEntry(nonprompt_hist,"Non-prompt Background","f");
   leg.AddEntry(psi_hist,"#psi(2S) Background","f");
@@ -156,16 +214,21 @@ void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   sig_final->Add(comb_hist,-1);
   sig_final->Add(nonprompt_hist,-1);
   sig_final->Add(psi_hist,-1);
-  TCanvas c1("Canvas","Canvas",1200,600);
-  c1.Divide(2,1);
-  c1.cd(1);
-  sig_hist->Draw("H");
-  stack.Draw("H same");
+
+  TCanvas c1("Canvas","Canvas",600,600);
+  stack.Draw("H e0");
+  sig_hist->Draw("e0 same");
+  stack.SetMaximum(1.2*std::max(stack.GetMaximum(),sig_hist->GetMaximum()));
   leg.Draw();
-  c1.cd(2);
-  sig_final->Draw("H");
   char outname[256];
-  snprintf(outname,256,"%s%s",base_hist->GetName(),suffix);
+  snprintf(outname,256,"%s_sbs_stk%s",base_hist->GetName(),suffix);
+  add_atlas_badge(c1,0.2,0.8,lumi);
+  c1.SaveAs(outname);
+  c1.Clear();
+  sig_final->Draw("e0");
+  sig_final->SetMaximum(1.2*sig_final->GetMaximum());
+  add_atlas_badge(c1,0.2,0.8,lumi);
+  snprintf(outname,256,"%s_sbs_sub%s",base_hist->GetName(),suffix);
   c1.SaveAs(outname);
 }
 RooAbsPdf* find_component(RooAbsPdf* PDF,const char* name){
@@ -174,7 +237,7 @@ RooAbsPdf* find_component(RooAbsPdf* PDF,const char* name){
   RooAbsPdf* comp = NULL;
   while((var = dynamic_cast<RooAbsArg*>(iter->Next()))){
     std::string var_name(var->GetName());
-    if(var_name.find(name)!=std::string::npos){
+    if(var_name==std::string(name)){
       comp=dynamic_cast<RooAbsPdf*>(var);
     }
   }
@@ -182,32 +245,4 @@ RooAbsPdf* find_component(RooAbsPdf* PDF,const char* name){
     MSG_ERR("Could not find \""<<name<<"\" in the model PDF!");
   }
   return comp;
-}
-void do_sbs(const char** variables, const size_t n_vars,
-	    TTree* tree, RooAbsPdf* model, 
-	    RooRealVar* mass, RooRealVar* tau,
-	    RooRealVar* psi_m, num_err psi_stsR, 
-	    const char* suffix){
-  std::map<std::string,TH1D*> HistBook;
-  init_hist_book(HistBook);
-  RooAbsPdf* np_mass_bkg = find_component(model,"NonPromptBkgMass");
-  RooAbsPdf* p_mass_bkg = find_component(model,"PromptBkgMass");
-  num_err mass_sig = add(get_yield(np_mass_bkg, mass,"Sig"),
-			 get_yield(p_mass_bkg,mass,"Sig"));
-  num_err mass_sb = add(get_yield(np_mass_bkg, mass,"SB"),
-			get_yield(p_mass_bkg,mass,"SB"));
-  num_err mass_stsR = div(mass_sig,mass_sb);
-
-  RooAbsPdf* tau_sig = find_component(model,"NonPromptSigTau");
-  num_err np_frac = div(get_yield(tau_sig,tau,"Sig"),get_yield(tau_sig,tau,"SB"));
-  MSG_DEBUG("Non-prompt fraction: "<<str_rep(np_frac)<<" Combinatoric Fraction: "<<str_rep(mass_stsR)<<" Psi(2S) fraction: "<<str_rep(psi_stsR));
-  for(size_t i=0; i < n_vars; i++){
-    print_sbs_stack(tree,HistBook[variables[i]],suffix,
-		    mass->getBinningNames(),
-		    tau->getBinningNames(),
-		    psi_m->getBinningNames(),
-		    np_frac,
-		    mass_stsR,
-		    psi_stsR);
-  }
 }

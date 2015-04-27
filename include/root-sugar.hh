@@ -7,6 +7,7 @@
 #define MSG(message) std::cout<<""<<message<<""<<std::endl
 #define MSG_ERR(message) std::cerr<<"\033[31m"<<message<<"\033[0m"<<std::endl
 #define MSG_DEBUG(message) if(DEBUG_LEVEL > 0){std::cout<<"\033[32m"<<message<<"\033[0m"<<std::endl;}
+#define LEN(arr) ((sizeof arr)/(sizeof *arr))
 
 template<typename H> 
 H* copy(const TObject* obj,std::string new_name = ""){

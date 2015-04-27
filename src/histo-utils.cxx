@@ -208,6 +208,26 @@ TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot,
   draw_histo(tree,plot.c_str(), hist->GetName(), weight_expr);
   return hist;
 }
+void add_atlas_badge(TCanvas& canv,const double x, const double y, const double lumi_fb){
+  canv.cd();
+  Double_t tsize(0.04);
+  TLatex l; 
+  l.SetTextSize(tsize); 
+  l.SetNDC();
+  l.SetTextFont(72);
+
+  double delx = 0.1*696*gPad->GetWh()/(472*gPad->GetWw());
+  double dely = (tsize+0.005) *696*gPad->GetWw()/(472*gPad->GetWh());
+	
+  l.DrawLatex(x,y,"ATLAS");
+  l.SetTextFont(42);
+  l.DrawLatex(x+delx,y,"Internal");
+  char data_cond[70];
+  const char* fmt_str = "#sqrt{s} = 8 TeV; #int L dt = %.3g fb^{-1}";
+  snprintf(data_cond,sizeof(data_cond)/sizeof(*data_cond),fmt_str,lumi_fb);
+  l.DrawLatex(x,y-dely,data_cond);
+}
+
 static void style_err_hist(TH1D* hist,int color){
   hist->SetFillColor(color);
   hist->SetMarkerStyle(kDot);
