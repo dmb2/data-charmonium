@@ -222,12 +222,12 @@ void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   leg.Draw();
   char outname[256];
   snprintf(outname,256,"%s_sbs_stk%s",base_hist->GetName(),suffix);
-  add_atlas_badge(c1,0.2,0.8,lumi);
+  add_atlas_badge(c1,0.2,0.9,lumi);
   c1.SaveAs(outname);
   c1.Clear();
   sig_final->Draw("e0");
   sig_final->SetMaximum(1.2*sig_final->GetMaximum());
-  add_atlas_badge(c1,0.2,0.8,lumi);
+  add_atlas_badge(c1,0.2,0.9,lumi);
   snprintf(outname,256,"%s_sbs_sub%s",base_hist->GetName(),suffix);
   c1.SaveAs(outname);
 }

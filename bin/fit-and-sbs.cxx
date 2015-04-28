@@ -81,8 +81,6 @@ void psi_fit(TTree* tree,RooRealVar* mass, RooRealVar* tau,
   sep_var_info["psi_m"].sts_ratio=div(get_yield(bkg,psi_m,"Sig",covmat),get_yield(bkg,psi_m,"SB",covmat));
   fit_result->Print();
 }
-
-// num_err process_jpsi(RooRealVar* pi)
 int main(const int argc, const char* argv[]){
   if(argc !=4){
     usage(argv[0]);
