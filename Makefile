@@ -14,6 +14,7 @@ CXXFLAGS= $(shell root-config --ldflags)\
 	$(DFLAGS) $(WFLAGS) -ansi
 
 BINS:=$(patsubst %.cxx,%,$(wildcard bin/*.cxx)) bin/skim-tree-response
+BINOBJ:=$(patsubst %.cxx,%.o,$(wildcard bin/*.cxx)) bin/skim-tree-response.o
 OBJS:=$(patsubst %.cxx,%.o,$(wildcard src/*.cxx))
 
 SKIM_DEPS:=src/tree-utils.o src/simple-parser.o src/Cut.o 
@@ -46,7 +47,9 @@ bin/fit-and-sbs: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) bin/fit-and-sbs.o
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS)
 bin/test-err-prop: bin/test-err-prop.o src/math.o
 	$(CC) $^ -o $@ $(LDFLAGS)
+bin/cut-flow-plots: $(HISTO_DEPS) bin/cut-flow-plots.o
+	$(CC) $^ -o $@ $(LDFLAGS)
 %.o: %.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@
 clean:
-	-rm $(BINS) bin/*.o src/*.o src/dict.cxx src/dict.h src/libDict.so
+	-rm $(BINS) $(BINOBJ) $(OBJS) src/dict.cxx src/dict.h src/libDict.so
