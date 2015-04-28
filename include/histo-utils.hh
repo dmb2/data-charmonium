@@ -7,6 +7,7 @@ class TAxis;
 class TH2D;
 class TTree;
 class TLegend;
+class TCanvas;
 class TVirtualPad;
 
 template<class T1,class T2>
