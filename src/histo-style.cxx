@@ -12,6 +12,7 @@ void style_hist(TH1* hist,aesthetic style){
   hist->SetMarkerStyle(style.marker);
   hist->SetMarkerSize(style.marker_size);
   hist->SetLineStyle(style.line_style);
+  hist->SetLineWidth(2);
 }
 void add_to_legend(TLegend* leg, const TH1* hist, const aesthetic style){
   leg->AddEntry(hist,style.leg_label,style.leg_style);

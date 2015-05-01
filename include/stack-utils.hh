@@ -9,7 +9,6 @@ class THStack;
 
 void scale_stack(TH1** hist_list, const size_t n, double sf);
 void norm_stack(THStack& stack);
-void style_hist(TH1* hist, TLegend* leg, const int color, const char* leg_name);
 THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
 		    const char* cut_branches[], const int cut_index, 
 		    const std::string& plot, TLegend& leg, 

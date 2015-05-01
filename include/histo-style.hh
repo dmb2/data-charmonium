@@ -1,10 +1,11 @@
+#pragma once
 #include "Rtypes.h"
 class TH1;
 class TLegend;
 
 typedef struct {
-  char* leg_label;
-  char* leg_style;
+  const char* leg_label;
+  const char* leg_style;
   Color_t color;
   Style_t fill_style;
   Style_t marker;
@@ -13,7 +14,7 @@ typedef struct {
 } aesthetic;
 
 void style_hist(TH1* hist,aesthetic style);
-void style_legend(TLegend* leg, const TH1* hist, const aesthetic style);
+void add_to_legend(TLegend* leg, const TH1* hist, const aesthetic style);
 aesthetic make_style(const char* leg_label, const char* leg_style,
 		     const Color_t color, const Style_t fill_style,
 		     const Style_t marker, const Size_t marker_size,
