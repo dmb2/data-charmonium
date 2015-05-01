@@ -25,7 +25,6 @@ RooAddPdf* build_signal(RooRealVar* mass, RooRealVar* tau, RooGaussModel* tau_un
   // -->Mass
   RooRealVar* mean_m = new RooRealVar("mean_m","Mean",JPSIMASS,JPSIMASS-0.02,JPSIMASS+0.02);
   RooRealVar* sigma_m = new RooRealVar("sigma_m","Width",0.005,0.0,0.10);
-  RooRealVar *PromptFrac = new RooRealVar("PromptSigFrac","Fraction of prompt events",0.5,0.0,1.0);
   RooGaussian *prompt_mass = new RooGaussian("PromptSigMass","Prompt Mass PDF",*mass,*mean_m,*sigma_m);
   // -->Tau
   RooRealVar* mean_t = dynamic_cast<RooRealVar*>(tau_uncert->getVariables()->find("mean_t"));
@@ -45,6 +44,7 @@ RooAddPdf* build_signal(RooRealVar* mass, RooRealVar* tau, RooGaussModel* tau_un
   RooProdPdf* nonprompt_sig = new RooProdPdf("NonPromptSig","Non-Prompt Signal PDF",RooArgSet(*nonprompt_mass,*nonprompt_tau));
 
   // nonprompt_sig + prompt_sig
+  RooRealVar *PromptFrac = new RooRealVar("PromptSigFrac","Fraction of prompt events",0.5,0.0,1.0);
   return new RooAddPdf("Signal","Signal Model", RooArgSet(*prompt_sig,*nonprompt_sig),*PromptFrac);
 }
 RooGenericPdf* build_mass_bkg(const char* name, RooRealVar* mass,double ptcl_mass){
@@ -62,7 +62,6 @@ RooGenericPdf* build_mass_bkg(const char* name, RooRealVar* mass,double ptcl_mas
 RooAddPdf* build_background(RooRealVar* mass, RooRealVar* tau,RooGaussModel* tau_uncert){
   // PROMPT
   // -->Mass
-  RooRealVar *PromptFrac = new RooRealVar("BkgPromptFrac","Fraction of prompt events",0.5,0.0,1.0);
   RooRealVar* Pc1 = new RooRealVar("Pc1","Slope", -0.27, -0.5,0.5);
   RooPolynomial *prompt_mass = new RooPolynomial("PromptBkgMass","Mass Background",*mass,RooArgList(*Pc1));
   // RooGenericPdf* prompt_mass = build_mass_bkg("PromptBkgMass",mass,JPSIMASS);
@@ -99,6 +98,7 @@ RooAddPdf* build_background(RooRealVar* mass, RooRealVar* tau,RooGaussModel* tau
   RooProdPdf *nonprompt_bkg = new RooProdPdf("NonPromptBkg","Non-Prompt Background",RooArgSet(*nonprompt_mass,*nonprompt_tau));
 
   // nonprompt_bkg + prompt_bkg
+  RooRealVar *PromptFrac = new RooRealVar("BkgPromptFrac","Fraction of prompt events",0.5,0.0,1.0);
   return new RooAddPdf("Background","Background Model",RooArgSet(*prompt_bkg,*nonprompt_bkg),*PromptFrac);
 }
 double get_par_val(const RooAbsCollection* pars,const char* name){

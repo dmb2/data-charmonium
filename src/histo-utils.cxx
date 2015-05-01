@@ -14,7 +14,6 @@
 
 #include "histo-utils.hh"
 #include "root-sugar.hh"
-
 using namespace std;
 
 void setup_hist(TH1* hist){
@@ -25,26 +24,42 @@ void setup_hist(TH1* hist){
 }
 TH2D* setup_res_dif_hist(TH1* hist){
   const TAxis* axis = hist->GetXaxis();
-  // MSG_DEBUG(hist->GetName());
+  std::string axis_label(axis->GetTitle());
+  double ymin=-50,ymax=125;
+  if( std::string(hist->GetName())=="jet_eta" ||
+      std::string(hist->GetName())=="jet_z" ){
+    ymin=-0.4; ymax=0.4;
+  }
+  TH2D* hist2D = new TH2D((string(hist->GetName())+ "res_dif").c_str(), 
+			  hist->GetTitle(), 
+			  axis->GetNbins(), axis->GetXmin(), axis->GetXmax(),
+			  50,ymin,ymax);
+  hist2D->GetXaxis()->SetTitle(("Truth "+axis_label).c_str());
+  hist2D->GetYaxis()->SetTitle(("Reco - Truth "+axis_label).c_str());
+  return hist2D;
+}
+TH2D* setup_res_vtxz_hist(TH1* hist){
+  const TAxis* axis = hist->GetXaxis();
+  std::string axis_label(axis->GetTitle());
   double ymin=-50,ymax=125;
   if(std::string(hist->GetName())=="jet_eta" ||
      std::string(hist->GetName())=="jet_z" ){
     ymin=-0.4; ymax=0.4;
   }
-  TH2D* hist2D = new TH2D((string(hist->GetName())+ "res_dif").c_str(), hist->GetTitle(),
-			  axis->GetNbins(), axis->GetXmin(), axis->GetXmax(),
-			  50,ymin,ymax);
-  hist2D->GetXaxis()->SetTitle("Truth");
-  hist2D->GetYaxis()->SetTitle("Reco - Truth");
+  TH2D* hist2D = new TH2D((string(hist->GetName())+ "res_vtxz").c_str(), 
+			  hist->GetTitle(), 50, -200, 200,50,ymin,ymax);
+  hist2D->GetXaxis()->SetTitle("J/#psi vertex z [mm]");
+  hist2D->GetYaxis()->SetTitle(("Reco - Truth "+axis_label).c_str());
   return hist2D;
 }
 
 TH2D* setup_rel_res_hist(TH1* hist){
   const TAxis* axis = hist->GetXaxis();
+  std::string axis_label(axis->GetTitle());
   TH2D* hist2D = new TH2D((string(hist->GetName())+ "rel_rsp").c_str(), hist->GetTitle(),
 			  axis->GetNbins(), axis->GetXmin(), axis->GetXmax(),
 			  50,-0.8,1.0);
-  hist2D->GetXaxis()->SetTitle("Truth");
+  hist2D->GetXaxis()->SetTitle(("Truth "+axis_label).c_str());
   hist2D->GetYaxis()->SetTitle("(Reco - Truth) / Truth");
   return hist2D;
 }
@@ -172,6 +187,16 @@ TH1* make_ratio_hist(TH1* base_hist, TTree* tree,
   ratio->SetMinimum(0.);
   return ratio;
 }
+TH1* make_res_vtxz_hist(TH1* base_hist,TTree* tree,const std::string& plot,
+			const char* weight_expr, const std::string& name_suffix){
+  // Suppress compiler warnings, yes that is what I want.
+  if(weight_expr != NULL){};
+  std::string draw_expr = plot+"-"+"truth_"+plot;
+  // MSG_DEBUG(draw_expr+":truth_"+plot);
+  TH1* hist = (TH1*)base_hist->Clone((plot + name_suffix+"_res_vtxz").c_str());
+  draw_histo(tree,(draw_expr+":jpsi_vtx_z").c_str(), hist->GetName(), weight_expr);
+  return hist;
+}
 TH1* make_res_dif_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 			const char* weight_expr, const std::string& name_suffix){
   // Suppress compiler warnings, yes that is what I want.
@@ -234,11 +259,14 @@ static void style_err_hist(TH1D* hist,int color){
   hist->SetMarkerSize(0);
 }
 void print_profile_hist(TH1* base_hist,TTree* tree,const std::string& plot,
-			const std::string& suffix){
+			const std::string& suffix,
+			TH1* (*make_hist)(TH1*,TTree*,
+					  const std::string&,const char*,
+					  const std::string&)){
   // Project to a list of hists along x, gather mean, mean error,
   // stddev, stddev err and make a TH1D that has a x and y axis
   // corresponding to the profile.
-  TH2D* hist2D = dynamic_cast<TH2D*>(make_res_dif_hist(base_hist, tree, plot, "", "_prof_"));
+  TH2D* hist2D = dynamic_cast<TH2D*>(make_hist(base_hist, tree, plot, "", "_prof_"));
   TAxis* x_axis = hist2D->GetXaxis();
   TH1D mean_hist((base_hist->GetName()+std::string("_mean")).c_str(), base_hist->GetTitle(),
 	      x_axis->GetNbins(), x_axis->GetXmin(), x_axis->GetXmax());
@@ -266,8 +294,10 @@ void print_profile_hist(TH1* base_hist,TTree* tree,const std::string& plot,
   style_err_hist(std_dev_hist,tred);
   style_err_hist(sigma_up_hist,tred);
   style_err_hist(sigma_down_hist,tred);
-  std_dev_hist->GetYaxis()->SetTitle("Reco - Truth");
+  std_dev_hist->GetYaxis()->SetTitle(hist2D->GetYaxis()->GetTitle());
+  std_dev_hist->GetXaxis()->SetTitle(hist2D->GetXaxis()->GetTitle());
   std_dev_hist->Draw("e4");
+  std_dev_hist->GetXaxis()->GetTitle();
   sigma_down_hist->Draw("e4 same");
   sigma_up_hist->Draw("e4 same");
   mean_hist.Draw("e1 same");

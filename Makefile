@@ -21,7 +21,8 @@ SKIM_DEPS:=src/tree-utils.o src/simple-parser.o src/Cut.o
 
 HISTO_DEPS:=src/stack-utils.o src/AtlasStyle.o\
 	src/histo-meta-data.o src/histo-utils.o\
-	src/plot-utils.o src/color.o src/math.o
+	src/plot-utils.o src/color.o src/math.o\
+	src/histo-style.o
 .PHONY: all clean 
 all: $(BINS)
 
