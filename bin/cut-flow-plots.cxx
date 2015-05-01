@@ -51,6 +51,7 @@ int main(const int argc, const char* argv[]){
     HistBook2D[plot+"_rsp"]=setup_response_hist(hist);
     HistBook2D[plot+"_rel_rsp"]=setup_rel_res_hist(hist);
     HistBook2D[plot+"_res_dif"]=setup_res_dif_hist(hist);
+    HistBook2D[plot+"_res_vtxz"]=setup_res_vtxz_hist(hist);
   }
   const char* plot_names[] = {"jet_pt","jet_eta","jet_e","jet_z"};
   vector<string> plots(plot_names,plot_names + sizeof(plot_names)/sizeof(*plot_names));// = map_keys(HistBook);
@@ -82,7 +83,11 @@ int main(const int argc, const char* argv[]){
     print_hist(CutTree,plot,HistBook2D[plot+"_res_dif"],
     	       cut_branches, nCuts,
     	       "_res_dif.root", make_res_dif_hist);
-    print_profile_hist(HistBook2D[plot+"_res_dif"], CutTree, plot, "_res_prof.root");
+    // print_hist(CutTree,plot,HistBook2D[plot+"_res_vtxz"],
+    // 	       cut_branches, nCuts,
+    // 	       "_res_vtxz.pdf", make_res_vtxz_hist);
+    print_profile_hist(HistBook2D[plot+"_res_vtxz"],CutTree,plot,"_res_vtxz_prof.root",make_res_vtxz_hist);
+    print_profile_hist(HistBook2D[plot+"_res_dif"], CutTree, plot, "_res_prof.root",make_res_dif_hist);
   }
   return 0;
 }

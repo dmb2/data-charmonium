@@ -29,6 +29,7 @@ inline std::vector<T2> map_values(std::map<T1,T2>& inputMap){
   return values;
 }
 void setup_hist(TH1* hist);
+TH2D* setup_res_vtxz_hist(TH1* hist);
 TH2D* setup_res_dif_hist(TH1* hist);
 TH2D* setup_rel_res_hist(TH1* hist);
 TH2D* setup_response_hist(TH1* hist);
@@ -50,6 +51,8 @@ TH1* make_normal_hist(TH1* base_hist, TTree* tree,
 TH1* make_ratio_hist(TH1* base_hist, TTree* tree,
 		     const char* cut_branches[],size_t cut_index, 
 		     const std::string& plot);
+TH1* make_res_vtxz_hist(TH1* base_hist,TTree* tree,const std::string& plot,
+			const char* weight_expr, const std::string& name_suffix);
 TH1* make_res_dif_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 		       const char* weight_expr, const std::string& name_suffix);
 TH1* make_rel_res_hist(TH1* base_hist,TTree* tree,const std::string& plot,
@@ -63,7 +66,10 @@ TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 		      const std::string& name_suffix="_NOM");
 void add_atlas_badge(TCanvas& canv,const double x, const double y, const double lumi_fb);
 void print_profile_hist(TH1* base_hist,TTree* tree,const std::string& plot,
-			const std::string& suffix);
+			const std::string& suffix,
+			TH1* (*make_hist)(TH1*,TTree*,
+					  const std::string&,const char*,
+					  const std::string&));
 void print_hist(TTree* tree, const std::string& plot, 
 		TH1* base_hist, const char* cut_branches[],size_t nCuts, 
 		const std::string suffix, 

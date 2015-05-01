@@ -20,7 +20,7 @@ static void style_err_hist(TH1* hist,int color){
 }
 void print_summary(const char* var){
   TCanvas canv("canv","Canvas",1200,1200);
-  const char* plot_types[]={"res_cor","res_dif","res_prof"};
+  const char* plot_types[]={"res_vtxz_prof","res_dif","res_prof"};
   const char* sub_systems[]={"LCTopoJets","MuonLCTopoJets","TrackZJets"};
   canv.Divide(3,3);
   size_t pad_pos=1;
