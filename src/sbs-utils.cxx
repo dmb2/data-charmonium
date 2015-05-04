@@ -128,16 +128,26 @@ TH1* make_bkg_hist(TH1* base_hist, TTree* tree,
 		   const std::list<std::string>& sb_regions, 
 		   const std::list<std::string>&  sig_regions,
 		   const char* prefix, const num_err sf){
+  //Everytime I re-read this function I'm convinced I made a mistake.
+  //Here's some info:
+
+  //The idea is that for one type of background I make sidebands that
+  //overlap with the signal region in the other separation variable
+  //the notation I used in my notebook is (X) to indicate which parts
+  //of the phase space that I'm selecting. For example:
+  //
+  // Bkg(Mass) = sf*SB(Mass)(X)Sig(Tau)
+  // 
+  // Bkg(Tau) = sf*SB(Tau)(X)Sig(Mass)
+
   char cut_expr[500];
   snprintf(cut_expr,sizeof cut_expr/sizeof *cut_expr,
 	   "(%s) && (%s)",
 	   make_cut_expr(sb_regions,"SB").c_str(),
 	   make_cut_expr(sig_regions,"Sig").c_str());
-  MSG_DEBUG(cut_expr);
   TH1* result = make_normal_hist(base_hist, tree, base_hist->GetName(),
 				 cut_expr,prefix);
   scale_hist(result,sf);
-  // result->Scale(sf.val);
   return result;
 }
 void style_bkg_hist(TH1* hist,Int_t color){
@@ -147,7 +157,7 @@ void style_bkg_hist(TH1* hist,Int_t color){
   hist->SetFillColor(color);
   hist->SetLineColor(color);
 }
-void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
+TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
 		     std::map<std::string,sb_info> sep_var_info, 
 		     const double lumi){
   const std::list<std::string>& mass_regions=sep_var_info["mass"].regions; 
@@ -172,6 +182,8 @@ void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   ///1/BR(\psi(2S)->J/\psi\pi\pi)
   const double jpsi_pi_br(1/0.3445);
   TLegend leg = *init_legend();
+  std::map<std::string,aesthetic> styles;
+  init_hist_styles(styles);
   // Signal Hist
   const std::string signal_cut_expr = make_cut_expr(mass_regions,"Sig")+ " && "
     + make_cut_expr(tau_regions,"Sig");
@@ -188,49 +200,96 @@ void print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
 				   (signal_cut_expr + "&& "+ make_cut_expr(psi_regions,"Sig")).c_str(),
 				   "_stk_psi_sig");
   TH1* psi_sb_hist = make_normal_hist(base_hist,tree,base_hist->GetName(),
-				      make_cut_expr(psi_regions, "SB").c_str(),"_stk_psi_sb");
+				      (signal_cut_expr + "&& "+ make_cut_expr(psi_regions, "SB")).c_str(),"_stk_psi_sb");
   scale_hist(psi_sb_hist,psi_stsR);
   // psi_sb_hist->Scale(-psi_stsR.val);
   psi_hist->Add(psi_sb_hist,-1);
-  psi_hist->Scale(-jpsi_pi_br);
+  psi_hist->Scale(jpsi_pi_br);
 
   THStack stack("sbs_stack",base_hist->GetTitle());
   stack.SetHistogram((TH1*)base_hist->Clone((std::string("stack_sbs")+base_hist->GetName()).c_str()));
   sig_hist->SetLineColor(kBlack);
   sig_hist->SetFillStyle(0);
   
-  style_bkg_hist(comb_hist,12);
-  style_bkg_hist(nonprompt_hist,14);
-  style_bkg_hist(psi_hist,16);
+  style_hist(comb_hist,styles["comb_bkg"]);
+  style_hist(nonprompt_hist,styles["non_prompt"]);
+  style_hist(psi_hist,styles["psi_bkg"]);
+  
+  add_to_legend(&leg,sig_hist,styles["periodA"]);
+  add_to_legend(&leg,comb_hist,styles["comb_bkg"]);
+  add_to_legend(&leg,nonprompt_hist,styles["non_prompt"]);
+  add_to_legend(&leg,psi_hist,styles["psi_bkg"]);
+
   stack.Add(psi_hist);
   stack.Add(nonprompt_hist);
   stack.Add(comb_hist); 
-  leg.AddEntry(sig_hist,"Data","lp");
-  leg.AddEntry(comb_hist,"Comb. Background","f");
-  leg.AddEntry(nonprompt_hist,"Non-prompt Background","f");
-  leg.AddEntry(psi_hist,"#psi(2S) Background","f");
+
+  TCanvas c1("Canvas","Canvas",600,600);
+  stack.Draw("HIST e2");
+  sig_hist->Draw("e0 same");
+  stack.SetMaximum(1.2*std::max(stack.GetMaximum(),sig_hist->GetMaximum()));
+  leg.Draw();
+  char outname[256];
+  snprintf(outname,256,"%s_sbs_stk%s",base_hist->GetName(),suffix);
+  add_atlas_badge(c1,0.2,0.9,lumi,INTERNAL);
+  c1.SaveAs(outname);
 
   TH1* sig_final = dynamic_cast<TH1*>(sig_hist->Clone((std::string("sf_")+base_hist->GetName()).c_str()));
   sig_final->Add(comb_hist,-1);
   sig_final->Add(nonprompt_hist,-1);
   sig_final->Add(psi_hist,-1);
 
-  TCanvas c1("Canvas","Canvas",600,600);
-  stack.Draw("H e0");
-  sig_hist->Draw("e0 same");
-  stack.SetMaximum(1.2*std::max(stack.GetMaximum(),sig_hist->GetMaximum()));
-  leg.Draw();
-  char outname[256];
-  snprintf(outname,256,"%s_sbs_stk%s",base_hist->GetName(),suffix);
-  add_atlas_badge(c1,0.2,0.9,lumi);
-  c1.SaveAs(outname);
-  c1.Clear();
-  sig_final->Draw("e0");
-  sig_final->SetMaximum(1.2*sig_final->GetMaximum());
-  add_atlas_badge(c1,0.2,0.9,lumi);
-  snprintf(outname,256,"%s_sbs_sub%s",base_hist->GetName(),suffix);
-  c1.SaveAs(outname);
+  return sig_final;
 }
+THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aesthetic> styles, 
+		     const char* cut_expr){
+  THStack* stack = new THStack(("pythia_stk_"+std::string(base_hist->GetName())).c_str(),"Stack");
+  const char* samp_names[]={
+    "208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8",
+    "208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1",
+    "208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8",
+    "208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1",
+    "208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"
+  };
+  char fname[500];
+  for(size_t i=0; i < LEN(samp_names); i++){
+    const std::string name(samp_names[i]);
+    snprintf(fname,LEN(fname),"%s.mini.root",name.c_str());
+    TTree* tree = retrieve<TTree>(fname,"mini");
+    TH1* hist=dynamic_cast<TH1*>(base_hist->Clone((name+base_hist->GetName()+"_p8_stk").c_str()));
+    draw_histo(tree,base_hist->GetName(),hist->GetName(),cut_expr);
+    stack->Add(hist);
+    style_hist(hist,styles[name]);
+    add_to_legend(leg, hist, styles[name]);
+  }
+  return stack;
+}
+void print_pythia_stack(TH1* base_hist, TH1* signal, 
+			const double lumi,const char* cut_expr,
+			const char* suffix){
+  TCanvas canv(("pythia_canv_"+std::string(base_hist->GetName())).c_str(),"Stack",600,600);
+  signal->Draw("e0");
+  TLegend leg = *init_legend();
+  std::map<std::string,aesthetic> styles;
+  init_hist_styles(styles);
+  signal->SetMaximum(1.2*signal->GetMaximum());
+  
+  THStack* stack = build_stack(base_hist,&leg,styles,cut_expr);
+  stack->Draw("H e1 same");
+  double s_max=stack->GetStack()!=NULL ? ((TH1*)stack->GetStack()->Last())->GetMaximum() : 0.;
+  double m_max=signal->GetMaximum();
+  // MSG_DEBUG("Stack: "<<s_max<<" Master: "<<m_max);
+  signal->SetMaximum((s_max > m_max ? s_max : m_max)*1.2);
+
+  leg.Draw();
+  add_atlas_badge(canv,0.2,0.9,lumi,INTERNAL);
+  add_to_legend(&leg,signal,styles["periodA"]);
+  char outname[256];
+  snprintf(outname,sizeof(outname)/sizeof(*outname),
+	   "%s_sbs_sub%s",base_hist->GetName(),suffix);
+  canv.SaveAs(outname);
+}
+
 RooAbsPdf* find_component(RooAbsPdf* PDF,const char* name){
   TIterator *iter = PDF->getComponents()->createIterator();
   RooAbsArg* var = NULL;

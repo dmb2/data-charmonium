@@ -135,9 +135,12 @@ void init_hist_styles(std::map<std::string,aesthetic>& styles){
   styles["208022.Pythia8B_AU2_CTEQ6L1_pp_Psi2S_JpsiPiPi"]=hist_aes("#psi(2S) #rightarrow J/#psi 2#pi",TColor::GetColor(158,154,200),kFSolid,kSolid);
   styles["208023.Pythia8B_AU2_CTEQ6L1_pp_X3872_JpsiPiPi"]=hist_aes("X(3872) #rightarrow J/#psi 2#pi",TColor::GetColor(106,81,163),kFSolid,kSolid);
 
-  styles["non_prompt"]=hist_aes("Non Prompt Sources",TColor::GetColor(189,0,38),kFSolid,kSolid);
+  styles["non_prompt"]=hist_aes("Non Prompt Background",TColor::GetColor(189,0,38),kFSolid,kSolid);
   styles["feed_down"]=hist_aes("Feed Down Sources",TColor::GetColor(0,104,55),kFSolid,kSolid);
 
+  styles["psi_bkg"]=hist_aes("#psi(2S) Background",TColor::GetColor(0,104,55),kFSolid,kSolid);
+  styles["comb_bkg"]=hist_aes("Comb. Background",TColor::GetColor(240,59,32),kFSolid,kSolid);
+  
   //Oranges
   styles["208004.trkComb.LCTopoJets"]=hist_aes("#mu Comb, Jet LCTopo",TColor::GetColor(254,204,92),kFSolid,kSolid);
   styles["208004.trkInnerExtr.LCTopoJets"]=hist_aes("#mu ID Extr., Jet LCTopo",TColor::GetColor(253,141,60),kFSolid,kSolid);

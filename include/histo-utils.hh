@@ -28,6 +28,10 @@ inline std::vector<T2> map_values(std::map<T1,T2>& inputMap){
   }
   return values;
 }
+enum status_t {
+  PRELIMINARY,
+  APPROVED,
+  INTERNAL };
 void setup_hist(TH1* hist);
 TH2D* setup_res_vtxz_hist(TH1* hist);
 TH2D* setup_res_dif_hist(TH1* hist);
@@ -64,7 +68,8 @@ TH1* make_response_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 		      const char* weight_expr="weight",
 		      const std::string& name_suffix="_NOM");
-void add_atlas_badge(TCanvas& canv,const double x, const double y, const double lumi_fb);
+void add_atlas_badge(TCanvas& canv,const double x, const double y, 
+		     const double lumi_fb, const status_t status);
 void print_profile_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 			const std::string& suffix,
 			TH1* (*make_hist)(TH1*,TTree*,

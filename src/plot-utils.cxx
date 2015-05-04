@@ -62,6 +62,7 @@ void print_ratio_hist(std::map<std::string,TTree*>& samples, const std::string& 
   stack->Draw("H nostack");
   remove_axis(stack->GetHistogram()->GetXaxis());
   leg->Draw();
+  add_atlas_badge(canv,0.2,0.9,target_lumi,INTERNAL);
   decorator.DrawLatexNDC(0.,0.05,base_hist->GetTitle());
   TPad* rpad = split_canvas(&canv,0.3);
   draw_ratios(rpad,stack);

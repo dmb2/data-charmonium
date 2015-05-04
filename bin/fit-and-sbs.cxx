@@ -112,9 +112,17 @@ int main(const int argc, const char* argv[]){
   const char* variables[] = {"jet_pt","jet_z","jet_e",
 			   "jpsi_pt","tau1","tau2",
 			   "tau3","tau21","tau32"};
+  const std::string jpsi_sig_region = make_cut_expr(mass->getBinningNames(),"Sig") 
+    + " && " + make_cut_expr(tau->getBinningNames(),"Sig");
+  char cut_expr[1024];
+  snprintf(cut_expr,sizeof(cut_expr)/sizeof(*cut_expr),
+	   "(%s)*weight*%.4g",
+	   jpsi_sig_region.c_str(),
+	   lumi);
   for(size_t i=0; i < LEN(variables); i++){
-    print_sbs_stack(tree,HistBook[variables[i]],".pdf",
-		    sep_var_info,lumi);
+    TH1* sig_final = print_sbs_stack(tree,HistBook[variables[i]],".pdf",
+				     sep_var_info,lumi);
+    print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
   }
   return 0;
 }
