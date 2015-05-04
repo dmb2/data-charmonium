@@ -26,7 +26,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double tau1(0),tau2(0),tau3(0),tau21(0),tau32(0);
   double jpsi_s(0.);
   double z(0.), delta_r(999.);
-  double jpsi_lxy(0.);
+  double jpsi_lxy(-99999.);
+  double jpsi_vtx_z(99999.);
   double jpsi_tau(0.);
 
   double jpsi_m(0.), jpsi_rap(0.);
@@ -43,7 +44,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   
   std::vector<int> *mu_charge=NULL;
   std::vector<double> *mu_pt=NULL, *mu_eta=NULL, *mu_phi=NULL, *mu_E=NULL;
-  std::vector<std::vector<double> > *vtx_lxy=NULL; std::vector<double> *vtx_pt=NULL;
+  std::vector<std::vector<double> > *vtx_lxy=NULL; 
+  std::vector<double> *vtx_pt=NULL, *vtx_z=NULL;
   std::vector<double> *psi_m=NULL, *psi_pt=NULL;
   std::vector<double> *vtx_px=NULL, *vtx_py=NULL, *vtx_pz=NULL, *vtx_e=NULL;
   std::vector<double> *jet_emfrac=NULL;
@@ -74,7 +76,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   // Forest["JPsi"]->SetBranchAddress("MUONS_index",&mu_trk_idx);
   Forest["JPsi"]->SetBranchAddress("VTX_pt",&vtx_pt);
   Forest["JPsi"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
-
+  Forest["JPsi"]->SetBranchAddress("VTX_zposition",&vtx_z);
   Forest["TRIG"]->SetBranchAddress("TRIG_EF_trigger_name",&EF_trigger_names);
   // Forest["MuTracks"]->SetBranchAddress("MuTracks_TRKS_qOverP",&mu_qbyp);
   // Forest["MuTracks"]->SetBranchAddress("MuTracks_TRKS_d0",&mu_d0);
@@ -116,6 +118,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   OutTree.Branch("psi_m",&cand_psi_m);
   OutTree.Branch("jpsi_s",&jpsi_s);
   OutTree.Branch("jpsi_lxy",&jpsi_lxy);
+  OutTree.Branch("jpsi_vtx_z",&jpsi_vtx_z);
   OutTree.Branch("jpsi_tau",&jpsi_tau);
   OutTree.Branch("jpsi_m",&jpsi_m);
   OutTree.Branch("jpsi_rap",&jpsi_rap);
@@ -229,6 +232,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     jpsi_s = (mu_trk_idx->size()> 0)? get_impact_sig(*mu_d0,*mu_d0_err,mu_trk_idx->at(jpsi_idx)) : -99.;
     */
     jpsi_lxy = (vtx_lxy->size() > 0) ? vtx_lxy->at(0).at(0) : -99999.;
+    jpsi_vtx_z = (vtx_z->size() > 0) ? vtx_z->at(0) : -99999.;
     jpsi_tau = jpsi_lxy*(3096.915*GeV)/jpsi_pt;
     // if(!CutDefReal["jpsi_lxy"].pass(fabs(jpsi_lxy),w)){
     //   continue;
