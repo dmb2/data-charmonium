@@ -178,9 +178,9 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   // Q  == Branching fractions to estimate \psi(2S) contamination
   // S(psi_m) = Signal of \psi(2S)
 
-  //BR(J/\psi->\mu\mu)=0.05961
-  ///1/BR(\psi(2S)->J/\psi\pi\pi)
-  const double jpsi_pi_br(1/0.3445);
+  //TODO make this a num_err and usethe PDG errors for the numbers
+  ///BR(\psi(2S)->J/\psi X)/BR(\psi(2S)->J/\psi\pi\pi)
+  const double jpsi_pi_br(0.609/0.3445);
   TLegend leg = *init_legend();
   std::map<std::string,aesthetic> styles;
   init_hist_styles(styles);
@@ -225,7 +225,7 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   stack.Add(comb_hist); 
 
   TCanvas c1("Canvas","Canvas",600,600);
-  stack.Draw("HIST e2");
+  stack.Draw("H e1");
   sig_hist->Draw("e0 same");
   stack.SetMaximum(1.2*std::max(stack.GetMaximum(),sig_hist->GetMaximum()));
   leg.Draw();
@@ -268,14 +268,17 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
 			const double lumi,const char* cut_expr,
 			const char* suffix){
   TCanvas canv(("pythia_canv_"+std::string(base_hist->GetName())).c_str(),"Stack",600,600);
-  signal->Draw("e0");
+  if(std::string(base_hist->GetName())=="jet_pt"){
+    canv.SetLogy(true);
+  }
   TLegend leg = *init_legend();
   std::map<std::string,aesthetic> styles;
   init_hist_styles(styles);
   signal->SetMaximum(1.2*signal->GetMaximum());
   
   THStack* stack = build_stack(base_hist,&leg,styles,cut_expr);
-  stack->Draw("H e1 same");
+  stack->Draw("H e1");
+  signal->Draw("e0 same");
   double s_max=stack->GetStack()!=NULL ? ((TH1*)stack->GetStack()->Last())->GetMaximum() : 0.;
   double m_max=signal->GetMaximum();
   // MSG_DEBUG("Stack: "<<s_max<<" Master: "<<m_max);
@@ -286,7 +289,7 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
   add_to_legend(&leg,signal,styles["periodA"]);
   char outname[256];
   snprintf(outname,sizeof(outname)/sizeof(*outname),
-	   "%s_sbs_sub%s",base_hist->GetName(),suffix);
+	   "%s_sbs_p8%s",base_hist->GetName(),suffix);
   canv.SaveAs(outname);
 }
 

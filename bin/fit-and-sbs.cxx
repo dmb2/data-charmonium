@@ -2,9 +2,12 @@
 #include "root-sugar.hh"
 #include "histo-meta-data.hh"
 #include "fit-utils.hh"
+#include "histo-utils.hh"
 #include "sbs-utils.hh"
 
 #include "TFile.h"
+#include "TLegend.h"
+#include "TCanvas.h"
 #include "TH1D.h"
 #include "TTree.h"
 
@@ -20,12 +23,12 @@ void usage(const char* name){
 }
 
 void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
-		 std::map<std::string,sb_info>& sep_var_info){
+	      std::map<std::string,sb_info>& sep_var_info, const double lumi){
   RooDataSet data("data","data",RooArgSet(*mass,*tau),RooFit::Import(*tree));
   RooAbsPdf* model = build_model(mass,tau);
   RooFitResult* result = Fit(model,data);
-  print_plot(mass,&data,model,"mass",";J/#psi Mass [GeV]");
-  print_plot(tau,&data,model,"tau",";J/#psi Proper Decay Time [ps]");
+  print_plot(mass,&data,model,"mass",";J/#psi Mass [GeV]",lumi);
+  print_plot(tau,&data,model,"tau",";J/#psi Proper Decay Time [ps]",lumi);
   double mass_width = get_par_val(&result->floatParsFinal(),"sigma_m");
   double mass_mean = get_par_val(&result->floatParsFinal(),"mean_m");
   add_region(mass, "SB", 
@@ -54,7 +57,8 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
   result->Print();
 }
 void psi_fit(TTree* tree,RooRealVar* mass, RooRealVar* tau,
-	     std::map<std::string,sb_info>& sep_var_info){
+	     std::map<std::string,sb_info>& sep_var_info,
+	     const double lumi){
   RooRealVar *psi_m = new RooRealVar("psi_m","psi_m",PSIMASS,PSIMASS-0.25,PSIMASS+0.25);
   RooDataSet data("psi_data","jpsi_data",RooArgSet(*mass,*tau,*psi_m),RooFit::Import(*tree));
   const std::string jpsi_sig_expr = make_cut_expr(mass->getBinningNames(),"Sig") + " && "
@@ -63,7 +67,7 @@ void psi_fit(TTree* tree,RooRealVar* mass, RooRealVar* tau,
 
   RooAbsPdf* model = build_psi_model(psi_m);
   RooFitResult* fit_result = Fit(model,data);
-  print_plot(psi_m,&data,model,"psi_m",";#psi(2S) Mass [GeV]");
+  print_plot(psi_m,&data,model,"psi_m",";#psi(2S) Mass [GeV]",lumi);
   double mass_width = get_par_val(&fit_result->floatParsFinal(),"psi_m_sigma");
   double mass_mean = get_par_val(&fit_result->floatParsFinal(),"psi_m_mean");
   add_region(psi_m, "SB", 
@@ -97,8 +101,8 @@ int main(const int argc, const char* argv[]){
   //unfortunately the order matters, psi_fit uses the fit result of
   //jpsi_fit to define the jpsi mass window
   std::map<std::string,sb_info> sep_var_info;
-  jpsi_fit(tree,mass,tau,sep_var_info);
-  psi_fit(tree,mass,tau,sep_var_info);
+  jpsi_fit(tree,mass,tau,sep_var_info,lumi);
+  psi_fit(tree,mass,tau,sep_var_info,lumi);
   for(std::map<std::string,sb_info>::const_iterator it=sep_var_info.begin(); it !=sep_var_info.end(); ++it){
     const std::string& name = it->first;
     const sb_info info = it->second;
@@ -122,6 +126,13 @@ int main(const int argc, const char* argv[]){
   for(size_t i=0; i < LEN(variables); i++){
     TH1* sig_final = print_sbs_stack(tree,HistBook[variables[i]],".pdf",
 				     sep_var_info,lumi);
+    TCanvas c1("c1","Canv",600,600);
+    sig_final->Draw("e0");
+    add_atlas_badge(c1,0.2,0.9,lumi,INTERNAL);
+    TLegend leg=*init_legend();
+    leg.AddEntry(sig_final,"Period A Data");
+    leg.Draw();
+    c1.SaveAs((std::string(variables[i])+"_sbs_sub.pdf").c_str());
     print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
   }
   return 0;

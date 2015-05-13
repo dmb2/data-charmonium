@@ -53,10 +53,9 @@ int main(const int argc, const char* argv[]){
     HistBook2D[plot+"_res_dif"]=setup_res_dif_hist(hist);
     HistBook2D[plot+"_res_vtxz"]=setup_res_vtxz_hist(hist);
   }
-  const char* plot_names[] = {"jet_pt","jet_eta","jet_e","jet_z"};
+  const char* plot_names[] = {"jet_pt","jet_eta","jet_e","jet_z",
+			      "jpsi_pt","jpsi_eta","jpsi_e"};
   vector<string> plots(plot_names,plot_names + sizeof(plot_names)/sizeof(*plot_names));// = map_keys(HistBook);
-  
-  const char* skip_plots[]={"pileup","jpsi_lxy", "psi_m","jpsi_s","jet_emfrac"};
   for(vector<string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
     const std::string& plot = *p;
     /*
@@ -70,13 +69,6 @@ int main(const int argc, const char* argv[]){
 		   HistBook[plot], pretty_cNames,
 		   "_normal.png" , make_normal_hist);
     */
-    bool skip=false;
-    for(size_t i=0; i < sizeof(skip_plots)/sizeof(*skip_plots); i++){
-      if(plot == std::string(skip_plots[i])){
-	skip=true;
-      }
-    }
-    if(skip) continue;
     print_hist(CutTree,plot,HistBook2D[plot+"_rsp"],
 	       cut_branches, nCuts,
 	       "_res_cor.root", make_response_hist);
@@ -85,7 +77,7 @@ int main(const int argc, const char* argv[]){
     	       "_res_dif.root", make_res_dif_hist);
     // print_hist(CutTree,plot,HistBook2D[plot+"_res_vtxz"],
     // 	       cut_branches, nCuts,
-    // 	       "_res_vtxz.pdf", make_res_vtxz_hist);
+    // 	       "_res_vtxz.root", make_res_vtxz_hist);
     print_profile_hist(HistBook2D[plot+"_res_vtxz"],CutTree,plot,"_res_vtxz_prof.root",make_res_vtxz_hist);
     print_profile_hist(HistBook2D[plot+"_res_dif"], CutTree, plot, "_res_prof.root",make_res_dif_hist);
   }

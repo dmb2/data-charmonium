@@ -161,7 +161,9 @@ static void add_leg_comp(TLegend* leg,RooPlot* frame, const char* comp_name){
   RooCurve * curve = frame->getCurve(comp_name);
   leg->AddEntry(curve,comp_name,"l");
 }
-void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model, const char* key,const char* title){
+void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model, 
+		const char* key,const char* title, 
+		const double lumi){
   RooPlot* frame = var->frame(200);
   TLegend* leg = init_legend();//new TLegend(0.7,0.85,1.0,1.0);
   leg->SetBorderSize(0);
@@ -200,5 +202,6 @@ void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model, const char* 
   if(std::string(key)=="tau"){
     canv.SetLogy(true);
   }
+  add_atlas_badge(canv,0.2,0.9,lumi,INTERNAL);
   canv.SaveAs(OFName);
 }

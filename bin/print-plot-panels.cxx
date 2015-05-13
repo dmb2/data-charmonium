@@ -7,6 +7,7 @@
 #include "TLatex.h"
 #include "AtlasStyle.hh"
 #include "color.hh"
+#include "histo-utils.hh"
 
 #include <string>
 #include <math.hh>
@@ -53,10 +54,12 @@ void print_summary(const char* var){
       pad_pos++;
     }
   }
+  
   canv.cd(1); decorator.DrawLatexNDC(0.4,0.8,"Calo Jets");
   canv.cd(2); decorator.DrawLatexNDC(0.4,0.8,"#mu + Calo Jets");
   canv.cd(3); decorator.DrawLatexNDC(0.4,0.8,"Track Jets");
-  
+  //0.05,.975 upper left
+  add_atlas_badge(canv,0.01,0.01,-1,INTERNAL);
   canv.SaveAs((std::string(var)+"_summary.pdf").c_str());
 }
 
@@ -64,7 +67,8 @@ int main(const int argc, const char** argv){
   AtlasStyle style;
   style.SetAtlasStyle();
   heat_gradient(gStyle);
-  const char* variables[] = {"jet_e","jet_eta","jet_pt","jet_z"};
+  const char* variables[] = {"jet_pt","jet_eta","jet_e","jet_z",
+			      "jpsi_pt","jpsi_eta","jpsi_e"};
   for(size_t i=0; i < LEN(variables); i++){
     print_summary(variables[i]);
   }

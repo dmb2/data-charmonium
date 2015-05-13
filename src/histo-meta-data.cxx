@@ -47,66 +47,6 @@ void init_cut_names(std::map<std::string,std::string>& cut_names){
   cut_names["mu_trigger_p"]="1 #mu Trigger, 2012";
 
 }
-void init_leg_names(std::map<std::string,std::string>& leg_map){
-  leg_map["1S0_8"]="^{1}S^{(8)}_{0}";
-  leg_map["3S1_8"]="^{3}S^{(8)}_{1}";
-  leg_map["3PJ_8"]="^{3}P^{(8)}_{J}";
-
-  leg_map["3S1_1"]="^{3}S^{(1)}_{1}";
-  leg_map["3PJ_1"]="^{3}P^{(1)}_{J}";
-
-  leg_map["208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8"]="^{1}S^{(8)}_{0}";
-  leg_map["208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"]="^{3}S^{(8)}_{1}";
-  leg_map["208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8"]="^{3}P^{(8)}_{J}";
-							                        
-  leg_map["208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1"]="^{3}S^{(1)}_{1}";
-  leg_map["208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1"]="^{3}P^{(1)}_{J}";
-
-  leg_map["non_prompt"]="Non Prompt Sources";
-  leg_map["feed_down"]="Feed Down Sources";
-
-  leg_map["108601.PythiaBc_Bc_JPsi_mu2p5mu2p5_Pi"]="B_{c}#rightarrow J/#psi #pi";
-  leg_map["108606.PythiaBc_Bc_JPsi_mu2p5mu2p5_3Pi"]="B_{c}#rightarrow J/#psi 3#pi";
-  leg_map["208022.Pythia8B_AU2_CTEQ6L1_pp_Psi2S_JpsiPiPi"]="#psi(2S) #rightarrow J/#psi 2#pi";
-  leg_map["208023.Pythia8B_AU2_CTEQ6L1_pp_X3872_JpsiPiPi"]="X(3872) #rightarrow J/#psi 2#pi";
-  leg_map["208401.Pythia8B_AU2_CTEQ6L1_Bs_Jpsimu4mu4_phi"]="B_{s}#rightarrow J/#psi #phi";
-  leg_map["208400.Pythia8B_AU2_CTEQ6L1_Bs_Jpsimu3p5mu3p5_phi"]="B_{s}#rightarrow J/#psi #phi";
-  leg_map["208432.Pythia8B_AU2_CTEQ6L1_Bplus_Jpsi_mu3p5mu3p5_piplus"]="B^+ #rightarrow J/#psi #pi^+";
-  leg_map["208413.Pythia8B_AU2_CTEQ6L1_chib_Jpsimu3p5mu3p5Jpsimu3p5mu3p5"]="#chi_{b}#rightarrow 2 J/#psi";
-
-  leg_map["208004.trkComb.LCTopoJets"]="#mu Comb, Jet LCTopo";
-  leg_map["208004.trkInnerExtr.LCTopoJets"]="#mu ID Extr., Jet LCTopo";
-  leg_map["208004.trkMS.LCTopoJets"]="#mu MS, Jet LCTopo";
-  leg_map["208004.trkMuonExtr.LCTopoJets"]="#mu MS Extr., Jet LCTopo";
-
-  leg_map["208004.trkComb.TopoEMJets"]="#mu Comb, Jet TopoEM";
-  leg_map["208004.trkInnerExtr.TopoEMJets"]="#mu ID Extr., Jet TopoEM";
-  leg_map["208004.trkMS.TopoEMJets"]="#mu MS, Jet Topoem";
-  leg_map["208004.trkMuonExtr.TopoEMJets"]="#mu MS Extr., Jet TopoEM";
-
-  leg_map["208004.trkComb.TrackZJets"]="#mu Comb, Jet TrackZ";
-  leg_map["208004.trkInnerExtr.TrackZJets"]="#mu ID Extr., Jet TrackZ";
-  leg_map["208004.trkMS.TrackZJets"]="#mu MS, Jet TrackZ";
-  leg_map["208004.trkMuonExtr.TrackZJets"]="#mu MS Extr., Jet TrackZ";
-
-  leg_map["208004..LCTopoJets"]="#mu, Jet LCTopo";
-  leg_map["208004..TopoEMJets"]="#mu, Jet TopoEM";
-  leg_map["208004..TrackZJets"]="#mu, Jet TrackZ";
-
-  leg_map["LCTopoJets"]="Jet LCTopo";
-  leg_map["MULCTopoJets"]="Jet #mu+LCTopo";
-  leg_map["TopoEMJets"]="Jet TopoEM";
-  leg_map["TrackZJets"]="Jet TrackZ";
-
-  leg_map["singlet.MuonLCTopoJets"]="Singlet";
-  leg_map["octet.MuonLCTopoJets"]="Octet";
-
-  leg_map["singlet"]="Singlet";
-  leg_map["octet"]="Octet";
-
-  leg_map["master"]="Signal";
-  leg_map["periodA"]="Period A Data";
-}
 
 void init_hist_styles(std::map<std::string,aesthetic>& styles){
   styles["1S0_8"]=hist_aes("^{1}S^{(8)}_{0}",TColor::GetColor(222,235,247),kFSolid,kSolid);
@@ -125,117 +65,50 @@ void init_hist_styles(std::map<std::string,aesthetic>& styles){
   styles["208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1"]=hist_aes("^{3}P^{(1)}_{J}",TColor::GetColor(222,45,38),kFSolid,kSolid);  
 
   // non-prompt BKG Styles
-  styles["108601.PythiaBc_Bc_JPsi_mu2p5mu2p5_Pi"]=hist_aes("B_{c}#rightarrow J/#psi #pi",TColor::GetColor(186,228,179),kFSolid,kSolid);
-  styles["108606.PythiaBc_Bc_JPsi_mu2p5mu2p5_3Pi"]=hist_aes("B_{c}#rightarrow J/#psi 3#pi",TColor::GetColor(116,196,118),kFSolid,kSolid);
-  styles["208401.Pythia8B_AU2_CTEQ6L1_Bs_Jpsimu4mu4_phi"]=hist_aes("B_{s}#rightarrow J/#psi #phi",TColor::GetColor(49,163,84),kFSolid,kSolid);
-  styles["208413.Pythia8B_AU2_CTEQ6L1_chib_Jpsimu3p5mu3p5Jpsimu3p5mu3p5"]=hist_aes("#chi_{b}#rightarrow 2 J/#psi",TColor::GetColor(0,109,44),kFSolid,kSolid);
-  styles["208400.Pythia8B_AU2_CTEQ6L1_Bs_Jpsimu3p5mu3p5_phi"]=hist_aes("B_{s}#rightarrow J/#psi #phi",TColor::GetColor(24,138,59),kFSolid,kSolid);
-  styles["208432.Pythia8B_AU2_CTEQ6L1_Bplus_Jpsi_mu3p5mu3p5_piplus"]=hist_aes("B^+ #rightarrow J/#psi #pi^+",TColor::GetColor(86,128,79),kFSolid,kSolid);
+  styles["108601.PythiaBc_Bc_JPsi_mu2p5mu2p5_Pi"]=hist_aes("B_{c}#rightarrow J/#psi #pi",TColor::GetColor(186,228,179),1001,kSolid);
+  styles["108606.PythiaBc_Bc_JPsi_mu2p5mu2p5_3Pi"]=hist_aes("B_{c}#rightarrow J/#psi 3#pi",TColor::GetColor(116,196,118),1001,kSolid);
+  styles["208401.Pythia8B_AU2_CTEQ6L1_Bs_Jpsimu4mu4_phi"]=hist_aes("B_{s}#rightarrow J/#psi #phi",TColor::GetColor(49,163,84),1001,kSolid);
+  styles["208413.Pythia8B_AU2_CTEQ6L1_chib_Jpsimu3p5mu3p5Jpsimu3p5mu3p5"]=hist_aes("#chi_{b}#rightarrow 2 J/#psi",TColor::GetColor(0,109,44),1001,kSolid);
+  styles["208400.Pythia8B_AU2_CTEQ6L1_Bs_Jpsimu3p5mu3p5_phi"]=hist_aes("B_{s}#rightarrow J/#psi #phi",TColor::GetColor(24,138,59),1001,kSolid);
+  styles["208432.Pythia8B_AU2_CTEQ6L1_Bplus_Jpsi_mu3p5mu3p5_piplus"]=hist_aes("B^+ #rightarrow J/#psi #pi^+",TColor::GetColor(86,128,79),1001,kSolid);
   // feed down
-  styles["208022.Pythia8B_AU2_CTEQ6L1_pp_Psi2S_JpsiPiPi"]=hist_aes("#psi(2S) #rightarrow J/#psi 2#pi",TColor::GetColor(158,154,200),kFSolid,kSolid);
-  styles["208023.Pythia8B_AU2_CTEQ6L1_pp_X3872_JpsiPiPi"]=hist_aes("X(3872) #rightarrow J/#psi 2#pi",TColor::GetColor(106,81,163),kFSolid,kSolid);
+  styles["208022.Pythia8B_AU2_CTEQ6L1_pp_Psi2S_JpsiPiPi"]=hist_aes("#psi(2S) #rightarrow J/#psi 2#pi",TColor::GetColor(158,154,200),1001,kSolid);
+  styles["208023.Pythia8B_AU2_CTEQ6L1_pp_X3872_JpsiPiPi"]=hist_aes("X(3872) #rightarrow J/#psi 2#pi",TColor::GetColor(106,81,163),1001,kSolid);
 
-  styles["non_prompt"]=hist_aes("Non Prompt Background",TColor::GetColor(189,0,38),kFSolid,kSolid);
-  styles["feed_down"]=hist_aes("Feed Down Sources",TColor::GetColor(0,104,55),kFSolid,kSolid);
+  styles["non_prompt"]=hist_aes("Non Prompt Background",TColor::GetColor(189,0,38),1001,kSolid);
+  styles["feed_down"]=hist_aes("Feed Down Sources",TColor::GetColor(0,104,55),1001,kSolid);
 
-  styles["psi_bkg"]=hist_aes("#psi(2S) Background",TColor::GetColor(0,104,55),kFSolid,kSolid);
-  styles["comb_bkg"]=hist_aes("Comb. Background",TColor::GetColor(240,59,32),kFSolid,kSolid);
+  styles["psi_bkg"]=hist_aes("#psi(2S) Background",TColor::GetColor(0,104,55),1001,kSolid);
+  styles["comb_bkg"]=hist_aes("Comb. Background",TColor::GetColor(240,59,32),1001,kSolid);
   
   //Oranges
-  styles["208004.trkComb.LCTopoJets"]=hist_aes("#mu Comb, Jet LCTopo",TColor::GetColor(254,204,92),kFSolid,kSolid);
-  styles["208004.trkInnerExtr.LCTopoJets"]=hist_aes("#mu ID Extr., Jet LCTopo",TColor::GetColor(253,141,60),kFSolid,kSolid);
-  styles["208004.trkMS.LCTopoJets"]=hist_aes("#mu MS, Jet LCTopo",TColor::GetColor(240,59,32),kFSolid,kSolid);
-  styles["208004.trkMuonExtr.LCTopoJets"]=hist_aes("#mu MS Extr., Jet LCTopo",TColor::GetColor(189,0,38),kFSolid,kSolid);
+  styles["208004.trkComb.LCTopoJets"]=hist_aes("#mu Comb, Jet LCTopo",TColor::GetColor(254,204,92),1001,kSolid);
+  styles["208004.trkInnerExtr.LCTopoJets"]=hist_aes("#mu ID Extr., Jet LCTopo",TColor::GetColor(253,141,60),1001,kSolid);
+  styles["208004.trkMS.LCTopoJets"]=hist_aes("#mu MS, Jet LCTopo",TColor::GetColor(240,59,32),1001,kSolid);
+  styles["208004.trkMuonExtr.LCTopoJets"]=hist_aes("#mu MS Extr., Jet LCTopo",TColor::GetColor(189,0,38),1001,kSolid);
   //Greens 
-  styles["208004.trkComb.TopoEMJets"]=hist_aes("#mu Comb, Jet TopoEM",TColor::GetColor(194,230,153),kFSolid,kSolid);
-  styles["208004.trkInnerExtr.TopoEMJets"]=hist_aes("#mu ID Extr., Jet TopoEM",TColor::GetColor(120,198,121),kFSolid,kSolid);
-  styles["208004.trkMS.TopoEMJets"]=hist_aes("#mu MS, Jet Topoem",TColor::GetColor(49,163,84),kFSolid,kSolid);
-  styles["208004.trkMuonExtr.TopoEMJets"]=hist_aes("#mu MS Extr., Jet TopoEM",TColor::GetColor(0,104,55),kFSolid,kSolid);
+  styles["208004.trkComb.TopoEMJets"]=hist_aes("#mu Comb, Jet TopoEM",TColor::GetColor(194,230,153),1001,kSolid);
+  styles["208004.trkInnerExtr.TopoEMJets"]=hist_aes("#mu ID Extr., Jet TopoEM",TColor::GetColor(120,198,121),1001,kSolid);
+  styles["208004.trkMS.TopoEMJets"]=hist_aes("#mu MS, Jet Topoem",TColor::GetColor(49,163,84),1001,kSolid);
+  styles["208004.trkMuonExtr.TopoEMJets"]=hist_aes("#mu MS Extr., Jet TopoEM",TColor::GetColor(0,104,55),1001,kSolid);
   // Pinks
-  styles["208004.trkComb.TrackZJets"]=hist_aes("#mu Comb, Jet TrackZ",TColor::GetColor(215,181,216),kFSolid,kSolid);
-  styles["208004.trkInnerExtr.TrackZJets"]=hist_aes("#mu ID Extr., Jet TrackZ",TColor::GetColor(223,101,176),kFSolid,kSolid);
-  styles["208004.trkMS.TrackZJets"]=hist_aes("#mu MS, Jet TrackZ",TColor::GetColor(221,28,119),kFSolid,kSolid);
-  styles["208004.trkMuonExtr.TrackZJets"]=hist_aes("#mu MS Extr., Jet TrackZ",TColor::GetColor(152,0,67),kFSolid,kSolid);
+  styles["208004.trkComb.TrackZJets"]=hist_aes("#mu Comb, Jet TrackZ",TColor::GetColor(215,181,216),1001,kSolid);
+  styles["208004.trkInnerExtr.TrackZJets"]=hist_aes("#mu ID Extr., Jet TrackZ",TColor::GetColor(223,101,176),1001,kSolid);
+  styles["208004.trkMS.TrackZJets"]=hist_aes("#mu MS, Jet TrackZ",TColor::GetColor(221,28,119),1001,kSolid);
+  styles["208004.trkMuonExtr.TrackZJets"]=hist_aes("#mu MS Extr., Jet TrackZ",TColor::GetColor(152,0,67),1001,kSolid);
 
-  styles["208004..LCTopoJets"]=hist_aes("#mu, Jet LCTopo",TColor::GetColor(253,141,60),kFSolid,kSolid);
-  styles["208004..TopoEMJets"]=hist_aes("#mu, Jet TopoEM",TColor::GetColor(120,198,121),kFSolid,kSolid);
-  styles["208004..TrackZJets"]=hist_aes("#mu, Jet TrackZ",TColor::GetColor(223,101,176),kFSolid,kSolid);
+  styles["208004..LCTopoJets"]=hist_aes("#mu, Jet LCTopo",TColor::GetColor(253,141,60),1001,kSolid);
+  styles["208004..TopoEMJets"]=hist_aes("#mu, Jet TopoEM",TColor::GetColor(120,198,121),1001,kSolid);
+  styles["208004..TrackZJets"]=hist_aes("#mu, Jet TrackZ",TColor::GetColor(223,101,176),1001,kSolid);
 
 
-  styles["LCTopoJets"]=hist_aes("Calo Jets",TColor::GetColor(55,126,184),kFSolid,kSolid);
-  styles["MuonLCTopoJets"]=hist_aes("Muon+Calo Jets ",TColor::GetColor(228,26,28),kFSolid,kSolid); 
-  styles["TrackZJets"]=hist_aes("Track Jets",TColor::GetColor(77,175,74),kFSolid,kSolid); 
+  styles["LCTopoJets"]=hist_aes("Calo Jets",TColor::GetColor(55,126,184),1001,kSolid);
+  styles["MuonLCTopoJets"]=hist_aes("Muon+Calo Jets ",TColor::GetColor(228,26,28),1001,kSolid); 
+  styles["TrackZJets"]=hist_aes("Track Jets",TColor::GetColor(77,175,74),1001,kSolid); 
 
-  styles["singlet"]=hist_aes("Singlet",TColor::GetColor(228,26,28),kFSolid,kSolid); 
-  styles["octet"]=hist_aes("Octet",TColor::GetColor(55,126,184),kFSolid,kSolid);
+  styles["singlet"]=hist_aes("Singlet",TColor::GetColor(228,26,28),1001,kSolid); 
+  styles["octet"]=hist_aes("Octet",TColor::GetColor(55,126,184),1001,kSolid);
 
   styles["periodA"]=data_aes("Period A Data",TColor::GetColor(0,0,0),kFullCircle,kSolid);
   styles["master"]=data_aes("MC Comparison ",TColor::GetColor(0,0,0),kDot,kSolid);
-}
-
-void init_colors(std::map<std::string,int>& colors){
-  // Octet colors
-  colors["1S0_8"]=TColor::GetColor(222,235,247);
-  colors["3S1_8"]=TColor::GetColor(158,202,225);
-  colors["3PJ_8"]=TColor::GetColor(49,130,189);
-  // Singlet colors
-  colors["3S1_1"]=TColor::GetColor(252,146,114);
-  colors["3PJ_1"]=TColor::GetColor(222,45,38);  
-
-  // Octet colors
-  colors["208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8"]=TColor::GetColor(222,235,247);
-  colors["208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"]=TColor::GetColor(158,202,225);
-  colors["208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8"]=TColor::GetColor(49,130,189); 
-  // Singlet colors
-  colors["208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1"]=TColor::GetColor(252,146,114);
-  colors["208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1"]=TColor::GetColor(222,45,38);  
-
-  // non-prompt BKG Colors
-  colors["108601.PythiaBc_Bc_JPsi_mu2p5mu2p5_Pi"]=TColor::GetColor(186,228,179);
-  colors["108606.PythiaBc_Bc_JPsi_mu2p5mu2p5_3Pi"]=TColor::GetColor(116,196,118);
-  colors["208401.Pythia8B_AU2_CTEQ6L1_Bs_Jpsimu4mu4_phi"]=TColor::GetColor(49,163,84);
-  colors["208413.Pythia8B_AU2_CTEQ6L1_chib_Jpsimu3p5mu3p5Jpsimu3p5mu3p5"]=TColor::GetColor(0,109,44);
-  colors["208400.Pythia8B_AU2_CTEQ6L1_Bs_Jpsimu3p5mu3p5_phi"]=TColor::GetColor(24,138,59);
-  colors["208432.Pythia8B_AU2_CTEQ6L1_Bplus_Jpsi_mu3p5mu3p5_piplus"]=TColor::GetColor(86,128,79);
-  // feed down
-  colors["208022.Pythia8B_AU2_CTEQ6L1_pp_Psi2S_JpsiPiPi"]=TColor::GetColor(158,154,200);
-  colors["208023.Pythia8B_AU2_CTEQ6L1_pp_X3872_JpsiPiPi"]=TColor::GetColor(106,81,163);
-
-  colors["non_prompt"]=TColor::GetColor(189,0,38);
-  colors["feed_down"]=TColor::GetColor(0,104,55);
-
-  //Oranges
-  colors["208004.trkComb.LCTopoJets"]=TColor::GetColor(254,204,92);
-  colors["208004.trkInnerExtr.LCTopoJets"]=TColor::GetColor(253,141,60);
-  colors["208004.trkMS.LCTopoJets"]=TColor::GetColor(240,59,32);
-  colors["208004.trkMuonExtr.LCTopoJets"]=TColor::GetColor(189,0,38);
-  //Greens 
-  colors["208004.trkComb.TopoEMJets"]=TColor::GetColor(194,230,153);
-  colors["208004.trkInnerExtr.TopoEMJets"]=TColor::GetColor(120,198,121);
-  colors["208004.trkMS.TopoEMJets"]=TColor::GetColor(49,163,84);
-  colors["208004.trkMuonExtr.TopoEMJets"]=TColor::GetColor(0,104,55);
-  // Pinks
-  colors["208004.trkComb.TrackZJets"]=TColor::GetColor(215,181,216);
-  colors["208004.trkInnerExtr.TrackZJets"]=TColor::GetColor(223,101,176);
-  colors["208004.trkMS.TrackZJets"]=TColor::GetColor(221,28,119);
-  colors["208004.trkMuonExtr.TrackZJets"]=TColor::GetColor(152,0,67);
-
-  colors["208004..LCTopoJets"]=TColor::GetColor(253,141,60);
-  colors["208004..TopoEMJets"]=TColor::GetColor(120,198,121);
-  colors["208004..TrackZJets"]=TColor::GetColor(223,101,176);
-
-
-  colors["LCTopoJets"]=TColor::GetColor(55,126,184);
-  colors["MuonLCTopoJets"]=TColor::GetColor(228,26,28); 
-  colors["TrackZJets"]=TColor::GetColor(77,175,74); 
-
-  colors["singlet.MuonLCTopoJets"]=TColor::GetColor(228,26,28); 
-  colors["octet.MuonLCTopoJets"]=TColor::GetColor(55,126,184);
-
-  colors["singlet"]=TColor::GetColor(228,26,28); 
-  colors["octet"]=TColor::GetColor(55,126,184);
-  
-
-  colors["periodA"]=TColor::GetColor(0,0,0);
-  colors["master"]=TColor::GetColor(0,0,0);
 }

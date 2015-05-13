@@ -189,8 +189,6 @@ TH1* make_ratio_hist(TH1* base_hist, TTree* tree,
 }
 TH1* make_res_vtxz_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 			const char* weight_expr, const std::string& name_suffix){
-  // Suppress compiler warnings, yes that is what I want.
-  if(weight_expr != NULL){};
   std::string draw_expr = plot+"-"+"truth_"+plot;
   // MSG_DEBUG(draw_expr+":truth_"+plot);
   TH1* hist = (TH1*)base_hist->Clone((plot + name_suffix+"_res_vtxz").c_str());
@@ -199,8 +197,6 @@ TH1* make_res_vtxz_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 }
 TH1* make_res_dif_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 			const char* weight_expr, const std::string& name_suffix){
-  // Suppress compiler warnings, yes that is what I want.
-  if(weight_expr != NULL){};
   std::string draw_expr = plot+"-"+"truth_"+plot;
   // MSG_DEBUG(draw_expr+":truth_"+plot);
   TH1* hist = (TH1*)base_hist->Clone((plot + name_suffix+"_res_dif").c_str());
@@ -211,7 +207,7 @@ TH1* make_res_dif_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 TH1* make_rel_res_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 			const char* weight_expr, const std::string& name_suffix){
   // Suppress compiler warnings, yes that is what I want.
-  if(weight_expr != NULL && name_suffix != ""){};
+  if(name_suffix != ""){};
   std::string draw_expr = "("+plot+"- truth_"+plot+")/truth_"+plot;
   TH1* hist = (TH1*)base_hist->Clone((plot + "_rel_res").c_str());
   draw_histo(tree,(draw_expr+":truth_"+plot).c_str(), hist->GetName(), weight_expr);
@@ -221,7 +217,7 @@ TH1* make_rel_res_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 TH1* make_response_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 			const char* weight_expr, const std::string& name_suffix){
   // Suppress compiler warnings, yes that is what I want.
-  if(weight_expr != NULL && name_suffix != ""){};
+  if(name_suffix != ""){};
   TH1* hist = (TH1*)base_hist->Clone((plot + "_rsp_NOM").c_str());
   draw_histo(tree,(plot + ":truth_"+plot).c_str(), hist->GetName(), weight_expr);
   return hist;
@@ -277,7 +273,7 @@ void print_profile_hist(TH1* base_hist,TTree* tree,const std::string& plot,
   // Project to a list of hists along x, gather mean, mean error,
   // stddev, stddev err and make a TH1D that has a x and y axis
   // corresponding to the profile.
-  TH2D* hist2D = dynamic_cast<TH2D*>(make_hist(base_hist, tree, plot, "", "_prof_"));
+  TH2D* hist2D = dynamic_cast<TH2D*>(make_hist(base_hist, tree, plot, "truth_jet_pt > 45", "_prof_"));
   TAxis* x_axis = hist2D->GetXaxis();
   TH1D mean_hist((base_hist->GetName()+std::string("_mean")).c_str(), base_hist->GetTitle(),
 	      x_axis->GetNbins(), x_axis->GetXmin(), x_axis->GetXmax());
@@ -323,8 +319,8 @@ void print_hist(TTree* tree, const std::string& plot,
   TCanvas canv(("canv_"+plot).c_str(),"Plot",600,600);
   TLatex decorator;
   decorator.SetTextSize(0.04);
-  const std::string weight_expr="weight*"+str_join("*",cut_branches,
-						    0,nCuts);
+  const std::string weight_expr="weight*(" +
+    str_join("*",cut_branches, 0,nCuts)+" && truth_jet_pt > 45)";
   // MSG_DEBUG(weight_expr);
   TH1* hist = make_hist(base_hist,tree,plot,weight_expr.c_str(),"_nom");
   hist->Draw("H COLZ");
