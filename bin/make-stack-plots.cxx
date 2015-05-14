@@ -24,24 +24,18 @@ void print_stack_plots(const char* master_fname, const char* sample_names[],
 		       const size_t n_samp, const double target_lumi){
   std::map<std::string,TTree*> sample_trees;
   sample_trees["master"]=retrieve<TTree>(master_fname,"mini");
-  char fname[512];
+  std::string fname;
   for(size_t i=0; i < n_samp; i++){
-    snprintf(fname,256,"%s.mini.root",sample_names[i]);
-    sample_trees[sample_names[i]]=retrieve<TTree>(fname,"mini");
+    fname=std::string(sample_names[i]);
+    sample_trees[fname.substr(0,fname.find(".mini.root"))]=retrieve<TTree>(fname.c_str(),"mini");
   }
-
-  std::map<std::string,std::string> pretty_cNames;
-  init_cut_names(pretty_cNames);
-  
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
   std::map<std::string,TH2D*> Hist2DBook;
   init_hist2D_book(Hist2DBook);
   for(std::map<std::string,TH1D*>::iterator item=HistBook.begin(); 
       item != HistBook.end(); ++item){
-    TH1D* hist = item->second;
-    setup_hist(hist);
-    hist->SetFillStyle(1001);
+    setup_hist(item->second);
   }
   std::vector<std::string> plots = map_keys(HistBook);
   for(std::vector<std::string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){

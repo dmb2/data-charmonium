@@ -165,7 +165,7 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   const std::list<std::string>& psi_regions=sep_var_info["psi_m"].regions;
   const num_err& mass_stsR=sep_var_info["mass"].sts_ratio;
   const num_err& np_frac=sep_var_info["tau"].sts_ratio;
-  const num_err& psi_stsR=sep_var_info["psi_m"].sts_ratio;
+  // const num_err& psi_stsR=sep_var_info["psi_m"].sts_ratio;
 
   //This covers:
   // S = S' + R*SB(mass) + F*SB(tau) + Q*S(psi_m)
@@ -180,7 +180,7 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
 
   //TODO make this a num_err and usethe PDG errors for the numbers
   ///BR(\psi(2S)->J/\psi X)/BR(\psi(2S)->J/\psi\pi\pi)
-  const double jpsi_pi_br(0.609/0.3445);
+  // const double jpsi_pi_br(0.609/0.3445);
   TLegend leg = *init_legend();
   std::map<std::string,aesthetic> styles;
   init_hist_styles(styles);
@@ -196,6 +196,7 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   TH1* nonprompt_hist = make_bkg_hist(base_hist,tree,tau_regions,mass_regions,"tau_stk_sb",np_frac);
 
   // Psi Mass Hist
+  /*
   TH1* psi_hist = make_normal_hist(base_hist,tree,base_hist->GetName(),
 				   (signal_cut_expr + "&& "+ make_cut_expr(psi_regions,"Sig")).c_str(),
 				   "_stk_psi_sig");
@@ -205,7 +206,7 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   // psi_sb_hist->Scale(-psi_stsR.val);
   psi_hist->Add(psi_sb_hist,-1);
   psi_hist->Scale(jpsi_pi_br);
-
+  */
   THStack stack("sbs_stack",base_hist->GetTitle());
   stack.SetHistogram((TH1*)base_hist->Clone((std::string("stack_sbs")+base_hist->GetName()).c_str()));
   sig_hist->SetLineColor(kBlack);
@@ -213,14 +214,14 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   
   style_hist(comb_hist,styles["comb_bkg"]);
   style_hist(nonprompt_hist,styles["non_prompt"]);
-  style_hist(psi_hist,styles["psi_bkg"]);
+  // style_hist(psi_hist,styles["psi_bkg"]);
   
   add_to_legend(&leg,sig_hist,styles["periodA"]);
   add_to_legend(&leg,comb_hist,styles["comb_bkg"]);
   add_to_legend(&leg,nonprompt_hist,styles["non_prompt"]);
-  add_to_legend(&leg,psi_hist,styles["psi_bkg"]);
+  // add_to_legend(&leg,psi_hist,styles["psi_bkg"]);
 
-  stack.Add(psi_hist);
+  // stack.Add(psi_hist);
   stack.Add(nonprompt_hist);
   stack.Add(comb_hist); 
 
@@ -237,7 +238,7 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   TH1* sig_final = dynamic_cast<TH1*>(sig_hist->Clone((std::string("sf_")+base_hist->GetName()).c_str()));
   sig_final->Add(comb_hist,-1);
   sig_final->Add(nonprompt_hist,-1);
-  sig_final->Add(psi_hist,-1);
+  // sig_final->Add(psi_hist,-1);
 
   return sig_final;
 }

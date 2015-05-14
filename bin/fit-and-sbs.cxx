@@ -64,7 +64,6 @@ void psi_fit(TTree* tree,RooRealVar* mass, RooRealVar* tau,
   const std::string jpsi_sig_expr = make_cut_expr(mass->getBinningNames(),"Sig") + " && "
     + make_cut_expr(tau->getBinningNames(),"Sig");
   data.reduce(jpsi_sig_expr.c_str());
-
   RooAbsPdf* model = build_psi_model(psi_m);
   RooFitResult* fit_result = Fit(model,data);
   print_plot(psi_m,&data,model,"psi_m",";#psi(2S) Mass [GeV]",lumi);
@@ -102,7 +101,9 @@ int main(const int argc, const char* argv[]){
   //jpsi_fit to define the jpsi mass window
   std::map<std::string,sb_info> sep_var_info;
   jpsi_fit(tree,mass,tau,sep_var_info,lumi);
-  psi_fit(tree,mass,tau,sep_var_info,lumi);
+  // psi_fit(tree,mass,tau,sep_var_info,lumi);
+  MSG_DEBUG(make_cut_expr(mass->getBinningNames(),"Sig") + " && "
+	    + make_cut_expr(tau->getBinningNames(),"Sig"));
   for(std::map<std::string,sb_info>::const_iterator it=sep_var_info.begin(); it !=sep_var_info.end(); ++it){
     const std::string& name = it->first;
     const sb_info info = it->second;
@@ -113,9 +114,9 @@ int main(const int argc, const char* argv[]){
   }
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
-  const char* variables[] = {"jet_pt","jet_z","jet_e",
-			   "jpsi_pt","tau1","tau2",
-			   "tau3","tau21","tau32"};
+  const char* variables[] = {"jet_pt","jet_eta", "jet_z", "jet_e", 
+			     "jpsi_pt","jpsi_eta",
+			     /*"tau1","tau2", "tau3","tau21","tau32"*/};
   const std::string jpsi_sig_region = make_cut_expr(mass->getBinningNames(),"Sig") 
     + " && " + make_cut_expr(tau->getBinningNames(),"Sig");
   char cut_expr[1024];

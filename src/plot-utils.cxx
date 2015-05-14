@@ -59,6 +59,11 @@ void print_ratio_hist(std::map<std::string,TTree*>& samples, const std::string& 
   THStack* stack = make_stack(base_hist,samples,cb,0,plot,*leg,target_lumi);
   canv.cd();
   norm_stack(*stack);
+  TIter next(stack->GetHists());
+  TH1* h = NULL;
+  while((h = dynamic_cast<TH1*>(next()))){
+    h->SetFillStyle(0);
+  }
   stack->Draw("H nostack");
   remove_axis(stack->GetHistogram()->GetXaxis());
   leg->Draw();

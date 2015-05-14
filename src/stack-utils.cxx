@@ -20,6 +20,7 @@
 #include "histo-style.hh"
 #include "histo-utils.hh"
 #include "histo-meta-data.hh"
+#include "math.hh"
 
 using std::string;
 using std::map;
@@ -49,11 +50,13 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
     }
 
     TTree* const tree = samples[name];
-    TH1* hist =(TH1*)base_hist->Clone((name+plot+"_"+cut_branches[cut_index]).c_str());
+    std::string suffix = cut_index == 0 ? "" : cut_branches[cut_index];
+    TH1* hist =(TH1*)base_hist->Clone((name+plot+"_"+ suffix).c_str());
     hist_list[i]=hist;
-    cut_expr=((cut_index == 0) ? "weight" : "weight*" 
+    cut_expr=((cut_index == 0) ? "weight*" + std::string(cut_branches[0]) : "weight*" 
 	      + str_join("*",cut_branches,0,cut_index+1));
     cut_expr+="*%.4g";
+    // MSG_DEBUG(cut_expr);
     snprintf(cut_str,sizeof(cut_str)/sizeof(*cut_str),cut_expr.c_str(),target_lumi);
     draw_histo(tree,plot.c_str(),hist->GetName(), cut_str);
     total+=hist->Integral();
@@ -117,25 +120,47 @@ void norm_stack(THStack& stack){
     h->Scale(1/h->Integral());
   }
 }
-static std::vector<double> build_norm_factors( const TH2D *HistZvsE){
-  std::vector<double> result;
+num_err integral_error(TH1D* hist){
+  num_err result={.val=0,.err=0};
+  num_err bin={.val=0,.err=0};
+  for(size_t i=1; i < size_t(hist->GetNbinsX())+1; i++){
+    bin.val=hist->GetBinContent(i);
+    bin.err=hist->GetBinError(i);
+    result=add(result,bin);
+  }
+  return result;
+}
+static std::vector<num_err> build_norm_factors( const TH2D *HistZvsE){
+  std::vector<num_err> result;
   result.reserve(HistZvsE->GetNbinsX());
   TH1D* hist=NULL;
+  char name[256];
+  
   for(size_t i = 1; i < (size_t)HistZvsE->GetNbinsX()+1; i++){
-    hist=HistZvsE->ProjectionY("_px",i,i+1,"e");
-    result.push_back(hist->Integral());
+    hist=HistZvsE->ProjectionY(name,i,i+1,"e");
+    snprintf(name,LEN(name),"%s_%d_px",hist->GetName(),i);
+    result.push_back(integral_error(hist));
   }
   return result;
 }
 ///*
-static void norm_hist(TH1* hist,const std::vector<double> norm_factors){
-  double bc(0);
-  double nf(0);
+static void norm_hist(TH1* hist,const std::vector<num_err> norm_factors){
+  num_err bc={.val=0,.err=0};
+  num_err nf={.val=0,.err=0};
+  // MSG_DEBUG(hist->GetName());
   for(size_t i = 0; i < norm_factors.size(); i++){
     nf = norm_factors.at(i);
-    bc = hist->GetBinContent(i+1)/(nf > 0 ? nf : 1.);
-    // MSG_DEBUG("Bin Content:"<<bc<<" Norm Factor: "<<nf);
-    hist->SetBinContent(i+1,bc);
+    if (nf.val == 0){
+      nf.val=1;
+      nf.err=0;
+    }
+    bc.val = hist->GetBinContent(i+1);///(nf > 0 ? nf : 1.);
+    bc.err = hist->GetBinError(i);
+    // MSG_DEBUG("Bin Content:"<<str_rep(bc));
+    bc=div(bc,nf);
+    // MSG_DEBUG("Bin Content:"<<str_rep(bc)<<" Norm Factor: "<<str_rep(nf));
+    hist->SetBinContent(i+1,bc.val);
+    hist->SetBinError(i+1,0);
   }
 }
 //*/
@@ -161,8 +186,8 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
   //    add sample to legend
   //draw legend
   const size_t n_col = 3;
-  const size_t n_bins_z = base_hist->GetNbinsY();
-  const size_t n_row = static_cast<size_t>(ceil(n_bins_z/(n_col+0.)));
+  const size_t n_bins_y = base_hist->GetNbinsY();
+  const size_t n_row = static_cast<size_t>(ceil(n_bins_y/(n_col+0.)));
   TCanvas canv(("2D_stk_canv_"+plot).c_str(),"2D Stack",600*n_col,600*n_row);
   TLatex decorator;
   TLegend* leg = make_legend(0.66,0.01,.33,.25);
@@ -173,43 +198,44 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
   canv.Divide(n_col,n_row);
   char weight_expr[256];
   snprintf(weight_expr,256,"weight*%.4g",target_lumi);
-  size_t pad_pos(0);
-  std::vector<double> max_vals(n_bins_z,0.);
+  std::vector<double> max_vals(n_bins_y,0.);
 
   for(std::vector<std::string>::const_iterator n=sample_names.begin();
       n!=sample_names.end(); ++n){
-    pad_pos = 1;
     const std::string& name = *n;
-    TH2D* HistZvsE = dynamic_cast<TH2D*>(make_normal_hist(base_hist,
+    TH2D* Hist2D = dynamic_cast<TH2D*>(make_normal_hist(base_hist,
 							 samples[name],
 							 plot, weight_expr,
 							 name+"_2D_SLC"));
-    std::vector<double> norm_factors = build_norm_factors(HistZvsE);
-    TH1D* HistE=NULL;
-    for(size_t i=1; i < (size_t)HistZvsE->GetNbinsY()+1; i++){
-      HistE=HistZvsE->ProjectionX("_py",i,i+1,"e");
-      style_hist(HistE,hist_styles[name]);
-      norm_hist(HistE,norm_factors);
-      paint_hist(HistE,canv.cd(i), i,n_col,n_row,n_bins_z);
-      if(HistE->GetMaximum() > max_vals.at(i-1)){
-	max_vals.at(pad_pos-1)=HistE->GetMaximum();
+    std::vector<num_err> norm_factors = build_norm_factors(Hist2D);
+    TH1D* HistX=NULL;
+    char prj_name[256];
+    for(size_t i=1; i < (size_t)Hist2D->GetNbinsY()+1; i++){
+      canv.cd(i);
+      snprintf(prj_name,LEN(prj_name),"%s_%d_py",Hist2D->GetName(),i);
+      HistX=Hist2D->ProjectionX(prj_name,i,i+1,"e");
+      // MSG_DEBUG(i<<" "<<HistX<<" "<<HistX->GetName()<<" "<<HistX->GetEntries());
+      style_hist(HistX,hist_styles[name]);
+      HistX->SetFillStyle(0);
+      norm_hist(HistX,norm_factors);
+      paint_hist(HistX,canv.cd(i), i,n_col,n_row,n_bins_y);
+      if(HistX->GetMaximum() > max_vals.at(i-1)){
+      	max_vals.at(i-1)=HistX->GetMaximum();
       }
       if(i==1){
-	add_to_legend(leg,HistE,hist_styles[name]);
+	add_to_legend(leg,HistX,hist_styles[name]);
       }
     }
   }
 
   TAxis* axis = base_hist->GetYaxis();
   std::ostringstream zbl_ss;
-
   // resize hists so they all fit on the pads
   // also add the z ranges to the upper corner
-
-  for(size_t i=1; i <= n_bins_z; i++){
+  for(size_t i=1; i <= n_bins_y; i++){
     TVirtualPad* pad = canv.cd(i);
     zbl_ss.str("");
-    zbl_ss << axis->GetBinLowEdge(i)<<" #leq z #leq "<< axis->GetBinLowEdge(i)+axis->GetBinWidth(i);
+    zbl_ss << axis->GetBinLowEdge(i)<<" #leq "<<axis->GetTitle()<<" #leq "<< axis->GetBinLowEdge(i)+axis->GetBinWidth(i);
     // MSG_DEBUG(zbl_ss.str());
     decorator.DrawLatexNDC(0.64,0.9,zbl_ss.str().c_str());
     TIter next(pad->GetListOfPrimitives());
@@ -218,11 +244,13 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
       h->SetMaximum(1.2*max_vals.at(i-1));
     }
   }
+
   canv.cd(0);
+  // this damn thing is too big
+  // add_atlas_badge(canv,0.4,0.1,target_lumi,INTERNAL);
   leg->Draw();
   decorator.SetTextSize(0.04);
   decorator.DrawLatex(0.38,0.01,base_hist->GetTitle());
-  add_atlas_badge(canv,0.2,0.9,target_lumi,INTERNAL);
   std::string outname=plot+suffix;
   replace(outname.begin(),outname.end(),':','_');
   canv.SaveAs(outname.c_str());
@@ -234,25 +262,19 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
   TCanvas canv(("stk_canv_"+plot).c_str(), "Stack", 600,600);
   TLatex decorator;
   TLegend& leg=*init_legend();
-
   decorator.SetTextSize(0.04);
-  TH1* master = make_normal_hist(base_hist,samples["master"],plot,"weight","_nom");
+  const char* sig_expr[] = {"((2.904 < jpsi_m && jpsi_m < 3.29) && (-1 < jpsi_tau && jpsi_tau < 0.25))"};
+  TH1* master = make_normal_hist(base_hist,samples["master"],plot,(std::string(sig_expr[0])+"*weight").c_str(),"_nom");
   master->SetLineWidth(2.);
   master->SetFillStyle(0);
   master->SetLineColor(kBlack);
-  const char* cb[]={""};
-  THStack* stack = make_stack(base_hist,samples,cut_branches==NULL ? cb : cut_branches,nCuts,plot,leg,target_lumi);
-  
-
+  THStack* stack = make_stack(base_hist,samples,cut_branches==NULL ? sig_expr : cut_branches, nCuts, plot, leg, target_lumi);
   master->Draw("H");
-  stack->Draw("HIST same");
-
+  stack->Draw("H same");
   double s_max=stack->GetStack()!=NULL ? ((TH1*)stack->GetStack()->Last())->GetMaximum() : 0.;
   double m_max=master->GetMaximum();
-  // MSG_DEBUG("Stack: "<<s_max<<" Master: "<<m_max);
   master->SetMaximum((s_max > m_max ? s_max : m_max)*1.2);
   master->Draw("H same");
-
   leg.AddEntry(master,"MC12");
   leg.Draw();
   decorator.DrawLatexNDC(0.,0.05,master->GetTitle());

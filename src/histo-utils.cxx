@@ -20,7 +20,6 @@ void setup_hist(TH1* hist){
   hist->Sumw2();
   hist->SetMarkerStyle(1);
   hist->SetLineWidth(1.);
-  hist->SetDrawOption("H");
 }
 TH2D* setup_res_dif_hist(TH1* hist){
   const TAxis* axis = hist->GetXaxis();
@@ -229,7 +228,7 @@ TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot,
   draw_histo(tree,plot.c_str(), hist->GetName(), weight_expr);
   return hist;
 }
-void add_atlas_badge(TCanvas& canv,const double x, const double y, 
+void add_atlas_badge(TVirtualPad& canv,const double x, const double y, 
 		     const double lumi_fb, const status_t status){
   std::string status_label="";
   if (status==PRELIMINARY){
@@ -238,7 +237,7 @@ void add_atlas_badge(TCanvas& canv,const double x, const double y,
   else if (status==INTERNAL){
     status_label="Internal";
   }
-  canv.cd();
+  // canv.cd();
   Double_t tsize(0.04);
   TLatex l; 
   l.SetTextSize(tsize); 
