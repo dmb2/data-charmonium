@@ -96,7 +96,7 @@ int main(const int argc, const char* argv[]){
   tree_collection Forest; 
   const char* treeNames[] = {"AUX","LCTopoJets","TopoEMJets",/*"MuTracks",*/
 			     "MuonLCTopoJets","TrackZJets","Mu",
-			     "JPsi", "JPsi2Trk","TRIG"};
+			     "JPsi", "FakeJPsi", "JPsi2Trk","TRIG"};
   for(size_t i=0; i < sizeof(treeNames)/sizeof(*(treeNames)); i++){
     Forest[std::string(treeNames[i])]=retrieve<TTree>(file,treeNames[i]);
   }
