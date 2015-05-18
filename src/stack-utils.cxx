@@ -106,8 +106,8 @@ void print_2D_stack(std::map<std::string,TTree*> samples,const std::string& plot
     decorator.DrawLatexNDC(0.25,0.25,hist_styles[name].leg_label);
   }
   canv.cd(0);
+  add_atlas_badge(canv,0.66,0.25,target_lumi,INTERNAL);
   decorator.SetTextSize(0.04);
-  add_atlas_badge(canv,0.2,0.9,target_lumi,INTERNAL);
   decorator.DrawLatex(0.01,0.02,base_hist->GetTitle());
   std::string outname=plot+suffix;
   replace(outname.begin(),outname.end(),':','_');
@@ -174,7 +174,7 @@ static void paint_hist(TH1* hist, TVirtualPad* pad,
 }
 void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plot,
 		     TH1* base_hist, const std::string& suffix, 
-		     const double target_lumi){
+		     const double target_lumi, bool norm){
   //This code is (unfortunately) conceptually hairy.  Here's the
   //pseudocode:
   //for each sample
@@ -207,7 +207,10 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
 							 samples[name],
 							 plot, weight_expr,
 							 name+"_2D_SLC"));
-    std::vector<num_err> norm_factors = build_norm_factors(Hist2D);
+    std::vector<num_err> norm_factors;
+    if (norm){
+      norm_factors= build_norm_factors(Hist2D);
+    }
     TH1D* HistX=NULL;
     char prj_name[256];
     for(size_t i=1; i < (size_t)Hist2D->GetNbinsY()+1; i++){
@@ -217,8 +220,12 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
       // MSG_DEBUG(i<<" "<<HistX<<" "<<HistX->GetName()<<" "<<HistX->GetEntries());
       style_hist(HistX,hist_styles[name]);
       HistX->SetFillStyle(0);
-      norm_hist(HistX,norm_factors);
-      paint_hist(HistX,canv.cd(i), i,n_col,n_row,n_bins_y);
+      if(norm){
+	norm_hist(HistX,norm_factors);
+      }
+      canv.cd(i);
+      HistX->Draw("H same");
+      // paint_hist(HistX,canv.cd(i), i,n_col,n_row,n_bins_y);
       if(HistX->GetMaximum() > max_vals.at(i-1)){
       	max_vals.at(i-1)=HistX->GetMaximum();
       }
@@ -237,7 +244,7 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
     zbl_ss.str("");
     zbl_ss << axis->GetBinLowEdge(i)<<" #leq "<<axis->GetTitle()<<" #leq "<< axis->GetBinLowEdge(i)+axis->GetBinWidth(i);
     // MSG_DEBUG(zbl_ss.str());
-    decorator.DrawLatexNDC(0.64,0.9,zbl_ss.str().c_str());
+    decorator.DrawLatexNDC(0.2,0.85,zbl_ss.str().c_str());
     TIter next(pad->GetListOfPrimitives());
     TH1* h = NULL;
     while((h = dynamic_cast<TH1*>(next()))){
@@ -247,7 +254,7 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
 
   canv.cd(0);
   // this damn thing is too big
-  // add_atlas_badge(canv,0.4,0.1,target_lumi,INTERNAL);
+  add_atlas_badge(canv,0.4,0.1,target_lumi,INTERNAL);
   leg->Draw();
   decorator.SetTextSize(0.04);
   decorator.DrawLatex(0.38,0.01,base_hist->GetTitle());

@@ -41,10 +41,10 @@ void print_plots(const char* sample_names[], const size_t n_samp, const double t
     setup_hist(hist);
   }
   std::vector<std::string> plots = map_keys(HistBook);
-  // for(std::vector<std::string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
-  //   const std::string& plot = *p;
-  //   print_ratio_hist(sample_trees,plot,HistBook[plot],".pdf", target_lumi);
-  // }
+  for(std::vector<std::string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
+    const std::string& plot = *p;
+    print_ratio_hist(sample_trees,plot,HistBook[plot],".pdf", target_lumi);
+  }
   plots = map_keys(Hist2DBook);
   for(std::vector<std::string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
     const std::string& plot = *p;

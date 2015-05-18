@@ -27,4 +27,4 @@ void print_cut_stack(std::map<std::string,TTree*>& samples,
 		     const std::string file_suffix, const double target_lumi=22.7);
 void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plot,
 		     TH1* base_hist, const std::string& suffix, 
-		     const double target_lumi);
+		     const double target_lumi,bool norm=false);
