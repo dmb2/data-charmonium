@@ -19,7 +19,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 		 category_cuts& CutDefCat, TTree& OutTree, 
 		 const char* muon_system, const std::string& jet_type, 
 		 const double weight){
-  bool is_MC=(weight != 1.0);
+  bool is_MC=false;//(weight != 1.0);
   unsigned int squawk_every = 1e3;
   std::vector<std::string>* EF_trigger_names=NULL;
   double pileup(0.);
@@ -210,27 +210,9 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     }
     cand_psi_m*=GeV;
     delta_r=find_closest(jets,candJet,candJPsi,idx);
-    /*
-    if(mu_d0->size() > 0 && mu_trk_idx->size() > 0 && mu_trk_idx->at(jpsi_idx).size() > 0){
-      const size_t mup_idx=mu_trk_idx->at(jpsi_idx)[0];
-      const size_t mun_idx=mu_trk_idx->at(jpsi_idx)[1];
-      if(mup_idx < mu_d0->size()){
-	mup_d0 = mu_d0->at(mup_idx);
-	mup_d0_err = mu_d0_err->at(mup_idx);
-      }
-      if(mun_idx < mu_d0->size()){
-	mun_d0 = mu_d0->at(mun_idx);
-	mun_d0_err = mu_d0_err->at(mun_idx);
-      }
-    }
-    jpsi_s = (mu_trk_idx->size()> 0)? get_impact_sig(*mu_d0,*mu_d0_err,mu_trk_idx->at(jpsi_idx)) : -99.;
-    */
     jpsi_lxy = (vtx_lxy->size() > 0) ? vtx_lxy->at(0).at(0) : -99999.;
     jpsi_vtx_z = (vtx_z->size() > 0) ? vtx_z->at(0) : -99999.;
     jpsi_tau = jpsi_lxy*(3096.915*GeV)/jpsi_pt;
-    // if(!CutDefReal["jpsi_lxy"].pass(fabs(jpsi_lxy),w)){
-    //   continue;
-    // };
     if(!CutDefReal["delta_r"].pass(delta_r,w)){
       continue;
     };
@@ -261,7 +243,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 
     cand_jet_m = candJet.M();
     store_four_vector(candJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
-    // jpsi -> mu+ track index, mu- track index -> S
+
 
     if(is_MC){
       idx=0;
