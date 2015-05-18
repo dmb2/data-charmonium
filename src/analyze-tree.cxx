@@ -72,11 +72,11 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   Forest["JPsi2Trk"]->SetBranchAddress("VTX_mass",&psi_m);
   Forest["JPsi2Trk"]->SetBranchAddress("VTX_pt",&psi_pt);
   const char* vtx_names[] = {"px","py","pz","e"};
-  setup_four_vector(Forest["JPsi"],vtx_px,vtx_py,vtx_pz,vtx_e,"VTX",vtx_names);
-  // Forest["JPsi"]->SetBranchAddress("MUONS_index",&mu_trk_idx);
-  Forest["JPsi"]->SetBranchAddress("VTX_pt",&vtx_pt);
-  Forest["JPsi"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
-  Forest["JPsi"]->SetBranchAddress("VTX_zposition",&vtx_z);
+  setup_four_vector(Forest["FakeJPsi"],vtx_px,vtx_py,vtx_pz,vtx_e,"VTX",vtx_names);
+  // Forest["FakeJPsi"]->SetBranchAddress("MUONS_index",&mu_trk_idx);
+  Forest["FakeJPsi"]->SetBranchAddress("VTX_pt",&vtx_pt);
+  Forest["FakeJPsi"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
+  Forest["FakeJPsi"]->SetBranchAddress("VTX_zposition",&vtx_z);
   Forest["TRIG"]->SetBranchAddress("TRIG_EF_trigger_name",&EF_trigger_names);
   // Forest["MuTracks"]->SetBranchAddress("MuTracks_TRKS_qOverP",&mu_qbyp);
   // Forest["MuTracks"]->SetBranchAddress("MuTracks_TRKS_d0",&mu_d0);
@@ -132,12 +132,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   OutTree.Branch("jet_emfrac",&emfrac);
   OutTree.Branch("jet_m",&cand_jet_m);
   OutTree.Branch("delta_r",&delta_r);
-  /*
-  OutTree.Branch("mup_d0",&mup_d0);
-  OutTree.Branch("mun_d0",&mun_d0);
-  OutTree.Branch("mup_d0_err",&mup_d0_err);
-  OutTree.Branch("mun_d0_err",&mun_d0_err);
-  */
   setup_four_vector_output(OutTree,jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
 
   double w=weight;

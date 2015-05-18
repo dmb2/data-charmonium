@@ -104,7 +104,7 @@ int main(const int argc, const char* argv[]){
     Forest["TruthJets"]=retrieve<TTree>(file,"TruthJets");
     Forest["MuonTruthJets"]=retrieve<TTree>(file,"MuonTruthJets");
   }
-  const double weight=xsec > 0 ? xsec/Forest["AUX"]->GetEntries() : 1.;
+  const double weight=xsec > 0 ? xsec/Forest["AUX"]->GetEntries() : fabs(xsec);
   // const char* muon_systems[] = {"","trkMS","trkMuonExtr","trkInnerExtr","trkComb"};
    process(outFName.c_str(),Forest,CutDefReals, CutDefCats, "","TrackZJets",weight);
   /*
