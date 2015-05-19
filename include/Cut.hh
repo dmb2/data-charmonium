@@ -4,10 +4,14 @@
 #include <map>
 #include <iostream>
 #include <algorithm>
+#include "root-sugar.hh"
+
+class TH1D;
+
 class Selector{
 public:
   virtual bool pass(const double w) = 0;
-  // virtual unsigned int count() = 0;
+  // virtual void cut_value() const = 0;
   virtual void reset() = 0;
 };
 
@@ -125,10 +129,35 @@ void print_cut_summary(std::string CutName, cut<double> Cut);
 void print_cut_table(real_cuts& CutDefReals,category_cuts& CutDefCats);
 class cut_container{
 public:
-  Selector& operator[](std::string key){return m_real_cuts[key]; };
-  void print_cut_table(){};
+  cut_container():
+    m_real_cuts(),
+    m_cat_cuts(),
+    insert_order()
+  {};
+
+  Selector& operator[](std::string key){
+    for(real_cuts::iterator it=m_real_cuts.begin(); 
+	it!=m_real_cuts.end(); ++it){
+      if(it->first==key){
+	return it->second;
+      }
+    }
+    for(category_cuts::iterator it=m_cat_cuts.begin();
+	it!=m_cat_cuts.end(); ++it){
+      if(it->first==key){
+	return it->second;
+      }
+    }
+    MSG_ERR("Could not find cut named: "<<key<<" in collection!");
+    return m_real_cuts[key];
+  };
+
+  void insert(std::string key, cut<int> cat_cut);
+  void insert(std::string key, cut<double> real_cut);
+  void print_cut_table();
+  void print_cut_hist(){};
 private:
   real_cuts m_real_cuts;
   category_cuts m_cat_cuts;
-  
+  std::vector<std::string> insert_order;
 };

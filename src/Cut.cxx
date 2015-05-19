@@ -17,7 +17,29 @@ void print_cut_summary(std::string CutName, cut<double> Cut){
 	 Cut.count(),
 	 Cut.weight());
 }
+void cut_container::insert(std::string key, cut<int> cat_cut){
+  std::vector<std::string>::const_iterator cut_name=std::find(insert_order.begin(),
+							      insert_order.end(),key);
+  if(cut_name==insert_order.end()){
+    insert_order.push_back(key);
+  }
+  m_cat_cuts[key]=cat_cut;
+};
+void cut_container::insert(std::string key, cut<double> real_cut){
+  std::vector<std::string>::const_iterator cut_name=std::find(insert_order.begin(),
+							      insert_order.end(),key);
+  if(cut_name==insert_order.end()){
+    insert_order.push_back(key);
+  }
+  m_real_cuts[key]=real_cut;
+};
 
+void cut_container::print_cut_table(){
+  for(std::vector<std::string>::const_iterator cn=insert_order.begin();
+      cn!=insert_order.end(); ++cn){
+    printf("%s\n",cn->c_str());
+  }
+}
 static bool sort_fn(std::pair<int,std::string> a, std::pair<int,std::string> b){
     return a.first > b.first;
 }

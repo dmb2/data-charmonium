@@ -28,6 +28,7 @@ int main(const int argc, const char* argv[]){
   category_cuts CutDefCats;
   std::map<std::string,std::string> value_opts;
   get_opts(argv[1],value_opts, CutDefReals, CutDefCats);
+  print_cut_table(CutDefReals,CutDefCats);
   cut_container cuts;
   get_opts(argv[1],value_opts,cuts);
   cuts.print_cut_table();

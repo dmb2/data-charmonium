@@ -120,10 +120,12 @@ void get_opts(const char* opt_fname,std::map<std::string,std::string>& value_opt
     }
     else if(opt.size()==4){
       if(opt[3]=="cat"){
-	cuts[opt[0]]=cut<int>(atoi(opt[2].c_str()), opt[1]);
+	// cuts[opt[0]]=cut<int>(atoi(opt[2].c_str()), opt[1]);
+	cuts.insert(opt[0],cut<int>(atoi(opt[2].c_str()), opt[1]));
       }
       else if(opt[3]=="real"){
-	cuts[opt[0]]=cut<double>(atof(opt[2].c_str()), opt[1]);
+	//cuts[opt[0]]=cut<double>(atof(opt[2].c_str()), opt[1]);
+	cuts.insert(opt[0],cut<double>(atof(opt[2].c_str()), opt[1]));
       }
     }
   }  
