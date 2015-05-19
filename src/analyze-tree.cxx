@@ -19,7 +19,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 		 category_cuts& CutDefCat, TTree& OutTree, 
 		 const char* muon_system, const std::string& jet_type, 
 		 const double weight){
-  bool is_MC=false;//(weight != 1.0);
+  bool is_MC=(weight != 1.0);
   unsigned int squawk_every = 1e3;
   std::vector<std::string>* EF_trigger_names=NULL;
   double pileup(0.);
@@ -72,11 +72,11 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   Forest["JPsi2Trk"]->SetBranchAddress("VTX_mass",&psi_m);
   Forest["JPsi2Trk"]->SetBranchAddress("VTX_pt",&psi_pt);
   const char* vtx_names[] = {"px","py","pz","e"};
-  setup_four_vector(Forest["FakeJPsi"],vtx_px,vtx_py,vtx_pz,vtx_e,"VTX",vtx_names);
-  // Forest["FakeJPsi"]->SetBranchAddress("MUONS_index",&mu_trk_idx);
-  Forest["FakeJPsi"]->SetBranchAddress("VTX_pt",&vtx_pt);
-  Forest["FakeJPsi"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
-  Forest["FakeJPsi"]->SetBranchAddress("VTX_zposition",&vtx_z);
+  setup_four_vector(Forest["JPsi"],vtx_px,vtx_py,vtx_pz,vtx_e,"VTX",vtx_names);
+  // Forest["JPsi"]->SetBranchAddress("MUONS_index",&mu_trk_idx);
+  Forest["JPsi"]->SetBranchAddress("VTX_pt",&vtx_pt);
+  Forest["JPsi"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
+  Forest["JPsi"]->SetBranchAddress("VTX_zposition",&vtx_z);
   Forest["TRIG"]->SetBranchAddress("TRIG_EF_trigger_name",&EF_trigger_names);
   // Forest["MuTracks"]->SetBranchAddress("MuTracks_TRKS_qOverP",&mu_qbyp);
   // Forest["MuTracks"]->SetBranchAddress("MuTracks_TRKS_d0",&mu_d0);
@@ -164,7 +164,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       continue;
     };
     std::vector<size_t> good_indices = filter_by_pt(*jet_pt, CutDefReal["jet_pt"].cut_value());
-    // MSG_DEBUG("num jets: "<<jet_pt->size()<<" filtered: "<<good_indices.size());
     for(std::vector<size_t>::const_iterator itr=good_indices.begin();
 	itr!=good_indices.end(); ++itr){
       TLorentzVector tmp_vec(0,0,0,0);
