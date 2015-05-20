@@ -56,7 +56,7 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
     cut_expr=((cut_index == 0) ? "weight*" + std::string(cut_branches[0]) : "weight*" 
 	      + str_join("*",cut_branches,0,cut_index+1));
     cut_expr+="*%.4g";
-    // MSG_DEBUG(cut_expr);
+    MSG_DEBUG(cut_expr);
     snprintf(cut_str,sizeof(cut_str)/sizeof(*cut_str),cut_expr.c_str(),target_lumi);
     draw_histo(tree,plot.c_str(),hist->GetName(), cut_str);
     total+=hist->Integral();
@@ -138,7 +138,7 @@ static std::vector<num_err> build_norm_factors( const TH2D *HistZvsE){
   
   for(size_t i = 1; i < (size_t)HistZvsE->GetNbinsX()+1; i++){
     hist=HistZvsE->ProjectionY(name,i,i+1,"e");
-    snprintf(name,LEN(name),"%s_%d_px",hist->GetName(),i);
+    snprintf(name,LEN(name),"%s_%zu_px",hist->GetName(),i);
     result.push_back(integral_error(hist));
   }
   return result;
@@ -164,6 +164,7 @@ static void norm_hist(TH1* hist,const std::vector<num_err> norm_factors){
   }
 }
 //*/
+/*
 static void paint_hist(TH1* hist, TVirtualPad* pad,
 		       size_t pad_pos,size_t n_col, size_t n_row, size_t n_hists){
   set_pad_margins(pad,pad_pos,n_col,n_row);
@@ -172,6 +173,7 @@ static void paint_hist(TH1* hist, TVirtualPad* pad,
   }
   hist->Draw("H same");
 }
+*/
 void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plot,
 		     TH1* base_hist, const std::string& suffix, 
 		     const double target_lumi, bool norm){
@@ -215,7 +217,7 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
     char prj_name[256];
     for(size_t i=1; i < (size_t)Hist2D->GetNbinsY()+1; i++){
       canv.cd(i);
-      snprintf(prj_name,LEN(prj_name),"%s_%d_py",Hist2D->GetName(),i);
+      snprintf(prj_name,LEN(prj_name),"%s_%zu_py",Hist2D->GetName(),i);
       HistX=Hist2D->ProjectionX(prj_name,i,i+1,"e");
       // MSG_DEBUG(i<<" "<<HistX<<" "<<HistX->GetName()<<" "<<HistX->GetEntries());
       style_hist(HistX,hist_styles[name]);
@@ -275,7 +277,9 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
   master->SetLineWidth(2.);
   master->SetFillStyle(0);
   master->SetLineColor(kBlack);
-  THStack* stack = make_stack(base_hist,samples,cut_branches==NULL ? sig_expr : cut_branches, nCuts, plot, leg, target_lumi);
+  THStack* stack = make_stack(base_hist,samples,
+			      cut_branches==NULL ? sig_expr : cut_branches, 
+			      nCuts==0 ? nCuts : nCuts-1, plot, leg, target_lumi);
   master->Draw("H");
   stack->Draw("H same");
   double s_max=stack->GetStack()!=NULL ? ((TH1*)stack->GetStack()->Last())->GetMaximum() : 0.;
@@ -289,10 +293,10 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
   canv.SaveAs((plot+suffix).c_str());
 }
 void print_cut_stack(std::map<std::string,TTree*>& samples, 
-		     const char* cut_branches[],size_t nCuts, 
+		     const char* cut_branches[],const size_t nCuts, 
 		     const std::string& plot, TH1* base_hist, 
-		     map<string,string>& CutNames, std::string file_suffix, 
-		     double target_lumi){
+		     std::map<std::string,std::string>& CutNames, 
+		     const std::string& file_suffix, const double target_lumi){
     TCanvas canv(("canv_"+plot).c_str(),"Cut Plot",1800,800);
   std::map<std::string,aesthetic> hist_styles;
   init_hist_styles(hist_styles);
@@ -309,9 +313,11 @@ void print_cut_stack(std::map<std::string,TTree*>& samples,
     set_pad_margins(canv.cd(i+1),i+1,nCuts);
     master = make_normal_hist(base_hist,samples["master"],cut_branches, i ,plot);
     hist = make_stack(base_hist,samples, cut_branches, i,plot, leg, target_lumi);
-    hist->Draw("HIST");
-    master->Draw("H same");
-    if( i < 3){ //top row
+    if(hist){
+      hist->Draw("HIST");
+    }
+    master->Draw("e1 same");
+    if(hist->GetXaxis() && i < 3){ //top row
       remove_axis(hist->GetXaxis());
     }
     decorator.DrawLatexNDC(0.5,0.75,CutNames[cut_branches[i]].c_str());
@@ -320,12 +326,14 @@ void print_cut_stack(std::map<std::string,TTree*>& samples,
   // canv.cd(nCuts);
   canv.cd(0);
   leg.Clear();
-  TIter next(hist->GetHists());
-  TH1* h=NULL;
-  while((h = (TH1*)next())) {
-    add_to_legend(&leg,h,hist_styles[string(h->GetName()).substr(0,5)]);
+  if(hist){
+    TIter next(hist->GetHists());
+    TH1* h=NULL;
+    while((h = (TH1*)next())) {
+      add_to_legend(&leg,h,hist_styles[string(h->GetName()).substr(0,5)]);
+    }
   }
-  leg.AddEntry(master,"MC12");
+  leg.AddEntry(master,"Data");
   leg.Draw();
   decorator.SetTextSize(0.04);
   decorator.DrawLatex(0.0,0.05,base_hist->GetTitle());

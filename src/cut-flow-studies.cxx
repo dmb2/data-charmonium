@@ -191,7 +191,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       continue;
     }
     has_jpsi_pt=CutDefReal["jpsi_pt"].pass(jpsi_pt,w);
-    has_jpsi_pt=CutDefReal["jpsi_eta"].pass(fabs(jpsi_eta),w);
+    has_jpsi_eta=CutDefReal["jpsi_eta"].pass(fabs(jpsi_eta),w);
     if(psi_m->size() > 0){
       double tmp_psi_pt(0.);
       for(size_t i = 0; i < psi_m->size(); i++){

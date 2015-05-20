@@ -23,8 +23,8 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
 void print_cut_stack(std::map<std::string,TTree*>& samples, 
 		     const char* cut_branches[],const size_t nCuts, 
 		     const std::string& plot, TH1* base_hist, 
-		     const std::map<std::string,std::string>& CutNames, 
-		     const std::string file_suffix, const double target_lumi=22.7);
+		     std::map<std::string,std::string>& CutNames, 
+		     const std::string& file_suffix, const double target_lumi=22.7);
 void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plot,
 		     TH1* base_hist, const std::string& suffix, 
 		     const double target_lumi,bool norm=false);

@@ -76,7 +76,7 @@ void init_hist_styles(std::map<std::string,aesthetic>& styles){
   styles["208401.Pythia8B_AU2_CTEQ6L1_Bs_Jpsimu4mu4_phi"]=hist_aes("B_{s}#rightarrow J/#psi #phi",TColor::GetColor(49,163,84),1001,kSolid);
   styles["208413.Pythia8B_AU2_CTEQ6L1_chib_Jpsimu3p5mu3p5Jpsimu3p5mu3p5"]=hist_aes("#chi_{b}#rightarrow 2 J/#psi",TColor::GetColor(0,109,44),1001,kSolid);
   styles["208400.Pythia8B_AU2_CTEQ6L1_Bs_Jpsimu3p5mu3p5_phi"]=hist_aes("B_{s}#rightarrow J/#psi #phi",TColor::GetColor(24,138,59),1001,kSolid);
-  styles["208432.Pythia8B_AU2_CTEQ6L1_Bplus_Jpsi_mu3p5mu3p5_piplus"]=hist_aes("B^+ #rightarrow J/#psi #pi^+",TColor::GetColor(86,128,79),1001,kSolid);
+  styles["208432.Pythia8B_AU2_CTEQ6L1_Bplus_Jpsi_mu3p5mu3p5_piplus"]=hist_aes("B^{+} #rightarrow J/#psi #pi^{+}",TColor::GetColor(86,128,79),1001,kSolid);
   // feed down
   styles["208022.Pythia8B_AU2_CTEQ6L1_pp_Psi2S_JpsiPiPi"]=hist_aes("#psi(2S) #rightarrow J/#psi 2#pi",TColor::GetColor(158,154,200),1001,kSolid);
   styles["208023.Pythia8B_AU2_CTEQ6L1_pp_X3872_JpsiPiPi"]=hist_aes("X(3872) #rightarrow J/#psi 2#pi",TColor::GetColor(106,81,163),1001,kSolid);
