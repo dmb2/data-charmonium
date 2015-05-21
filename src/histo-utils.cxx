@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <cmath>
+#include <ctime>
 
 #include "TTree.h"
 #include "TCanvas.h"
@@ -97,8 +98,10 @@ string str_join(string base, const char* strings[],size_t start, size_t end){
 }
 void draw_histo(TTree* tree,const char* branch_name, const char* hist_name, 
 		const char* cut_expr){
-  char branch_expr[200];
-  snprintf(branch_expr,200,"%s>>%s", branch_name,hist_name);
+  char branch_expr[500];
+  snprintf(branch_expr,LEN(branch_expr),"%s>>%s", branch_name,hist_name);
+  // MSG_DEBUG(cut_expr);
+  // MSG_DEBUG(branch_expr);
   tree->Draw(branch_expr,cut_expr,"goff");
 }
 void remove_axis(TAxis* axis){
@@ -163,11 +166,23 @@ TH1* make_response_hist(TH1* base_hist, TTree* tree,
 TH1* make_normal_hist(TH1* base_hist, TTree* tree, 
 		      const char* cut_branches[], size_t cut_index, 
 		      const string& plot){
-  const std::string name_suffix="_NRM_"+ str_join("_",cut_branches,
-						  0,cut_index+1);
+  //This is horrible, but necessary to allow multiple calls using the
+  //same combinations of cuts, ie using the current time + cuts
+  //applied gives us a unique name for the cloned histogram to avoid
+  //clobbering it if the same combination of cuts is used later
+  struct timespec tp;
+  clock_gettime(CLOCK_MONOTONIC,&tp);
+  char tstr[10];
+  snprintf(tstr,LEN(tstr),"%zd",tp.tv_nsec);
+  std::string uniq_suffix=str_join("_",cut_branches,0,cut_index+1);
+  if(uniq_suffix.find("&&")!=std::string::npos){
+    uniq_suffix="signal_region";
+  }
   const std::string weight_expr=("weight*"+str_join("*",cut_branches,
 						    0,cut_index+1));
-  return make_normal_hist(base_hist,tree,plot,weight_expr.c_str(),name_suffix);
+  // MSG_DEBUG(weight_expr);
+  return make_normal_hist(base_hist,tree,plot,
+			  weight_expr.c_str(),"_NRM_"+std::string(tstr)+uniq_suffix);
 }
 TH1* make_ratio_hist(TH1* base_hist, TTree* tree,
 		     const char* cut_branches[],size_t cut_index, 

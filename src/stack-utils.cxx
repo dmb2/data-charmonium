@@ -56,7 +56,7 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
     cut_expr=((cut_index == 0) ? "weight*" + std::string(cut_branches[0]) : "weight*" 
 	      + str_join("*",cut_branches,0,cut_index+1));
     cut_expr+="*%.4g";
-    MSG_DEBUG(cut_expr);
+    // MSG_DEBUG(cut_expr);
     snprintf(cut_str,sizeof(cut_str)/sizeof(*cut_str),cut_expr.c_str(),target_lumi);
     draw_histo(tree,plot.c_str(),hist->GetName(), cut_str);
     total+=hist->Integral();
@@ -273,7 +273,10 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
   TLegend& leg=*init_legend();
   decorator.SetTextSize(0.04);
   const char* sig_expr[] = {"((2.904 < jpsi_m && jpsi_m < 3.29) && (-1 < jpsi_tau && jpsi_tau < 0.25))"};
-  TH1* master = make_normal_hist(base_hist,samples["master"],plot,(std::string(sig_expr[0])+"*weight").c_str(),"_nom");
+  // MSG_DEBUG(extended_cb[nCuts+1]);
+  TH1* master = make_normal_hist(base_hist,samples["master"],
+				 cut_branches==NULL ? sig_expr : cut_branches,
+				 nCuts==0 ? nCuts : nCuts-1, plot);
   master->SetLineWidth(2.);
   master->SetFillStyle(0);
   master->SetLineColor(kBlack);
@@ -297,12 +300,11 @@ void print_cut_stack(std::map<std::string,TTree*>& samples,
 		     const std::string& plot, TH1* base_hist, 
 		     std::map<std::string,std::string>& CutNames, 
 		     const std::string& file_suffix, const double target_lumi){
-    TCanvas canv(("canv_"+plot).c_str(),"Cut Plot",1800,800);
+  TCanvas canv(("canv_"+plot).c_str(),"Cut Plot",1800,800);
   std::map<std::string,aesthetic> hist_styles;
   init_hist_styles(hist_styles);
   TLatex decorator;
   TLegend& leg=*init_legend(0.25,0.72,0.35,0.9);
-
   decorator.SetTextSize(0.1);
   canv.Divide(3,2);
   canv.SetRightMargin(0);
@@ -313,13 +315,11 @@ void print_cut_stack(std::map<std::string,TTree*>& samples,
     set_pad_margins(canv.cd(i+1),i+1,nCuts);
     master = make_normal_hist(base_hist,samples["master"],cut_branches, i ,plot);
     hist = make_stack(base_hist,samples, cut_branches, i,plot, leg, target_lumi);
+    master->Draw("e1");
     if(hist){
-      hist->Draw("HIST");
+      hist->Draw("H same");
     }
-    master->Draw("e1 same");
-    if(hist->GetXaxis() && i < 3){ //top row
-      remove_axis(hist->GetXaxis());
-    }
+    // MSG_DEBUG(master->GetEntries()<<" "<<cut_branches[i]);
     decorator.DrawLatexNDC(0.5,0.75,CutNames[cut_branches[i]].c_str());
   }
   // canv.cd(1);

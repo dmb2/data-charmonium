@@ -33,11 +33,11 @@ int main(const int argc, const char* argv[]){
   heat_gradient(gStyle,stops,sizeof(stops)/sizeof(*stops));
   TTree* CutTree = retrieve<TTree>(argv[1],"mini");
 
-  const char* cut_branches[]={"num_jets_p", /*"mu_trigger_p",*/
+  const char* cbs[]={"num_jets_p", /*"mu_trigger_p",*/
 			      "jpsi_pt_p", /*"jpsi_eta_p",*/
 			      "delta_r_p", "jet_eta_p",
 			      "jet_pt_p"};
-  size_t nCuts=sizeof(cut_branches)/sizeof(*cut_branches);
+  std::vector<std::string> cut_branches(cbs,cut_names + sizeof(cbs)/sizeof(*cbs));
   map<string,string> pretty_cNames;
   init_cut_names(pretty_cNames);
   map<string,TH1D*> HistBook;
@@ -60,24 +60,20 @@ int main(const int argc, const char* argv[]){
     const std::string& plot = *p;
     /*
     print_hist(CutTree,plot,HistBook[plot],
-	       cut_branches, nCuts,
-	       "_nominal.png", make_normal_hist);
-    print_cut_hist(CutTree, cut_branches, nCuts, plot, 
+	       cut_branches, "_nominal.png", make_normal_hist);
+    print_cut_hist(CutTree, cut_branches, plot, 
 		   HistBook[plot], pretty_cNames,
 		   "_ratio.png", make_ratio_hist);
-    print_cut_hist(CutTree, cut_branches, nCuts, plot, 
+    print_cut_hist(CutTree, cut_branches, plot, 
 		   HistBook[plot], pretty_cNames,
 		   "_normal.png" , make_normal_hist);
     */
     print_hist(CutTree,plot,HistBook2D[plot+"_rsp"],
-	       cut_branches, nCuts,
-	       "_res_cor.root", make_response_hist);
+	       cut_branches, "_res_cor.root", make_response_hist);
     print_hist(CutTree,plot,HistBook2D[plot+"_res_dif"],
-    	       cut_branches, nCuts,
-    	       "_res_dif.root", make_res_dif_hist);
+    	       cut_branches, "_res_dif.root", make_res_dif_hist);
     // print_hist(CutTree,plot,HistBook2D[plot+"_res_vtxz"],
-    // 	       cut_branches, nCuts,
-    // 	       "_res_vtxz.root", make_res_vtxz_hist);
+    // 	       cut_branches, "_res_vtxz.root", make_res_vtxz_hist);
     print_profile_hist(HistBook2D[plot+"_res_vtxz"],CutTree,plot,"_res_vtxz_prof.root",make_res_vtxz_hist);
     print_profile_hist(HistBook2D[plot+"_res_dif"], CutTree, plot, "_res_prof.root",make_res_dif_hist);
   }

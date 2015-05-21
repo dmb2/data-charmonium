@@ -40,11 +40,11 @@ void print_stack_plots(const char* master_fname, const char* sample_names[],
   const char* plot_names[] = {"jet_pt", "jpsi_pt"};
   std::vector<std::string> plots(plot_names,plot_names + sizeof(plot_names)/sizeof(*plot_names));  
   // std::vector<std::string> plots = map_keys(HistBook);
-  const char* cut_branches[]={"num_jets_p", /*"mu_trigger_p",*/
-			      "jpsi_pt_p", /*"jpsi_eta_p",*/
+  const char* cbs[]={"num_jets_p", /*"mu_trigger_p",*/
+			      "jpsi_pt_p", "jpsi_eta_p",
 			      "delta_r_p", "jet_eta_p",
 			      "jet_pt_p"};
-  size_t nCuts=sizeof(cut_branches)/sizeof(*cut_branches);
+  std::vector<std::string> cut_branches(cbs,cut_names + sizeof(cbs)/sizeof(*cbs));
   std::map<std::string,std::string> pretty_cNames;
   init_cut_names(pretty_cNames);
 
@@ -52,8 +52,8 @@ void print_stack_plots(const char* master_fname, const char* sample_names[],
     const std::string& plot = *p;
     print_stack(sample_trees,plot,HistBook[plot],"_nom_stk.pdf", target_lumi);
     print_stack(sample_trees,plot,HistBook[plot],"_cut_stk.pdf", target_lumi,
-		cut_branches,nCuts);
-    print_cut_stack(sample_trees, cut_branches,nCuts, plot, HistBook[plot],
+		cut_branches);
+    print_cut_stack(sample_trees, cut_branches, plot, HistBook[plot],
 		    pretty_cNames,"_panel_stk.pdf",target_lumi);
   }
   // plots = map_keys(Hist2DBook);

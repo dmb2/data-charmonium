@@ -38,10 +38,10 @@ int main(const int argc, const char* argv[]){
     sample_trees[sample_names[i]]=retrieve<TTree>(fname,"mini");
   }
   /*
-  const char* cut_branches[]={"num_jets_p", "jpsi_pt_p",    
-  			      "jpsi_eta_p", "delta_r_p",    
-  			      "jet_eta_p", "jet_pt_p"};
-  size_t nCuts=sizeof(cut_branches)/sizeof(*cut_branches);
+  const char* cbs[]={"num_jets_p", "jpsi_pt_p",    
+		     "jpsi_eta_p", "delta_r_p",    
+		     "jet_eta_p", "jet_pt_p"};
+  std::vector<std::string> cut_branches(cbs,cut_names + sizeof(cbs)/sizeof(*cbs));
   */
   map<string,string> pretty_cNames;
   init_cut_names(pretty_cNames);
@@ -58,7 +58,7 @@ int main(const int argc, const char* argv[]){
   for(vector<string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
     const std::string& plot = *p;
     print_stack(sample_trees,plot,HistBook[plot],"_stack.pdf");
-    // print_cut_stack(sample_trees,cut_branches,nCuts,plot,
+    // print_cut_stack(sample_trees,cut_branches,plot,
     // 		    HistBook[plot],pretty_cNames,
     // 		    "_normal.pdf");
   }
