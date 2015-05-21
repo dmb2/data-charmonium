@@ -44,7 +44,7 @@ void print_stack_plots(const char* master_fname, const char* sample_names[],
 			      "jpsi_pt_p", "jpsi_eta_p",
 			      "delta_r_p", "jet_eta_p",
 			      "jet_pt_p"};
-  std::vector<std::string> cut_branches(cbs,cut_names + sizeof(cbs)/sizeof(*cbs));
+  std::vector<std::string> cut_branches(cbs,cbs + sizeof(cbs)/sizeof(*cbs));
   std::map<std::string,std::string> pretty_cNames;
   init_cut_names(pretty_cNames);
 

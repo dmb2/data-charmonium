@@ -154,7 +154,7 @@ std::vector<std::pair<double,double> > make_roc_pairs(TH1* signal, TH1* backgrou
 }
 
 TH1* make_response_hist(TH1* base_hist, TTree* tree, 
-			const char* cut_branches[],size_t cut_index, 
+			const std::vector<std::string>& cut_branches,size_t cut_index, 
 			const string& plot){
   TH1* response = (TH1*)base_hist->Clone((plot + "_RSP_"+
 					  str_join("_",cut_branches,
@@ -164,7 +164,7 @@ TH1* make_response_hist(TH1* base_hist, TTree* tree,
   return response;
 }
 TH1* make_normal_hist(TH1* base_hist, TTree* tree, 
-		      const char* cut_branches[], size_t cut_index, 
+		      const std::vector<std::string>& cut_branches, size_t cut_index, 
 		      const string& plot){
   //This is horrible, but necessary to allow multiple calls using the
   //same combinations of cuts, ie using the current time + cuts
@@ -185,7 +185,7 @@ TH1* make_normal_hist(TH1* base_hist, TTree* tree,
 			  weight_expr.c_str(),"_NRM_"+std::string(tstr)+uniq_suffix);
 }
 TH1* make_ratio_hist(TH1* base_hist, TTree* tree,
-		     const char* cut_branches[],size_t cut_index, 
+		     const std::vector<std::string>& cut_branches,size_t cut_index, 
 		     const string& plot){
   TH1* ratio =(TH1*)base_hist->Clone((plot +"_R_"+
 				      str_join("_",cut_branches,
@@ -326,15 +326,17 @@ void print_profile_hist(TH1* base_hist,TTree* tree,const std::string& plot,
   canv.SaveAs((plot+suffix).c_str());
 }
 void print_hist(TTree* tree, const std::string& plot, 
-		TH1* base_hist, const char* cut_branches[],size_t nCuts, 
+		TH1* base_hist, 
+		const std::vector<std::string>& cut_branches, 
 		const std::string suffix, 
 		TH1* (*make_hist)(TH1*,TTree*,const std::string&, const char*,
 				  const std::string&)){
   TCanvas canv(("canv_"+plot).c_str(),"Plot",600,600);
   TLatex decorator;
   decorator.SetTextSize(0.04);
+  MSG_DEBUG("Warning: using truth_jet_pt cut!");
   const std::string weight_expr="weight*(" +
-    str_join("*",cut_branches, 0,nCuts)+" && truth_jet_pt > 45)";
+    str_join("*",cut_branches, 0,cut_branches.size())+" && truth_jet_pt > 45)";
   // MSG_DEBUG(weight_expr);
   TH1* hist = make_hist(base_hist,tree,plot,weight_expr.c_str(),"_nom");
   hist->Draw("H COLZ");
@@ -348,7 +350,7 @@ TLegend* make_legend(double x, double y, double width, double height){
   leg->SetBorderSize(0);
   return leg;
 }
-void print_cut_hist(TTree* tree,const char* cut_branches[],size_t nCuts, 
+void print_cut_hist(TTree* tree, const std::vector<std::string>& cut_branches,
 		const std::string& plot, TH1* base_hist, 
 		map<string,string>& CutNames, std::string file_suffix,
 		TH1* (*make_hist)(TH1* ,TTree* , const char**, 
@@ -361,6 +363,7 @@ void print_cut_hist(TTree* tree,const char* cut_branches[],size_t nCuts,
   canv.Divide(3,2);
   canv.SetRightMargin(0);
   canv.SetTopMargin(0);
+  size_t nCuts=cut_branches.size();
   for(size_t i = 0; i < nCuts; i++){
     set_pad_margins(canv.cd(i+1),i+1,nCuts);
     TH1* hist = make_hist(base_hist,tree, cut_branches, i,plot);

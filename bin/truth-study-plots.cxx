@@ -41,7 +41,7 @@ int main(const int argc, const char* argv[]){
   const char* cbs[]={"num_jets_p", "jpsi_pt_p",    
 		     "jpsi_eta_p", "delta_r_p",    
 		     "jet_eta_p", "jet_pt_p"};
-  std::vector<std::string> cut_branches(cbs,cut_names + sizeof(cbs)/sizeof(*cbs));
+  std::vector<std::string> cut_branches(cbs,cbs + sizeof(cbs)/sizeof(*cbs));
   */
   map<string,string> pretty_cNames;
   init_cut_names(pretty_cNames);

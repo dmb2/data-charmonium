@@ -31,7 +31,7 @@ void scale_stack(TH1** hist_list, const size_t n, double sf){
   }
 }
 THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
-		    const char* cut_branches[], int cut_index, 
+		    const std::vector<std::string>& cut_branches, int cut_index, 
 		    const std::string& plot, TLegend& leg, double target_lumi ){
   std::vector<std::string> sample_names = map_keys(samples);
   std::map<std::string,aesthetic> hist_styles;
@@ -53,7 +53,7 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
     std::string suffix = cut_index == 0 ? "" : cut_branches[cut_index];
     TH1* hist =(TH1*)base_hist->Clone((name+plot+"_"+ suffix).c_str());
     hist_list[i]=hist;
-    cut_expr=((cut_index == 0) ? "weight*" + std::string(cut_branches[0]) : "weight*" 
+    cut_expr=((cut_index == 0) ? "weight*" + cut_branches[0] : "weight*" 
 	      + str_join("*",cut_branches,0,cut_index+1));
     cut_expr+="*%.4g";
     // MSG_DEBUG(cut_expr);
@@ -267,22 +267,20 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
 void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
 		 TH1* base_hist, const std::string& suffix, 
 		 const double target_lumi,
-		 const char* cut_branches[], const size_t nCuts){
+		 const std::vector<std::string>& cut_branches){
   TCanvas canv(("stk_canv_"+plot).c_str(), "Stack", 600,600);
   TLatex decorator;
   TLegend& leg=*init_legend();
   decorator.SetTextSize(0.04);
   const char* sig_expr[] = {"((2.904 < jpsi_m && jpsi_m < 3.29) && (-1 < jpsi_tau && jpsi_tau < 0.25))"};
-  // MSG_DEBUG(extended_cb[nCuts+1]);
-  TH1* master = make_normal_hist(base_hist,samples["master"],
-				 cut_branches==NULL ? sig_expr : cut_branches,
-				 nCuts==0 ? nCuts : nCuts-1, plot);
+  TH1* master = make_normal_hist(base_hist,samples["master"], cut_branches, 
+				 cut_branches.size()==0 ? 0 : cut_branches.size()-1, plot);
   master->SetLineWidth(2.);
   master->SetFillStyle(0);
   master->SetLineColor(kBlack);
-  THStack* stack = make_stack(base_hist,samples,
-			      cut_branches==NULL ? sig_expr : cut_branches, 
-			      nCuts==0 ? nCuts : nCuts-1, plot, leg, target_lumi);
+  THStack* stack = make_stack(base_hist,samples,cut_branches, 
+			      cut_branches.size()==0 ? 0 : cut_branches.size()-1,
+			      plot, leg, target_lumi);
   master->Draw("H");
   stack->Draw("H same");
   double s_max=stack->GetStack()!=NULL ? ((TH1*)stack->GetStack()->Last())->GetMaximum() : 0.;
@@ -296,7 +294,7 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
   canv.SaveAs((plot+suffix).c_str());
 }
 void print_cut_stack(std::map<std::string,TTree*>& samples, 
-		     const char* cut_branches[],const size_t nCuts, 
+		     const std::vector<std::string>& cut_branches,
 		     const std::string& plot, TH1* base_hist, 
 		     std::map<std::string,std::string>& CutNames, 
 		     const std::string& file_suffix, const double target_lumi){
@@ -311,6 +309,7 @@ void print_cut_stack(std::map<std::string,TTree*>& samples,
   canv.SetTopMargin(0);
   THStack* hist = NULL;
   TH1* master=NULL;
+  size_t nCuts=cut_branches.size();
   for(size_t i = 0; i < nCuts; i++){
     set_pad_margins(canv.cd(i+1),i+1,nCuts);
     master = make_normal_hist(base_hist,samples["master"],cut_branches, i ,plot);

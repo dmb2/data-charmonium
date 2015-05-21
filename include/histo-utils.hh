@@ -39,6 +39,7 @@ TH2D* setup_rel_res_hist(TH1* hist);
 TH2D* setup_response_hist(TH1* hist);
 std::vector<std::string> add_prefix(std::string prefix, std::vector<std::string> strings);
 std::string str_join(std::string base, const char* strings[],size_t start, size_t end);
+std::string str_join(std::string base, const std::vector<std::string>&,size_t start, size_t end);
 void draw_histo(TTree* tree,const char* branch_name, const char* hist_name, 
 		const char* cut_expr);
 TLegend* init_legend(double x1=0.75,double y1=0.68, double x2=0.99,double y2=0.92);
@@ -47,14 +48,14 @@ void set_pad_margins(TVirtualPad* pad,int pad_pos,int N_hists,int n_col=3,int n_
 TLegend* make_legend(double x, double y, double width, double height);
 void make_roc_list(TH1* signal, TH1* background);
 TH1* make_response_hist(TH1* base_hist, TTree* tree, 
-			const char* cut_branches[],size_t cut_index, 
+			const std::vector<std::string>& cut_branches,size_t cut_index, 
 			const std::string& plot);
 TH1* make_normal_hist(TH1* base_hist, TTree* tree, 
-		      const char* cut_branches[], size_t cut_index, 
+		      const std::vector<std::string>& cut_branches, size_t cut_index, 
 		      const std::string& plot);
 TH1* make_ratio_hist(TH1* base_hist, TTree* tree,
-		     const char* cut_branches[],size_t cut_index, 
-		     const std::string& plot);
+		     const std::vector<std::string>& cut_branches, 
+		     size_t cut_index, const std::string& plot);
 TH1* make_res_vtxz_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 			const char* weight_expr, const std::string& name_suffix);
 TH1* make_res_dif_hist(TH1* base_hist,TTree* tree,const std::string& plot,
@@ -76,11 +77,11 @@ void print_profile_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 					  const std::string&,const char*,
 					  const std::string&));
 void print_hist(TTree* tree, const std::string& plot, 
-		TH1* base_hist, const char* cut_branches[],size_t nCuts, 
+		TH1* base_hist, const std::vector<std::string>& cut_branches,
 		const std::string suffix, 
 		TH1* (*make_hist)(TH1*,TTree*,const std::string&, const char*,
 				  const std::string&));
-void print_cut_hist(TTree* tree,const char* cut_branches[],size_t nCuts, 
+void print_cut_hist(TTree* tree,const std::vector<std::string>& cut_branches,
 		const std::string& plot, TH1* base_hist, 
 		std::map<std::string,std::string>& CutNames, std::string file_suffix,
 		TH1* (*make_hist)(TH1* ,TTree* , const char**, 
