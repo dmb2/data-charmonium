@@ -53,7 +53,7 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
     std::string suffix = cut_index == 0 ? "" : cut_branches[cut_index];
     TH1* hist =(TH1*)base_hist->Clone((name+plot+"_"+ suffix).c_str());
     hist_list[i]=hist;
-    cut_expr=((cut_index == 0) ? "weight*" + cut_branches[0] : "weight*" 
+    cut_expr=((cut_index == 0) ? "weight" : "weight*" 
 	      + str_join("*",cut_branches,0,cut_index+1));
     cut_expr+="*%.4g";
     // MSG_DEBUG(cut_expr);
@@ -272,15 +272,13 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
   TLatex decorator;
   TLegend& leg=*init_legend();
   decorator.SetTextSize(0.04);
+  size_t cut_idx=cut_branches.size()==0 ? 0 : cut_branches.size()-1;
   const char* sig_expr[] = {"((2.904 < jpsi_m && jpsi_m < 3.29) && (-1 < jpsi_tau && jpsi_tau < 0.25))"};
-  TH1* master = make_normal_hist(base_hist,samples["master"], cut_branches, 
-				 cut_branches.size()==0 ? 0 : cut_branches.size()-1, plot);
+  TH1* master = make_normal_hist(base_hist,samples["master"], cut_branches, cut_idx, plot);
   master->SetLineWidth(2.);
   master->SetFillStyle(0);
   master->SetLineColor(kBlack);
-  THStack* stack = make_stack(base_hist,samples,cut_branches, 
-			      cut_branches.size()==0 ? 0 : cut_branches.size()-1,
-			      plot, leg, target_lumi);
+  THStack* stack = make_stack(base_hist,samples,cut_branches, cut_idx, plot, leg, target_lumi);
   master->Draw("H");
   stack->Draw("H same");
   double s_max=stack->GetStack()!=NULL ? ((TH1*)stack->GetStack()->Last())->GetMaximum() : 0.;

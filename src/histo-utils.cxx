@@ -84,23 +84,13 @@ std::vector<std::string> add_prefix(std::string prefix, std::vector<std::string>
   }
   return result;
 }
-std::string str_join(std::string base, const char* strings[],size_t start, size_t end){
-  std::string result(strings[start]);
-  if(start==end){
-    return "";
-  }
-  for(size_t i=(start+1); i < end; i++){
-    result+=(base + std::string(strings[i]));
-  }
-  return result;
-}
 std::string str_join(const std::string base, 
 		const std::vector<std::string>& strings,
 		const size_t start, const size_t end){
-  std::string result(strings[start]);
-  if(start==end){
+  if(start==end || strings.size()==0){
     return "";
   }
+  std::string result(strings[start]);
   for(size_t i=(start+1); i < end; i++){
     result+=(base + strings[i]);
   }
@@ -188,8 +178,8 @@ TH1* make_normal_hist(TH1* base_hist, TTree* tree,
   if(uniq_suffix.find("&&")!=std::string::npos){
     uniq_suffix="signal_region";
   }
-  const std::string weight_expr=("weight*"+str_join("*",cut_branches,
-						    0,cut_index+1));
+  const std::string weight_expr=cut_branches.size()==0 ? "weight" :
+    "weight*"+str_join("*",cut_branches,0,cut_index+1);
   // MSG_DEBUG(weight_expr);
   return make_normal_hist(base_hist,tree,plot,
 			  weight_expr.c_str(),"_NRM_"+std::string(tstr)+uniq_suffix);
@@ -255,6 +245,7 @@ TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 }
 void add_atlas_badge(TVirtualPad& canv,const double x, const double y, 
 		     const double lumi_fb, const status_t status){
+  canv.cd();
   std::string status_label="";
   if (status==PRELIMINARY){
     status_label="Preliminary";
