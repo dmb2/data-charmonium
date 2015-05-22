@@ -81,8 +81,9 @@ void print_hist(TTree* tree, const std::string& plot,
 		const std::string suffix, 
 		TH1* (*make_hist)(TH1*,TTree*,const std::string&, const char*,
 				  const std::string&));
-void print_cut_hist(TTree* tree,const std::vector<std::string>& cut_branches,
-		const std::string& plot, TH1* base_hist, 
-		std::map<std::string,std::string>& CutNames, std::string file_suffix,
-		TH1* (*make_hist)(TH1* ,TTree* , const char**, 
-				  size_t, const std::string&));
+void print_cut_hist(TTree* tree, const std::vector<std::string>& cut_branches,
+		    const std::string& plot, TH1* base_hist, 
+		    std::map<std::string,std::string>& CutNames, std::string file_suffix,
+		    TH1* (*make_hist)(TH1* ,TTree* , 
+				      const std::vector<std::string>&, size_t,
+				      const std::string&));

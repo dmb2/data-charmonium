@@ -55,7 +55,8 @@ void print_ratio_hist(std::map<std::string,TTree*>& samples, const std::string& 
     leg = init_legend(0.25,0.68,0.4,0.92);
   }
   decorator.SetTextSize(0.04);
-  const char* cb[]={""};
+  // const char* cb[]={""};
+  std::vector<std::string> cb;
   THStack* stack = make_stack(base_hist,samples,cb,0,plot,*leg,target_lumi);
   canv.cd();
   norm_stack(*stack);

@@ -15,8 +15,6 @@
 
 #include "histo-utils.hh"
 #include "root-sugar.hh"
-using namespace std;
-
 void setup_hist(TH1* hist){
   hist->Sumw2();
   hist->SetMarkerStyle(1);
@@ -30,7 +28,7 @@ TH2D* setup_res_dif_hist(TH1* hist){
       std::string(hist->GetName())=="jet_z" ){
     ymin=-0.4; ymax=0.4;
   }
-  TH2D* hist2D = new TH2D((string(hist->GetName())+ "res_dif").c_str(), 
+  TH2D* hist2D = new TH2D((std::string(hist->GetName())+ "res_dif").c_str(), 
 			  hist->GetTitle(), 
 			  axis->GetNbins(), axis->GetXmin(), axis->GetXmax(),
 			  50,ymin,ymax);
@@ -46,7 +44,7 @@ TH2D* setup_res_vtxz_hist(TH1* hist){
      std::string(hist->GetName())=="jet_z" ){
     ymin=-0.4; ymax=0.4;
   }
-  TH2D* hist2D = new TH2D((string(hist->GetName())+ "res_vtxz").c_str(), 
+  TH2D* hist2D = new TH2D((std::string(hist->GetName())+ "res_vtxz").c_str(), 
 			  hist->GetTitle(), 50, -200, 200,50,ymin,ymax);
   hist2D->GetXaxis()->SetTitle("J/#psi vertex z [mm]");
   hist2D->GetYaxis()->SetTitle(("Reco - Truth "+axis_label).c_str());
@@ -56,7 +54,7 @@ TH2D* setup_res_vtxz_hist(TH1* hist){
 TH2D* setup_rel_res_hist(TH1* hist){
   const TAxis* axis = hist->GetXaxis();
   std::string axis_label(axis->GetTitle());
-  TH2D* hist2D = new TH2D((string(hist->GetName())+ "rel_rsp").c_str(), hist->GetTitle(),
+  TH2D* hist2D = new TH2D((std::string(hist->GetName())+ "rel_rsp").c_str(), hist->GetTitle(),
 			  axis->GetNbins(), axis->GetXmin(), axis->GetXmax(),
 			  50,-0.8,1.0);
   hist2D->GetXaxis()->SetTitle(("Truth "+axis_label).c_str());
@@ -67,7 +65,7 @@ TH2D* setup_rel_res_hist(TH1* hist){
 TH2D* setup_response_hist(TH1* hist){
   TColor* color = new TColor(1756,0.0,0.0,0.0,"tran_black",0.75);
   const TAxis* axis = hist->GetXaxis();
-  TH2D* hist2D = new TH2D((string(hist->GetName())+ "_rsp").c_str(), hist->GetTitle(),
+  TH2D* hist2D = new TH2D((std::string(hist->GetName())+ "_rsp").c_str(), hist->GetTitle(),
 			  axis->GetNbins(), axis->GetXmin(), axis->GetXmax(),
 			  axis->GetNbins(), axis->GetXmin(), axis->GetXmax());
   hist2D->SetMarkerStyle(6);
@@ -78,21 +76,33 @@ TH2D* setup_response_hist(TH1* hist){
   delete color;
   return hist2D;
 }
-vector<string> add_prefix(string prefix, vector<string> strings){
-  vector<string> result;
+std::vector<std::string> add_prefix(std::string prefix, std::vector<std::string> strings){
+  std::vector<std::string> result;
   result.reserve(strings.size());
-  for(vector<string>::const_iterator str=strings.begin(); str!=strings.end(); ++str){
+  for(std::vector<std::string>::const_iterator str=strings.begin(); str!=strings.end(); ++str){
     result.push_back(prefix + *str);
   }
   return result;
 }
-string str_join(string base, const char* strings[],size_t start, size_t end){
-  string result(strings[start]);
+std::string str_join(std::string base, const char* strings[],size_t start, size_t end){
+  std::string result(strings[start]);
   if(start==end){
     return "";
   }
   for(size_t i=(start+1); i < end; i++){
-    result+=(base + string(strings[i]));
+    result+=(base + std::string(strings[i]));
+  }
+  return result;
+}
+std::string str_join(const std::string base, 
+		const std::vector<std::string>& strings,
+		const size_t start, const size_t end){
+  std::string result(strings[start]);
+  if(start==end){
+    return "";
+  }
+  for(size_t i=(start+1); i < end; i++){
+    result+=(base + strings[i]);
   }
   return result;
 }
@@ -155,7 +165,7 @@ std::vector<std::pair<double,double> > make_roc_pairs(TH1* signal, TH1* backgrou
 
 TH1* make_response_hist(TH1* base_hist, TTree* tree, 
 			const std::vector<std::string>& cut_branches,size_t cut_index, 
-			const string& plot){
+			const std::string& plot){
   TH1* response = (TH1*)base_hist->Clone((plot + "_RSP_"+
 					  str_join("_",cut_branches,
 						   0,cut_index+1)).c_str());
@@ -165,7 +175,7 @@ TH1* make_response_hist(TH1* base_hist, TTree* tree,
 }
 TH1* make_normal_hist(TH1* base_hist, TTree* tree, 
 		      const std::vector<std::string>& cut_branches, size_t cut_index, 
-		      const string& plot){
+		      const std::string& plot){
   //This is horrible, but necessary to allow multiple calls using the
   //same combinations of cuts, ie using the current time + cuts
   //applied gives us a unique name for the cloned histogram to avoid
@@ -186,11 +196,11 @@ TH1* make_normal_hist(TH1* base_hist, TTree* tree,
 }
 TH1* make_ratio_hist(TH1* base_hist, TTree* tree,
 		     const std::vector<std::string>& cut_branches,size_t cut_index, 
-		     const string& plot){
+		     const std::string& plot){
   TH1* ratio =(TH1*)base_hist->Clone((plot +"_R_"+
 				      str_join("_",cut_branches,
 					       0,cut_index+1)).c_str());
-  string hNDenom = plot+str_join("_",cut_branches,0,cut_index)+"_tmp";
+  std::string hNDenom = plot+str_join("_",cut_branches,0,cut_index)+"_tmp";
   TH1* hDenom = (TH1*)ratio->Clone(hNDenom.c_str());
   draw_histo(tree, plot.c_str(), hNDenom.c_str(),
 	     str_join("*", cut_branches, 0,cut_index).c_str());
@@ -352,9 +362,8 @@ TLegend* make_legend(double x, double y, double width, double height){
 }
 void print_cut_hist(TTree* tree, const std::vector<std::string>& cut_branches,
 		const std::string& plot, TH1* base_hist, 
-		map<string,string>& CutNames, std::string file_suffix,
-		TH1* (*make_hist)(TH1* ,TTree* , const char**, 
-				  size_t, const std::string&)){
+		std::map<std::string,std::string>& CutNames, std::string file_suffix,
+		    TH1* (*make_hist)(TH1* ,TTree* , const std::vector<std::string>&,size_t, const std::string&)){
   TCanvas canv(("canv_"+plot).c_str(),"Cut Plot",1800,800);
   // TPaveText label(0.08,0.6,0.18,0.71,"NB");
   TLatex decorator;
