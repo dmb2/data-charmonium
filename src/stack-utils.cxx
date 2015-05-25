@@ -42,6 +42,10 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
   TH1** hist_list = (TH1**)calloc(num_hists, sizeof(TH1*));
   string cut_expr;
   char cut_str[1024];
+  // struct timespec tp;
+  // clock_gettime(CLOCK_MONOTONIC,&tp);
+  // char tstr[10]; 
+ // snprintf(tstr,LEN(tstr),"%zd",tp.tv_nsec);
   for(size_t i=0; i < num_hists; i++){
     cut_expr.clear();
     const string name(sample_names[i]);
@@ -50,7 +54,11 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
     }
 
     TTree* const tree = samples[name];
-    std::string suffix = cut_index == 0 ? "" : cut_branches[cut_index];
+    std::string suffix = cut_index == 0 ? "" : str_join("_",cut_branches,0,cut_index+1);
+    suffix.replace(suffix.find("("),suffix.rfind(")"),"signal_region");
+    // if(suffix.find("&&")!=std::string::npos){
+    //   suffix="signal_region";
+    // }
     TH1* hist =(TH1*)base_hist->Clone((name+plot+"_"+ suffix).c_str());
     hist_list[i]=hist;
     cut_expr=((cut_index == 0) ? "weight" : "weight*" 
@@ -59,6 +67,7 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
     // MSG_DEBUG(cut_expr);
     snprintf(cut_str,sizeof(cut_str)/sizeof(*cut_str),cut_expr.c_str(),target_lumi);
     draw_histo(tree,plot.c_str(),hist->GetName(), cut_str);
+    MSG_DEBUG(hist->GetName()<<": "<<hist->GetEntries());
     total+=hist->Integral();
     stack->Add(hist);
     style_hist(hist,hist_styles[name]);
@@ -269,16 +278,20 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
 		 const double target_lumi,
 		 const std::vector<std::string>& cut_branches){
   TCanvas canv(("stk_canv_"+plot).c_str(), "Stack", 600,600);
+  if(plot.find("pt")!=std::string::npos){
+    canv.SetLogy(true);
+  }
   TLatex decorator;
   TLegend& leg=*init_legend();
   decorator.SetTextSize(0.04);
-  size_t cut_idx=cut_branches.size()==0 ? 0 : cut_branches.size()-1;
-  const char* sig_expr[] = {"((2.904 < jpsi_m && jpsi_m < 3.29) && (-1 < jpsi_tau && jpsi_tau < 0.25))"};
-  TH1* master = make_normal_hist(base_hist,samples["master"], cut_branches, cut_idx, plot);
+  std::vector<std::string> extended_cbs(cut_branches);
+  extended_cbs.push_back("((2.904 < jpsi_m && jpsi_m < 3.29) && (-1 < jpsi_tau && jpsi_tau < 0.25))");
+  size_t cut_idx=extended_cbs.size()-1;
+  TH1* master = make_normal_hist(base_hist,samples["master"], extended_cbs, cut_idx, plot);
   master->SetLineWidth(2.);
   master->SetFillStyle(0);
   master->SetLineColor(kBlack);
-  THStack* stack = make_stack(base_hist,samples,cut_branches, cut_idx, plot, leg, target_lumi);
+  THStack* stack = make_stack(base_hist,samples,extended_cbs, cut_idx, plot, leg, target_lumi);
   master->Draw("H");
   stack->Draw("H same");
   double s_max=stack->GetStack()!=NULL ? ((TH1*)stack->GetStack()->Last())->GetMaximum() : 0.;
@@ -309,27 +322,28 @@ void print_cut_stack(std::map<std::string,TTree*>& samples,
   TH1* master=NULL;
   size_t nCuts=cut_branches.size();
   for(size_t i = 0; i < nCuts; i++){
-    set_pad_margins(canv.cd(i+1),i+1,nCuts);
-    master = make_normal_hist(base_hist,samples["master"],cut_branches, i ,plot);
-    hist = make_stack(base_hist,samples, cut_branches, i,plot, leg, target_lumi);
+    std::vector<std::string> extended_cbs(cut_branches.begin(),cut_branches.begin()+i);
+    extended_cbs.push_back("((2.904 < jpsi_m && jpsi_m < 3.29) && (-1 < jpsi_tau && jpsi_tau < 0.25))");
+    size_t cut_idx=extended_cbs.size()-1;
+    TVirtualPad* pad = canv.cd(i+1);
+    set_pad_margins(pad,i+1,nCuts);
+    if(plot.find("pt")!=std::string::npos ||
+       plot.find("jpsi_tau")!=std::string::npos){
+      pad->SetLogy(true);
+    }
+      
+    master = make_normal_hist(base_hist,samples["master"], extended_cbs, cut_idx ,plot);
+    hist = make_stack(base_hist,samples, extended_cbs, cut_idx,plot, leg, target_lumi);
     master->Draw("e1");
     if(hist){
       hist->Draw("H same");
     }
-    // MSG_DEBUG(master->GetEntries()<<" "<<cut_branches[i]);
+    // MSG_DEBUG(hist->GetName());
+    // MSG_DEBUG(hist->GetEntries()<<" "<<cut_branches[i]);
     decorator.DrawLatexNDC(0.5,0.75,CutNames[cut_branches[i]].c_str());
   }
-  // canv.cd(1);
-  // canv.cd(nCuts);
   canv.cd(0);
   leg.Clear();
-  if(hist){
-    TIter next(hist->GetHists());
-    TH1* h=NULL;
-    while((h = (TH1*)next())) {
-      add_to_legend(&leg,h,hist_styles[string(h->GetName()).substr(0,5)]);
-    }
-  }
   leg.AddEntry(master,"Data");
   leg.Draw();
   decorator.SetTextSize(0.04);

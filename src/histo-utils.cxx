@@ -363,6 +363,9 @@ void print_cut_hist(TTree* tree, const std::vector<std::string>& cut_branches,
   canv.Divide(3,2);
   canv.SetRightMargin(0);
   canv.SetTopMargin(0);
+  if(plot.find("pt")!=std::string::npos){
+    canv.SetLogy(true);
+  }
   size_t nCuts=cut_branches.size();
   for(size_t i = 0; i < nCuts; i++){
     set_pad_margins(canv.cd(i+1),i+1,nCuts);
