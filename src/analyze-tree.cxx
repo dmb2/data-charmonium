@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
+#include <algorithm>
 //ROOT 
 #include "TFile.h"
 #include "TLorentzVector.h"
@@ -35,7 +36,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double cand_psi_m(0.);
   double cand_jet_m(0.), emfrac(0.);
   double cand_jet_pt(0.), cand_jet_eta(0.),cand_jet_phi(0.), cand_jet_E(0.);
-  // std::vector<std::vector<int> > *mu_trk_idx = NULL;
+  std::vector<std::vector<int> > *mu_trk_idx = NULL;
   // std::vector<double> *mu_d0 = NULL, *mu_d0_err = NULL;
   // std::vector<double> *mu_qbyp = NULL;
 
@@ -73,7 +74,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   Forest["JPsi2Trk"]->SetBranchAddress("VTX_pt",&psi_pt);
   const char* vtx_names[] = {"px","py","pz","e"};
   setup_four_vector(Forest["JPsi"],vtx_px,vtx_py,vtx_pz,vtx_e,"VTX",vtx_names);
-  // Forest["JPsi"]->SetBranchAddress("MUONS_index",&mu_trk_idx);
+  Forest["JPsi"]->SetBranchAddress("MUONS_index",&mu_trk_idx);
   Forest["JPsi"]->SetBranchAddress("VTX_pt",&vtx_pt);
   Forest["JPsi"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
   Forest["JPsi"]->SetBranchAddress("VTX_zposition",&vtx_z);
@@ -173,12 +174,24 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 			   jet_E->at(*itr)*GeV);
       jets.push_back(tmp_vec);
     }
-
+    int mu1_idx=-1, mu2_idx=-1;
     if (vtx_pt->size() > 0){
       for(size_t i = 0; i < vtx_pt->size(); i++){
 	if(vtx_pt->at(i) > vtx_pt->at(jpsi_idx)){
 	  jpsi_idx=i;
 	}
+      }
+      if (mu_trk_idx->size() && mu_trk_idx->at(jpsi_idx).size() == 2){
+	mu1_idx=mu_trk_idx->at(jpsi_idx)[0];
+	mu2_idx=mu_trk_idx->at(jpsi_idx)[1];
+      }
+      if(mu1_idx < 0 || mu2_idx < 0){
+	MSG_DEBUG("WARNING: J/\\psi candidate is missing muon track indices");
+	continue;
+      }
+      double mu_max_eta=std::max(fabs(mu_eta->at(mu1_idx)),fabs(mu_eta->at(mu2_idx)));
+      if(!CutDefReal["mumu_eta"].pass(mu_max_eta,w)){
+	continue;
       }
       candJPsi.SetPxPyPzE(vtx_px->at(jpsi_idx)*GeV, vtx_py->at(jpsi_idx)*GeV, vtx_pz->at(jpsi_idx)*GeV, vtx_e->at(jpsi_idx)*GeV);
       // candJPsi=buildJPsiCand(buildMuons(mu_pt,mu_eta,mu_phi,mu_E),*mu_charge);
@@ -195,7 +208,13 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     if(!CutDefReal["jpsi_pt"].pass(jpsi_pt,w)){
       continue;
     }
+    /*
     if(!CutDefReal["jpsi_eta"].pass(fabs(jpsi_eta),w)){
+      continue;
+    }
+    */
+    
+    if(!CutDefReal["jpsi_rap"].pass(fabs(jpsi_rap),w)){
       continue;
     }
     if(psi_m->size() > 0){

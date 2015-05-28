@@ -1,7 +1,7 @@
-#ifdef __CINT__
+#ifdef __MAKECINT__
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
 #pragma link C++ nestedclasses;
-#pragma link C++ std::vector<std::vector<int> >;
+#pragma link C++ vector<vector<int> >+;
 #endif

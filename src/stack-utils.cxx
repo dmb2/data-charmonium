@@ -42,10 +42,6 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
   TH1** hist_list = (TH1**)calloc(num_hists, sizeof(TH1*));
   string cut_expr;
   char cut_str[1024];
-  // struct timespec tp;
-  // clock_gettime(CLOCK_MONOTONIC,&tp);
-  // char tstr[10]; 
- // snprintf(tstr,LEN(tstr),"%zd",tp.tv_nsec);
   for(size_t i=0; i < num_hists; i++){
     cut_expr.clear();
     const string name(sample_names[i]);
@@ -55,19 +51,16 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
 
     TTree* const tree = samples[name];
     std::string suffix = cut_index == 0 ? "" : str_join("_",cut_branches,0,cut_index+1);
-    suffix.replace(suffix.find("("),suffix.rfind(")"),"signal_region");
-    // if(suffix.find("&&")!=std::string::npos){
-    //   suffix="signal_region";
-    // }
+    if(suffix.find("(")!=std::string::npos){
+      suffix.replace(suffix.find("("),suffix.rfind(")"),"signal_region");
+    } 
     TH1* hist =(TH1*)base_hist->Clone((name+plot+"_"+ suffix).c_str());
     hist_list[i]=hist;
     cut_expr=((cut_index == 0) ? "weight" : "weight*" 
 	      + str_join("*",cut_branches,0,cut_index+1));
     cut_expr+="*%.4g";
-    // MSG_DEBUG(cut_expr);
     snprintf(cut_str,sizeof(cut_str)/sizeof(*cut_str),cut_expr.c_str(),target_lumi);
     draw_histo(tree,plot.c_str(),hist->GetName(), cut_str);
-    MSG_DEBUG(hist->GetName()<<": "<<hist->GetEntries());
     total+=hist->Integral();
     stack->Add(hist);
     style_hist(hist,hist_styles[name]);

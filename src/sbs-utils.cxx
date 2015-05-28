@@ -236,10 +236,10 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   c1.SaveAs(outname);
 
   TH1* sig_final = dynamic_cast<TH1*>(sig_hist->Clone((std::string("sf_")+base_hist->GetName()).c_str()));
+  MSG_DEBUG("Raw Signal: "<<sig_final->Integral()<<" Combinatoric Yield: "<<comb_hist->Integral()<<" Non-Prompt Yield: "<<nonprompt_hist->Integral());
   sig_final->Add(comb_hist,-1);
   sig_final->Add(nonprompt_hist,-1);
   // sig_final->Add(psi_hist,-1);
-
   return sig_final;
 }
 THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aesthetic> styles, 

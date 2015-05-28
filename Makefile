@@ -32,6 +32,7 @@ src/dict.cxx: include/LinkDef.h
 	rootcint -f $@ -c $(CXXFLAGS) -p $^
 src/libDict.so: src/dict.cxx
 	$(CC) -shared -fPIC -o$@ $(CXXFLAGS) $^
+bin/make-closure-sample: bin/make-closure-sample.o src/simple-parser.o src/Cut.o
 bin/simple-parser-test: bin/simple-parser-test.o src/simple-parser.o src/Cut.o
 	$(CC) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 bin/skim-tree:  $(SKIM_DEPS) bin/skim-tree.o src/analyze-tree.o src/libDict.so
