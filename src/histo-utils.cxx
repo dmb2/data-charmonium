@@ -2,7 +2,6 @@
 #include <string>
 #include <iostream>
 #include <cmath>
-#include <ctime>
 
 #include "TTree.h"
 #include "TCanvas.h"
@@ -166,14 +165,11 @@ TH1* make_response_hist(TH1* base_hist, TTree* tree,
 TH1* make_normal_hist(TH1* base_hist, TTree* tree, 
 		      const std::vector<std::string>& cut_branches, size_t cut_index, 
 		      const std::string& plot){
-  //This is horrible, but necessary to allow multiple calls using the
-  //same combinations of cuts, ie using the current time + cuts
-  //applied gives us a unique name for the cloned histogram to avoid
-  //clobbering it if the same combination of cuts is used later
-  struct timespec tp;
-  clock_gettime(CLOCK_MONOTONIC,&tp);
-  char tstr[10];
-  snprintf(tstr,LEN(tstr),"%zd",tp.tv_nsec);
+  //TODO use Directory staging
+  static int counter=0;
+  counter++;
+  char count_str[10];
+  snprintf(count_str,LEN(count_str),"%d",counter);
   std::string uniq_suffix=str_join("_",cut_branches,0,cut_index+1);
   if(uniq_suffix.find("&&")!=std::string::npos){
     uniq_suffix="signal_region";
@@ -182,7 +178,7 @@ TH1* make_normal_hist(TH1* base_hist, TTree* tree,
     "weight*"+str_join("*",cut_branches,0,cut_index+1);
   // MSG_DEBUG(weight_expr);
   return make_normal_hist(base_hist,tree,plot,
-			  weight_expr.c_str(),"_NRM_"+std::string(tstr)+uniq_suffix);
+			  weight_expr.c_str(),"_NRM_"+std::string(count_str)+uniq_suffix);
 }
 TH1* make_ratio_hist(TH1* base_hist, TTree* tree,
 		     const std::vector<std::string>& cut_branches,size_t cut_index, 
