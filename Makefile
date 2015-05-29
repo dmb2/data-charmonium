@@ -2,6 +2,7 @@ CC=$(shell root-config --cxx)
 
 INCDIR=$(PWD)/include
 LIBDIR:=$(shell root-config --libdir)
+ROOTSYS:=$(shell root-config --prefix)
 ROOTINCDIR:=$(shell root-config --incdir)
 LDFLAGS:=$(shell root-config --libs)\
 	$(shell fastjet-config --libs)\
@@ -32,6 +33,8 @@ src/dict.cxx: include/LinkDef.h
 	rootcint -f $@ -c $(CXXFLAGS) -p $^
 src/libDict.so: src/dict.cxx
 	$(CC) -shared -fPIC -o$@ $(CXXFLAGS) $^
+bin/tree-bug: bin/tree-bug.o src/libDict.so
+	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -lDict
 bin/make-closure-sample: bin/make-closure-sample.o src/simple-parser.o src/Cut.o
 bin/simple-parser-test: bin/simple-parser-test.o src/simple-parser.o src/Cut.o
 	$(CC) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
@@ -55,3 +58,4 @@ bin/cut-flow-plots: $(HISTO_DEPS) bin/cut-flow-plots.o
 	$(CC) $(CXXFLAGS) -c $< -o $@
 clean:
 	-rm $(BINS) $(BINOBJ) $(OBJS) src/dict.cxx src/dict.h src/libDict.so
+# DO NOT DELETE

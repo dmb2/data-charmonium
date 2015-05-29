@@ -1,7 +1,9 @@
-#ifdef __MAKECINT__
-#pragma link off all globals;
-#pragma link off all classes;
-#pragma link off all functions;
+#ifdef __CINT__
+
 #pragma link C++ nestedclasses;
-#pragma link C++ vector<vector<int> >+;
+#pragma link C++ nestedtypedefs;
+
+#pragma link C++ class std::vector<std::vector<int> >+;
+/* #pragma link C++ defined_in "src/libLoader.C"; */
+
 #endif
