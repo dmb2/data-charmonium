@@ -48,7 +48,7 @@ int parse_line(const std::string& line, std::vector<std::string>& options,const 
   }
   if(idx==std::string::npos){
     std::cerr<<"ERROR: Could not find a comparison operator at line "<<line_n <<std::endl;
-    return 1;
+    exit(-1);
   }
   //adjust the index position just beyond the comparison operator
   idx+= (line[idx+1]=='=') ? 2 : 1;
@@ -59,6 +59,7 @@ int parse_line(const std::string& line, std::vector<std::string>& options,const 
   }
   else{
     std::cerr<<"ERROR: Could not find a \",\" to separate cut from cut type at line "<<line_n<<std::endl;
+    exit(-1);
   }
   options.push_back(line.substr(delim_pos+1));
   return 0;
@@ -71,7 +72,7 @@ int parse_file(std::ifstream& file,std::vector<std::vector<std::string > >& opti
     std::vector<std::string> line_opts;
     line_opts.reserve(3);
     line = strip_whitespace(line);
-    if(line[0]=='#') {
+    if(line[0]=='#' || line=="" || line[0]=='\n') {
       continue;
     }
     line = strip_comment(line);

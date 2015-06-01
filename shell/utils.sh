@@ -2,6 +2,7 @@
 # outside of this analysis if your working in a directory that has bin
 # with binaries in it
 export PATH=./bin:$PATH
+export LD_LIBRARY_PATH=./src:$LD_LIBRARY_PATH
 # Helper functions for bookkeeping, should be sourced not executed 
 
 # usage: proc_file foo.txt echo [cmd opts]
@@ -44,35 +45,29 @@ submit_dset(){
             $@
 }
 
-#usage: make_config DSID.foobar.root base.conf
+#usage: make_config cross_sections.conf AnalysisCutsMC.conf DSID.file.root
 py_mul(){
     python -c "print $1"
 }
 make_config(){
-    local xsecs; local DSID; local BASECONF;
-    declare -A xsecs
-    xsecs["208003"]=55717
-    xsecs["208004"]=1361.5
-    xsecs["208413"]=2.190e6
-    xsecs["208022"]=1.682e7
-    xsecs["208023"]=1.740e8
-    xsecs["208400"]=6.191e8
-    xsecs["208401"]=3.906e8
-    xsecs["208432"]=7.407e9
-    xsecs["108606"]=3.855e6
-    xsecs["108601"]=5.042e6
-    xsecs["208024"]=$(py_mul 12.515716*1.8)
-    xsecs["208025"]=$(py_mul 586.61009*1.08)
-    xsecs["208026"]=$(py_mul 15.605898*1.8)
-    xsecs["208027"]=$(py_mul 0.30668153*1.0344828)
-    xsecs["208028"]=$(py_mul 8256.2234*0.010924370)
-    BASECONF=$2
-    DSID=$(echo $1 | awk -F '.' '{print $1}')
-    samp=$(echo $1 | sed 's/.root//g')
+    local XSEC_FILE=$1;
+    local BASECONF=$2;
+    local INFILE=$3;
+    local xsecs; declare -A xsecs;
+    local DSID; 
+    local INPATH=../rucio/mini/mj-v5/;
+    # local INPATH=root://eosatlas.cern.ch//eos/atlas/user/d/davidb/charm/NTUP/mini/mj-v5/;
+    cat ${XSEC_FILE} | while read line; do
+	id=$(echo $line | awk -F '=' '{print $1}')
+	xsec=$(echo $line | awk -F '=' '{print $2}')
+	xsecs[$id]=$xsec
+    done
+    DSID=$(echo ${INFILE} | awk -F '.' '{print $1}')
+    samp=$(echo ${INFILE} | sed 's/.root//g')
     echo ${samp}
-    sed s/SAMP/${samp}/g $BASECONF > ${samp}_config.conf
-    sigma=${xsecs[${DSID}]}
-    sed -i s/XSEC/$sigma/g ${samp}_config.conf 
+    sed s/OSAMP/${samp}/g $BASECONF > ${samp}_config.conf
+    sed -i s,SAMP,${INPATH}${samp},g ${samp}_config.conf
+    sed -i s/XSEC/${xsecs[${DSID}]}/g ${samp}_config.conf 
 }
 
 #usage: make_mini DSID.foobar.root
