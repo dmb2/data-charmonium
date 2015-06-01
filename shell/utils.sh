@@ -53,21 +53,15 @@ make_config(){
     local INFILE=$1;
     local XSEC_FILE=$2;
     local BASECONF=$3;
-    local xsecs; declare -A xsecs;
     local DSID; 
     local INPATH=../rucio/mini/mj-v5/;
     # local INPATH=root://eosatlas.cern.ch//eos/atlas/user/d/davidb/charm/NTUP/mini/mj-v5/;
-    cat ${XSEC_FILE} | while read line; do
-	id=$(echo $line | awk -F '=' '{print $1}')
-	xsec=$(echo $line | awk -F '=' '{print $2}')
-	xsecs[$id]=$xsec
-    done
     DSID=$(echo ${INFILE} | awk -F '.' '{print $1}')
     samp=$(echo ${INFILE} | sed 's/.root//g')
-    echo ${samp}
+    xsec=$(grep "$DSID" "$XSEC_FILE" | awk -F '=' '{print $2}')
     sed s/OSAMP/${samp}/g $BASECONF > ${samp}_config.conf
     sed -i s,SAMP,${INPATH}${samp},g ${samp}_config.conf
-    sed -i s/XSEC/${xsecs[${DSID}]}/g ${samp}_config.conf 
+    sed -i s/XSEC/${xsec}/g ${samp}_config.conf 
 }
 
 #usage: make_mini DSID.foobar.root
