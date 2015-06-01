@@ -50,9 +50,9 @@ py_mul(){
     python -c "print $1"
 }
 make_config(){
-    local XSEC_FILE=$1;
-    local BASECONF=$2;
-    local INFILE=$3;
+    local INFILE=$1;
+    local XSEC_FILE=$2;
+    local BASECONF=$3;
     local xsecs; declare -A xsecs;
     local DSID; 
     local INPATH=../rucio/mini/mj-v5/;
