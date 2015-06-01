@@ -63,7 +63,7 @@ void print_summary(const char* var){
   canv.SaveAs((std::string(var)+"_summary.pdf").c_str());
 }
 
-int main(const int argc, const char** argv){
+int main(/*const int argc, const char** argv*/){
   AtlasStyle style;
   style.SetAtlasStyle();
   heat_gradient(gStyle);

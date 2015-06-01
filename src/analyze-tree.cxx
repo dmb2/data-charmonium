@@ -16,7 +16,7 @@
 #ifndef __ANALYZE_TREE_CUTFLOW__
 #define CUT_CONTINUE(cut) if(!cut){continue;};
 #else
-#define CUT_CONTINUE(cut) if(!cut){};
+#define CUT_CONTINUE(cut) {};
 #endif
 
 using namespace Units;
@@ -136,14 +136,16 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   OutTree.Branch("delta_r",&delta_r);
   setup_four_vector_output(OutTree,jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
 
-  int has_trigger=0, has_num_jets=0, has_jpsi_pt=0, has_jpsi_eta=0,
+  int has_trigger=0, has_num_jets=0, has_jpsi_pt=0, /*has_jpsi_eta=0,*/
     has_mumu_eta,has_jpsi_rap,has_jet_eta=0, has_delta_r=0, has_jet_pt=0;
 
 #ifdef __ANALYZE_TREE_CUTFLOW__  
   OutTree.Branch("mu_trigger_p",&has_trigger);
   OutTree.Branch("num_jets_p",&has_num_jets);
   OutTree.Branch("jpsi_pt_p",&has_jpsi_pt);
-  OutTree.Branch("jpsi_eta_p",&has_jpsi_eta);
+  OutTree.Branch("jpsi_rap_p",&has_jpsi_rap);
+  OutTree.Branch("mumu_eta_p",&has_mumu_eta);
+  // OutTree.Branch("jpsi_eta_p",&has_jpsi_eta);
   OutTree.Branch("delta_r_p", &has_delta_r);
   OutTree.Branch("jet_eta_p",&has_jet_eta);
   OutTree.Branch("jet_pt_p",&has_jet_pt);
