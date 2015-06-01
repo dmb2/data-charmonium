@@ -13,6 +13,12 @@
 #include "root-sugar.hh"
 #include "Units.hh"
 
+#ifndef __ANALYZE_TREE_CUTFLOW__
+#define CUT_CONTINUE(cut) if(!cut){continue;};
+#else
+#define CUT_CONTINUE(cut) if(!cut){};
+#endif
+
 using namespace Units;
 bool verbose=true;
 
@@ -37,11 +43,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double cand_jet_m(0.), emfrac(0.);
   double cand_jet_pt(0.), cand_jet_eta(0.),cand_jet_phi(0.), cand_jet_E(0.);
   std::vector<std::vector<int> > *mu_trk_idx = NULL;
-  // std::vector<double> *mu_d0 = NULL, *mu_d0_err = NULL;
-  // std::vector<double> *mu_qbyp = NULL;
-
-  // double mup_d0(0.), mun_d0(0.);
-  // double mup_d0_err(0.), mun_d0_err(0.);
   
   std::vector<int> *mu_charge=NULL;
   std::vector<double> *mu_pt=NULL, *mu_eta=NULL, *mu_phi=NULL, *mu_E=NULL;
@@ -135,6 +136,19 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   OutTree.Branch("delta_r",&delta_r);
   setup_four_vector_output(OutTree,jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
 
+  int has_trigger=0, has_num_jets=0, has_jpsi_pt=0, has_jpsi_eta=0,
+    has_mumu_eta,has_jpsi_rap,has_jet_eta=0, has_delta_r=0, has_jet_pt=0;
+
+#ifdef __ANALYZE_TREE_CUTFLOW__  
+  OutTree.Branch("mu_trigger_p",&has_trigger);
+  OutTree.Branch("num_jets_p",&has_num_jets);
+  OutTree.Branch("jpsi_pt_p",&has_jpsi_pt);
+  OutTree.Branch("jpsi_eta_p",&has_jpsi_eta);
+  OutTree.Branch("delta_r_p", &has_delta_r);
+  OutTree.Branch("jet_eta_p",&has_jet_eta);
+  OutTree.Branch("jet_pt_p",&has_jet_pt);
+#endif
+
   double w=weight;
   OutTree.Branch("weight", &w);
 
@@ -158,12 +172,10 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     idx=0; jpsi_idx=0; delta_r=-1.; z=-1.;
     jets.clear(); jets.reserve(jet_pt->size());
     CutDefCat["nominal"].pass();
-    if(!CutDefCat["trigger"].pass(is_MC || passed_trigger(*EF_trigger_names),w)){
-      continue;
-    };
-    if(!CutDefCat["num_jets"].pass(int(jet_pt->size()),w)){
-      continue;
-    };
+    has_trigger = CutDefCat["trigger"].pass(is_MC || passed_trigger(*EF_trigger_names),w);
+    has_num_jets = CutDefCat["num_jets"].pass(int(jet_pt->size()),w);
+    CUT_CONTINUE(has_trigger);
+    CUT_CONTINUE(has_num_jets);
     std::vector<size_t> good_indices = filter_by_pt(*jet_pt, CutDefReal["jet_pt"].cut_value());
     for(std::vector<size_t>::const_iterator itr=good_indices.begin();
 	itr!=good_indices.end(); ++itr){
@@ -175,48 +187,39 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       jets.push_back(tmp_vec);
     }
     int mu1_idx=-1, mu2_idx=-1;
-    if (vtx_pt->size() > 0){
-      for(size_t i = 0; i < vtx_pt->size(); i++){
-	if(vtx_pt->at(i) > vtx_pt->at(jpsi_idx)){
-	  jpsi_idx=i;
-	}
+    CUT_CONTINUE((vtx_pt->size() > 0));
+    for(size_t i = 0; i < vtx_pt->size(); i++){
+      if(vtx_pt->at(i) > vtx_pt->at(jpsi_idx)){
+	jpsi_idx=i;
       }
-      if (mu_trk_idx->size() && mu_trk_idx->at(jpsi_idx).size() == 2){
-	mu1_idx=mu_trk_idx->at(jpsi_idx)[0];
-	mu2_idx=mu_trk_idx->at(jpsi_idx)[1];
-      }
-      if(mu1_idx < 0 || mu2_idx < 0){
-	MSG_DEBUG("WARNING: J/\\psi candidate is missing muon track indices");
-	continue;
-      }
-      double mu_max_eta=std::max(fabs(mu_eta->at(mu1_idx)),fabs(mu_eta->at(mu2_idx)));
-      if(!CutDefReal["mumu_eta"].pass(mu_max_eta,w)){
-	continue;
-      }
-      candJPsi.SetPxPyPzE(vtx_px->at(jpsi_idx)*GeV, vtx_py->at(jpsi_idx)*GeV, vtx_pz->at(jpsi_idx)*GeV, vtx_e->at(jpsi_idx)*GeV);
-      // candJPsi=buildJPsiCand(buildMuons(mu_pt,mu_eta,mu_phi,mu_E),*mu_charge);
-      jpsi_pt=candJPsi.Pt();
-      jpsi_eta=candJPsi.Eta();
-      jpsi_rap=candJPsi.Rapidity();
-      jpsi_phi=candJPsi.Phi();
-      jpsi_E=candJPsi.E();
-      jpsi_m=candJPsi.M();
     }
-    else{
+    if (mu_trk_idx->size() && mu_trk_idx->at(jpsi_idx).size() == 2){
+      mu1_idx=mu_trk_idx->at(jpsi_idx)[0];
+      mu2_idx=mu_trk_idx->at(jpsi_idx)[1];
+    }
+    if(mu1_idx < 0 || mu2_idx < 0){
+#ifndef __ANALYZE_TREE_CUTFLOW__      
+      MSG_DEBUG("WARNING: J/\\psi candidate is missing muon track indices");
+#endif
       continue;
     }
-    if(!CutDefReal["jpsi_pt"].pass(jpsi_pt,w)){
-      continue;
-    }
-    /*
-    if(!CutDefReal["jpsi_eta"].pass(fabs(jpsi_eta),w)){
-      continue;
-    }
-    */
-    
-    if(!CutDefReal["jpsi_rap"].pass(fabs(jpsi_rap),w)){
-      continue;
-    }
+    double mu_max_eta=std::max(fabs(mu_eta->at(mu1_idx)),fabs(mu_eta->at(mu2_idx)));
+    has_mumu_eta = CutDefReal["mumu_eta"].pass(mu_max_eta,w);
+    CUT_CONTINUE(has_mumu_eta);
+    candJPsi.SetPxPyPzE(vtx_px->at(jpsi_idx)*GeV, vtx_py->at(jpsi_idx)*GeV, vtx_pz->at(jpsi_idx)*GeV, vtx_e->at(jpsi_idx)*GeV);
+    // candJPsi=buildJPsiCand(buildMuons(mu_pt,mu_eta,mu_phi,mu_E),*mu_charge);
+    jpsi_pt=candJPsi.Pt();
+    jpsi_eta=candJPsi.Eta();
+    jpsi_rap=candJPsi.Rapidity();
+    jpsi_phi=candJPsi.Phi();
+    jpsi_E=candJPsi.E();
+    jpsi_m=candJPsi.M();
+    has_jpsi_pt=CutDefReal["jpsi_pt"].pass(jpsi_pt,w);
+    // has_jpsi_eta=CutDefReal["jpsi_eta"].pass(fabs(jpsi_eta),w);
+    has_jpsi_rap=CutDefReal["jpsi_rap"].pass(fabs(jpsi_rap),w);
+    CUT_CONTINUE(has_jpsi_pt);
+    // CUT_CONTINUE(has_jpsi_eta);
+    CUT_CONTINUE(has_jpsi_rap);
     if(psi_m->size() > 0){
       double tmp_psi_pt(0.);
       for(size_t i = 0; i < psi_m->size(); i++){
@@ -231,22 +234,20 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     jpsi_lxy = (vtx_lxy->size() > 0) ? vtx_lxy->at(0).at(0) : -99999.;
     jpsi_vtx_z = (vtx_z->size() > 0) ? vtx_z->at(0) : -99999.;
     jpsi_tau = jpsi_lxy*(3096.915*GeV)/jpsi_pt;
-    if(!CutDefReal["delta_r"].pass(delta_r,w)){
-      continue;
-    };
-    if(!CutDefReal["jet_eta"].pass(fabs(candJet.Eta()),w)){
-      continue;
-    };
-    if(!CutDefReal["jet_pt"].pass(candJet.Pt(),w)){
-      continue;
-    };
+
+    has_delta_r=CutDefReal["delta_r"].pass(delta_r,w);
+    has_jet_eta=CutDefReal["jet_eta"].pass(fabs(candJet.Eta()),w);
+    has_jet_pt=CutDefReal["jet_pt"].pass(candJet.Pt(),w);
+    CUT_CONTINUE(has_delta_r);
+    CUT_CONTINUE(has_jet_eta);
+    CUT_CONTINUE(has_jet_pt);
     if(jet_type == "TrackZJets" || jet_type == "MuonLCTopoJets"){
       z=(jpsi_pt)/candJet.Pt();
     }
     else {
       z=(jpsi_pt)/(candJet.Pt()+jpsi_pt);
     }
-      
+    
     if(jet_pt->size()==0){
       continue;
     }
@@ -261,7 +262,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 
     cand_jet_m = candJet.M();
     store_four_vector(candJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
-
 
     if(is_MC){
       idx=0;
@@ -291,7 +291,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       t_tau32=t_tau3/t_tau2;
       t_tau21=t_tau2/t_tau1;
     }
-
     OutTree.Fill();
   }
   // Clean up the forest

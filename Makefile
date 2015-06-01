@@ -33,6 +33,8 @@ src/dict.cxx: include/LinkDef.h
 	rootcint -f $@ -c $(CXXFLAGS) -p $^
 src/libDict.so: src/dict.cxx
 	$(CC) -shared -fPIC -o$@ $(CXXFLAGS) $^
+src/analyze-cut-tree.o: src/analyze-tree.cxx
+	$(CC) $(CXXFLAGS) -D__ANALYZE_TREE_CUTFLOW__ -c $< -o $@ 
 bin/tree-bug: bin/tree-bug.o src/libDict.so
 	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -lDict
 bin/make-closure-sample: bin/make-closure-sample.o src/simple-parser.o src/Cut.o
@@ -40,7 +42,7 @@ bin/simple-parser-test: bin/simple-parser-test.o src/simple-parser.o src/Cut.o
 	$(CC) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 bin/skim-tree:  $(SKIM_DEPS) bin/skim-tree.o src/analyze-tree.o src/libDict.so
 	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -l Dict
-bin/skim-tree-response: $(SKIM_DEPS) bin/skim-tree.o src/cut-flow-studies.o src/libDict.so
+bin/skim-tree-response: $(SKIM_DEPS) bin/skim-tree.o src/analyze-cut-tree.o src/libDict.so
 	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -l Dict
 bin/skim-truth-tree:  $(SKIM_DEPS) bin/skim-truth-tree.o src/truth-studies.o
 	$(CC) $^ -o $@ $(LDFLAGS) 
