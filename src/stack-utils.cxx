@@ -302,23 +302,27 @@ void print_cut_stack(std::map<std::string,TTree*>& samples,
 		     const std::string& plot, TH1* base_hist, 
 		     std::map<std::string,std::string>& CutNames, 
 		     const std::string& file_suffix, const double target_lumi){
-  TCanvas canv(("canv_"+plot).c_str(),"Cut Plot",1800,800);
+  // include an extra frame for the legend and atlas boilerplate
+  const size_t n_frame = cut_branches.size()+1;
+  const size_t n_col = 3;
+  const size_t n_row = static_cast<size_t>(ceil(n_frame/(n_col+0.)));
+  TCanvas canv(("2D_stk_canv_"+plot).c_str(),"2D Stack",600*n_col,600*n_row);
   std::map<std::string,aesthetic> hist_styles;
   init_hist_styles(hist_styles);
   TLatex decorator;
   TLegend& leg=*init_legend(0.25,0.72,0.35,0.9);
   decorator.SetTextSize(0.1);
-  canv.Divide(3,2);
+  canv.Divide(n_row,n_col);
   canv.SetRightMargin(0);
   canv.SetTopMargin(0);
   THStack* hist = NULL;
   TH1* master=NULL;
   size_t nCuts=cut_branches.size();
-  for(size_t i = 0; i < nCuts; i++){
+  for(size_t i = 1; i < nCuts+1; i++){
     std::vector<std::string> extended_cbs(cut_branches.begin(),cut_branches.begin()+i);
     extended_cbs.push_back("((2.904 < jpsi_m && jpsi_m < 3.29) && (-1 < jpsi_tau && jpsi_tau < 0.25))");
     size_t cut_idx=extended_cbs.size()-1;
-    TVirtualPad* pad = canv.cd(i+1);
+    TVirtualPad* pad = canv.cd(i);
     set_pad_margins(pad,i+1,nCuts);
     if(plot.find("pt")!=std::string::npos ||
        plot.find("jpsi_tau")!=std::string::npos){
@@ -332,8 +336,8 @@ void print_cut_stack(std::map<std::string,TTree*>& samples,
       hist->Draw("H same");
     }
     // MSG_DEBUG(hist->GetName());
-    // MSG_DEBUG(hist->GetEntries()<<" "<<cut_branches[i]);
-    decorator.DrawLatexNDC(0.5,0.75,CutNames[cut_branches[i]].c_str());
+    MSG_DEBUG(cut_branches[i-1]);
+    decorator.DrawLatexNDC(0.5,0.75,CutNames[cut_branches[i-1]].c_str());
   }
   canv.cd(0);
   leg.Clear();
@@ -341,6 +345,6 @@ void print_cut_stack(std::map<std::string,TTree*>& samples,
   leg.Draw();
   decorator.SetTextSize(0.04);
   decorator.DrawLatex(0.0,0.05,base_hist->GetTitle());
-  add_atlas_badge(canv,0.2,0.9,target_lumi,INTERNAL);
+  // add_atlas_badge(canv,0.2,0.9,target_lumi,INTERNAL);
   canv.SaveAs((plot+file_suffix).c_str());
 }

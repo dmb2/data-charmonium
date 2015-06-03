@@ -37,14 +37,13 @@ void print_stack_plots(const char* master_fname, const char* sample_names[],
       item != HistBook.end(); ++item){
     setup_hist(item->second);
   }
-  const char* plot_names[] = {"jet_pt", "jpsi_pt"/*,"jpsi_m","jpsi_tau"*/};
-  std::vector<std::string> plots(plot_names,plot_names + sizeof(plot_names)/sizeof(*plot_names));  
+  const char* plot_names[] = {"jpsi_pt"/*,"jet_pt","jpsi_m","jpsi_tau"*/};
+  std::vector<std::string> plots(plot_names,plot_names + LEN(plot_names));  
   // std::vector<std::string> plots = map_keys(HistBook);
-  const char* cbs[]={"num_jets_p", /*"mu_trigger_p",*/
-			      "jpsi_pt_p", "jpsi_eta_p",
-			      "delta_r_p", "jet_eta_p",
-			      "jet_pt_p"};
-  std::vector<std::string> cut_branches(cbs,cbs + sizeof(cbs)/sizeof(*cbs));
+  const char* cbs[]={"mu_trigger_p", "jpsi_pt_p",
+		     "jpsi_rap_p", "mumu_eta_p",/*"jpsi_eta_p",*/
+		     "num_jets_p","delta_r_p", "jet_eta_p","jet_pt_p"};
+  std::vector<std::string> cut_branches(cbs,cbs + LEN(cbs));
   std::map<std::string,std::string> pretty_cNames;
   init_cut_names(pretty_cNames);
 
@@ -54,7 +53,7 @@ void print_stack_plots(const char* master_fname, const char* sample_names[],
     print_stack(sample_trees,plot,HistBook[plot],"_cut_stk.pdf", target_lumi,
 		cut_branches);
     print_cut_stack(sample_trees, cut_branches, plot, HistBook[plot],
-		    pretty_cNames,"_panel_stk.pdf",target_lumi);
+    		    pretty_cNames,"_panel_stk.pdf",target_lumi);
   }
   // plots = map_keys(Hist2DBook);
   // for(std::vector<std::string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){

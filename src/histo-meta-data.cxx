@@ -44,14 +44,15 @@ void init_hist_book(std::map<std::string,TH1D*>& HistBook){
   //HistBook["1/mup_d0^2 + 1/mun_d0^2"]=new TH1D("1/mup_d0^2 + 1/mun_d0^2","Impact parameter quadrature",50,0,10);
 }
 void init_cut_names(std::map<std::string,std::string>& cut_names){
+  cut_names["mu_trigger_p"]="Trigger";
   cut_names["num_jets_p"]="N_{j} #geq 1"; 
-  cut_names["jpsi_pt_p"]="p_{T}(J/#psi) > 20 GeV";    
+  cut_names["jpsi_pt_p"]="p_{T}(J/#psi) > 50 GeV";    
   cut_names["jpsi_eta_p"]="|#eta(J/#psi)| < 2.5";
-  cut_names["delta_r_p"]="#Delta R(Jet;J/#psi) < 0.4";    
+  cut_names["jpsi_rap_p"]="|y(J/#psi)| < 2.0";
+  cut_names["mumu_eta_p"]="|#eta(#mu)| < 2.3";
   cut_names["jet_eta_p"]="|#eta(jet)| < 2.5"; 
+  cut_names["delta_r_p"]="#Delta R(Jet;J/#psi) < 0.4";    
   cut_names["jet_pt_p"]="p_{T}(jet) > 45 GeV";
-  cut_names["mu_trigger_p"]="1 #mu Trigger, 2012";
-
 }
 
 void init_hist_styles(std::map<std::string,aesthetic>& styles){

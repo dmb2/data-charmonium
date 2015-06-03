@@ -176,7 +176,7 @@ TH1* make_normal_hist(TH1* base_hist, TTree* tree,
   }
   const std::string weight_expr=cut_branches.size()==0 ? "weight" :
     "weight*"+str_join("*",cut_branches,0,cut_index+1);
-  // MSG_DEBUG(weight_expr);
+  MSG_DEBUG(weight_expr);
   return make_normal_hist(base_hist,tree,plot,
 			  weight_expr.c_str(),"_NRM_"+std::string(count_str)+uniq_suffix);
 }
