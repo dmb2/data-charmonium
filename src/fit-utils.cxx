@@ -6,6 +6,8 @@
 #include "RooDataSet.h"
 #include "RooRealVar.h"
 #include "RooGaussian.h"
+#include "RooProduct.h"
+#include "RooCBShape.h"
 #include "RooGenericPdf.h"
 #include "RooChebychev.h"
 #include "RooPolynomial.h"
@@ -25,15 +27,24 @@ RooAddPdf* build_signal(RooRealVar* mass, RooRealVar* tau, RooGaussModel* tau_un
   // -->Mass
   RooRealVar* mean_m = new RooRealVar("mean_m","Mean",JPSIMASS,JPSIMASS-0.02,JPSIMASS+0.02);
   RooRealVar* sigma_m = new RooRealVar("sigma_m","Width",0.005,0.0,0.10);
-  RooGaussian *prompt_mass = new RooGaussian("PromptSigMass","Prompt Mass PDF",*mass,*mean_m,*sigma_m);
+  
+  RooRealVar* cb_n = new RooRealVar("cb_n","Crystal Ball N",1.0);
+  RooRealVar* cb_alpha = new RooRealVar("cb_alpha","Crystal Ball Alpha",5.0);
+  RooRealVar* cb_w_sf = new RooRealVar("cb_w_sf","Width Scale Factor",1.0,0.0,2.0);
+  RooRealVar* cb_mass_frac = new RooRealVar("cb_mass_frac","Fraction between Gauss and CB",0.5,0.0,1.0);
+  RooProduct* cb_width = new RooProduct("cb_width","Crystal Ball Width",RooArgList(*sigma_m,*cb_w_sf));
+  RooCBShape* prompt_cb = new RooCBShape("prompt_cb","Mass Crystal Ball",*mass,*mean_m,*cb_width,*cb_alpha,*cb_n);
+  RooGaussian *prompt_gauss = new RooGaussian("prompt_gauss","Prompt Gauss Mass",*mass,*mean_m,*sigma_m);
+  // RooGaussian *prompt_mass = new RooGaussian("PromptSigMass","Prompt Mass PDF",*mass,*mean_m,*sigma_m);
+  RooAddPdf   *prompt_mass = new RooAddPdf("PromptSigMass","Prompt Mass PDF",RooArgSet(*prompt_cb,*prompt_gauss),*cb_mass_frac);
   // -->Tau
   RooRealVar* mean_t = dynamic_cast<RooRealVar*>(tau_uncert->getVariables()->find("mean_t"));
   RooRealVar* sigma_t = dynamic_cast<RooRealVar*>(tau_uncert->getVariables()->find("sigma_t"));
   RooGaussian* prompt_tau = new RooGaussian("PromptTauSig","Prompt Tau Signal",*tau,*mean_t,*sigma_t);
   // RooGaussModel*& prompt_tau = tau_uncert;
   // Mass*Tau
-  RooProdPdf* prompt_sig = new RooProdPdf("PromptSig","Prompt Signal PDF",RooArgSet(*prompt_mass,*prompt_tau));
-  
+  RooProdPdf* prompt_sig = new RooProdPdf("PromptSig","Prompt Signal PDF",RooArgSet(*prompt_mass,*prompt_tau)); 
+ 
   // NON-PROMPT
   // -->Mass
   RooGaussian *nonprompt_mass = new RooGaussian("NonPromptSigMass","Non-Prompt Mass PDF",*mass,*mean_m,*sigma_m);
