@@ -43,14 +43,21 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
   add_region(tau,"Sig", -1,0.25);
   add_region(tau,"SB",0.25,50);
   const double* covmat = result->covarianceMatrix().GetMatrixArray();
-  RooAbsPdf* np_mass_bkg = find_component(model,"NonPromptBkgMass");
-  RooAbsPdf* p_mass_bkg = find_component(model,"PromptBkgMass");
+  RooAbsPdf* nc_mass_bkg = find_component(model,"NonCoherentMassBkg");
+  RooAbsPdf* np_mass_bkg = find_component(model,"NonPromptMassBkg");
+  RooAbsPdf* p_mass_bkg = find_component(model,"PromptMassBkg");
   sep_var_info["mass"].regions=mass->getBinningNames();
-  sep_var_info["mass"].sts_ratio=div(add(get_yield(np_mass_bkg, mass,"Sig",covmat),
-					 get_yield(p_mass_bkg,mass,"Sig",covmat)),
-				     add(get_yield(np_mass_bkg, mass,"SB",covmat),
-					 get_yield(p_mass_bkg,mass,"SB",covmat)));
-  RooAbsPdf* tau_sig = find_component(model,"NonPromptSigTau");
+  //The following function call looks hairy but its just:
+  //             Int(NonCoherent + (NonPrompt + Prompt),Sig)
+  // sts_ratio = -------------------------------------------
+  //             Int(NonCoherent + (NonPrompt + Prompt),SB))
+  sep_var_info["mass"].sts_ratio=div(add(get_yield(nc_mass_bkg, mass,"Sig",covmat),
+					 add(get_yield(np_mass_bkg, mass,"Sig",covmat),
+					     get_yield(p_mass_bkg,mass,"Sig",covmat))),
+				     add(get_yield(nc_mass_bkg, mass,"SB",covmat),
+					 add(get_yield(np_mass_bkg, mass,"SB",covmat),
+					     get_yield(p_mass_bkg,mass,"SB",covmat))));
+  RooAbsPdf* tau_sig = find_component(model,"NonPromptTauSig");
   sep_var_info["tau"].regions=tau->getBinningNames();
   sep_var_info["tau"].sts_ratio=div(get_yield(tau_sig,tau,"Sig",covmat),
 				    get_yield(tau_sig,tau,"SB",covmat));

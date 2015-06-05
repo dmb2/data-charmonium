@@ -29,30 +29,30 @@ int main(const int argc, const char* argv[]){
   double total_xs=0.0;
   double n_requested=atof(argv[2]);
   double N_MC=0.0;
-  TFile out_file("closure_sample.root","RECREATE");
+  // TFile out_file("closure_sample.root","RECREATE");
   std::map<std::string,TTree*> samples;
   for(int i=3; i < argc; i++ ){
     std::string fname(argv[i]);
-    //TODO: split by '/' and take the last element to get the filename
-    std::string dsid=fname.substr(0,6);
+    std::vector<std::string> parts = split_string(fname,"./");
+    std::string dsid=parts[parts.size()-4];
     total_xs+=xsecs[dsid];
     samples[dsid]=retrieve<TTree>(fname.c_str(),"mini");
     N_MC+=samples[dsid]->GetEntries();
   }
-  out_file.cd();
+  // out_file.cd();
   TTree* out_tree=samples.begin()->second->CloneTree(0);
   MSG_DEBUG("Total cross section: "<<total_xs<<" from "<<N_MC<<" events");
-  for(std::map<std::string,TTree*>::const_iterator it=samples.begin();
-      it!=samples.end(); ++it){
-    const std::string& dsid = it->first;
-    const double& xsec = xsecs[dsid];
-    const int nentries=xsec/total_xs*n_requested;
-    MSG_DEBUG("Processing "<<dsid<<", copying "<<nentries<<" events.");
-    out_tree->CopyAddresses(samples[dsid]);
-    out_tree->CopyEntries(samples[dsid],nentries);
-    out_tree->Fill();
-  }
-  out_file.Write();
-  out_file.Close();
+  // for(std::map<std::string,TTree*>::const_iterator it=samples.begin();
+  //     it!=samples.end(); ++it){
+  //   const std::string& dsid = it->first;
+  //   const double& xsec = xsecs[dsid];
+  //   const int nentries=xsec/total_xs*n_requested;
+  //   MSG_DEBUG("Processing "<<dsid<<", copying "<<nentries<<" events.");
+  //   out_tree->CopyAddresses(samples[dsid]);
+  //   out_tree->CopyEntries(samples[dsid],nentries);
+  //   out_tree->Fill();
+  // }
+  // out_file.Write();
+  // out_file.Close();
   return 0;
 }

@@ -25,22 +25,6 @@ void reset_cut_cat(std::map<std::string, cut<T> >& CutCat){
     cut_pair->second.reset();
   }
 }
-std::vector<std::string> split_string(const std::string& input, const std::string& delims ){
-  std::vector<std::string> result;
-  char *tok;
-  char *buff = new char [input.size()];
-  strncpy(buff,input.c_str(),input.size());
-  tok = strtok(buff,delims.c_str());
-  while(tok){
-    // MSG_DEBUG(tok);
-    tok = strtok(NULL,delims.c_str());
-    if(tok){
-      result.push_back(tok);
-    }
-  }
-  if(buff) delete buff;
-  return result;
-}
 void process(const char* outName, tree_collection& Forest,
 	     real_cuts& CutDefReals, category_cuts& CutDefCats,
 	     const char* mu_system, const char* jet_system,

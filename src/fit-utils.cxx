@@ -11,6 +11,7 @@
 #include "RooGenericPdf.h"
 #include "RooChebychev.h"
 #include "RooPolynomial.h"
+#include "RooExponential.h"
 #include "RooGaussModel.h"
 #include "RooAddModel.h"
 #include "RooAddPdf.h"
@@ -27,12 +28,57 @@ double get_par_val(const RooAbsCollection* pars,const char* name){
   //this sucks
   return dynamic_cast<RooRealVar*>(pars->find(name))->getVal();
 }
+RooAbsPdf* mass_signal_pdf(RooRealVar* mass){
+  RooRealVar* mean_m = new RooRealVar("mean_m","Mean Mass",JPSIMASS,JPSIMASS-0.02,JPSIMASS+0.02);
+  RooRealVar* sigma_m = new RooRealVar("sigma_m","Width of Mass",0.05,0.0,0.5);
+  RooGaussian* gauss = new RooGaussian("gauss","Mass Gaussian",*mass,*mean_m,*sigma_m);
 
+  RooRealVar* cb_alpha = new RooRealVar("cb_alpha","Alpha of Crystal Ball",10);
+  RooRealVar* cb_n = new RooRealVar("cb_n","N of Crystal Ball",1);
+  RooRealVar* cb_sf = new RooRealVar("cb_sf","Scaling factor for CB Width",0.5,0,10);
+  RooProduct* cb_sigma = new RooProduct("cb_sigma","Crystal Ball Width",RooArgList(*sigma_m,*cb_sf));
+
+  RooCBShape* crystal_ball = new RooCBShape("crystal_ball","Crystal Ball Mass",*mass,*mean_m,*cb_sigma,*cb_alpha,*cb_n);
+  
+  RooRealVar* mass_frac = new RooRealVar("mass_frac","Fraction of CB to Gauss",0.5,0,1);
+  return new RooAddPdf("SignalMass","Mass Signal Model",RooArgList(*crystal_ball,*gauss),*mass_frac);
+}
+RooAbsPdf* signal_pdf(RooRealVar* mass, RooRealVar* tau, RooAddModel* tau_resolution){
+  RooAbsPdf* signal_mass = mass_signal_pdf(mass);
+  
+  RooRealVar* lifetime = new RooRealVar("lifetime","Lifetime of J/\\psi",1.53,0,2);
+  RooDecay* nonprompt_tau = new RooDecay("NonPromptTauSig","Non Prompt J/psi Tau",*tau,*lifetime,*tau_resolution,RooDecay::SingleSided);
+
+  RooRealVar* prompt_frac = new RooRealVar("prompt_frac","Prompt Fraction",0.5,0,1);
+  RooAddPdf* signal_tau = new RooAddPdf("TauSig","Tau Signal",RooArgList(*tau_resolution,*nonprompt_tau),*prompt_frac);
+  return new RooProdPdf("Signal","Signal PDF",RooArgList(*signal_mass,*signal_tau));
+}
+RooAbsPdf* background_pdf(RooRealVar* mass, RooRealVar* tau, RooAddModel* tau_resolution){
+  RooRealVar* ncm = new RooRealVar("ncm","Non Coherent Mass Decay Constatn",0.001,0,2);
+  RooExponential* non_coherent_mass_bkg = new RooExponential("NonCoherentMassBkg","Non Coherent Mass Background",*mass,*ncm);
+
+  RooRealVar* nclt = new RooRealVar("nclt","Non Coherent Lifetime",0.5,0,1);
+  RooDecay* non_coherent_tau_bkg = new RooDecay("NonCoherentTauBkg","Non Coherent Tau Decay",*tau,*nclt,*tau_resolution,RooDecay::DoubleSided);
+  RooProdPdf* non_coherent_bkg = new RooProdPdf("non_coherent_bkg","Non Coherent Background",RooArgList(*non_coherent_mass_bkg,*non_coherent_tau_bkg));
+
+  RooRealVar* nplt = new RooRealVar("nplt","Non Prompt Lifetime",1.53,0,2);
+  RooDecay* non_prompt_tau_bkg = new RooDecay("NonPromptTauBkg","Non Prompt Tau Decay",*tau,*nplt,*tau_resolution,RooDecay::SingleSided);
+  
+  RooRealVar* Pc1 = new RooRealVar("Pc1","Slope", -0.27, -0.5,0.5);
+  RooPolynomial* non_prompt_mass_bkg = new RooPolynomial("NonPromptMassBkg","Linear NonPrompt Mass Background",*mass,RooArgList(*Pc1));
+  RooProdPdf* non_prompt_bkg = new RooProdPdf("non_prompt_bkg","Non Prompt Background",RooArgList(*non_prompt_mass_bkg,*non_prompt_tau_bkg));
+
+  RooPolynomial *prompt_mass_bkg = new RooPolynomial("PromptMassBkg","Flat Prompt Mass Background",*mass);
+  RooProdPdf* prompt_bkg = new RooProdPdf("prompt_bkg","Prompt Background",RooArgList(*prompt_mass_bkg,*tau_resolution));
+
+  RooRealVar* prompt_bkg_frac = new RooRealVar("prompt_bkg_frac","Prompt Background Fraction",0.1,0.0,1.0);
+  RooRealVar* non_prompt_bkg_frac = new RooRealVar("non_prompt_bkg_frac","Non-prompt Background Fraction",0.1,0.0,1.0);
+  return new RooAddPdf("Background","Background PDF",
+		       RooArgList(*prompt_bkg,*non_prompt_bkg,*non_coherent_bkg),
+		       RooArgList(*prompt_bkg_frac,*non_prompt_bkg_frac));
+}
 RooAbsPdf* build_model(RooRealVar* mass, RooRealVar* tau){
   MSG("Constructing model");
-  // Fraction of signal and background events
-  RooRealVar *sigFrac = new RooRealVar("sigFrac","Fraction of signal events",0.5,0.,1.);
-
   // Lifetime uncertainty function, shared among signal and
   // background, prompt and non-prompt components
   // This also doubles as the tau signal, (ie delta fn (x) resolution)
@@ -44,12 +90,12 @@ RooAbsPdf* build_model(RooRealVar* mass, RooRealVar* tau){
   RooRealVar* sigma_t2 = new RooRealVar("sigma_t2","Width",0.1,0.0,3.0);
   RooGaussModel* tau_uncert2 = new RooGaussModel("TauResolution2","Tau Uncertainty",*tau,*mean_t2,*sigma_t2);
   RooRealVar* res_frac = new RooRealVar("res_frac","Resolution Fraction",0.5,0.0,1.0);
-  RooAddModel* tau_uncert = new RooAddModel("TauResolution","Double Gaussian Resolution",RooArgList(*tau_uncert1,*tau_uncert2),*res_frac);
+  RooAddModel* tau_uncert = new RooAddModel("PromptTauSig","Double Gaussian Resolution",RooArgList(*tau_uncert1,*tau_uncert2),*res_frac);
 
-  // RooAddPdf* Signal = build_signal(mass,tau,tau_uncert);
-  // RooAddPdf* Background = build_background(mass,tau,tau_uncert);
-  // return new RooAddPdf("model","model",RooArgList(*Signal,*Background),*sigFrac);
-  return NULL;
+  RooRealVar *sigFrac = new RooRealVar("sigFrac","Fraction of signal events",0.5,0.,1.);
+  RooAbsPdf* Signal = signal_pdf(mass,tau,tau_uncert);
+  RooAbsPdf* Background = background_pdf(mass,tau,tau_uncert);
+  return new RooAddPdf("model","model",RooArgList(*Signal,*Background),*sigFrac);
 }
 RooAbsPdf* build_psi_model(RooRealVar* mass){
   MSG("Constructing psi(2S) model");
@@ -113,13 +159,13 @@ void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model,
   }
   if(std::string(key)=="tau"){
     add_component(frame,model,"Background",kBlue);
-    // add_component(frame,model,"NonPromptBkgTau",kRed-1);
+    // add_component(frame,model,"NonPromptTauBkg",kRed-1);
     add_component(frame,model,"PromptTauSig",kMagenta);
-    add_component(frame,model,"NonPromptSigTau",kAzure);
+    add_component(frame,model,"NonPromptTauSig",kAzure);
     add_leg_comp(leg,frame,"Background");
-    // add_leg_comp(leg,frame,"NonPromptBkgTau");
+    // add_leg_comp(leg,frame,"NonPromptTauBkg");
     add_leg_comp(leg,frame,"PromptTauSig");
-    add_leg_comp(leg,frame,"NonPromptSigTau");
+    add_leg_comp(leg,frame,"NonPromptTauSig");
     frame->SetAxisRange(-1.1,3.0);
   }
   TCanvas canv(key,key,600,600);
