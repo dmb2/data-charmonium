@@ -236,7 +236,17 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   c1.SaveAs(outname);
 
   TH1* sig_final = dynamic_cast<TH1*>(sig_hist->Clone((std::string("sf_")+base_hist->GetName()).c_str()));
-  MSG_DEBUG("Raw Signal: "<<sig_final->Integral()<<" Combinatoric Yield: "<<comb_hist->Integral()<<" Non-Prompt Yield: "<<nonprompt_hist->Integral());
+  // double integral(0.);
+  // double int_err(0.);
+  // integral=sig_final->IntegralAndError(0,sig_final->GetNbinsX(),int_err);
+  // num_err signal_yield={.val=integral,.err=int_err};
+  // integral=comb_hist->IntegralAndError(0,comb_hist->GetNbinsX(),int_err);
+  // num_err comb_yield={.val=integral,.err=int_err};
+  // integral=nonprompt_hist->IntegralAndError(0,nonprompt_hist->GetNbinsX(),int_err);
+  // num_err nonprompt_yield={.val=integral,.err=int_err};
+  // MSG_DEBUG("| Total Yield | "<<str_rep(signal_yield)<<"| "<<str_rep(div(signal_yield,signal_yield))<<" |");
+  // MSG_DEBUG("| Combinatoric | "<<str_rep(comb_yield)<<"| "<<str_rep(div(comb_yield,signal_yield))<<" |");
+  // MSG_DEBUG("| Non-Prompt | "<<str_rep(nonprompt_yield)<<"| "<<str_rep(div(nonprompt_yield,signal_yield))<<" |");
   sig_final->Add(comb_hist,-1);
   sig_final->Add(nonprompt_hist,-1);
   // sig_final->Add(psi_hist,-1);

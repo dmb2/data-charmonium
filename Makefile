@@ -18,12 +18,14 @@ BINS:=$(patsubst %.cxx,%,$(wildcard bin/*.cxx)) bin/skim-tree-response
 BINOBJ:=$(patsubst %.cxx,%.o,$(wildcard bin/*.cxx)) bin/skim-tree-response.o
 OBJS:=$(patsubst %.cxx,%.o,$(wildcard src/*.cxx))
 
-SKIM_DEPS:=src/tree-utils.o src/simple-parser.o src/Cut.o 
+COMMON_DEPS:=src/root-sugar.o
 
-HISTO_DEPS:=src/stack-utils.o src/AtlasStyle.o\
+SKIM_DEPS:=$(COMMON_DEPS) src/tree-utils.o src/simple-parser.o src/Cut.o 
+
+HISTO_DEPS:=$(COMMON_DEPS) src/stack-utils.o src/AtlasStyle.o\
 	src/histo-meta-data.o src/histo-utils.o\
 	src/plot-utils.o src/color.o src/math.o\
-	src/histo-style.o
+	src/histo-style.o 
 .PHONY: all clean 
 all: $(BINS)
 
@@ -37,7 +39,7 @@ src/analyze-cut-tree.o: src/analyze-tree.cxx
 	$(CC) $(CXXFLAGS) -D__ANALYZE_TREE_CUTFLOW__ -c $< -o $@ 
 bin/tree-bug: bin/tree-bug.o src/libDict.so
 	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -lDict
-bin/make-closure-sample: bin/make-closure-sample.o src/simple-parser.o src/Cut.o
+bin/make-closure-sample: $(COMMON_DEPS) bin/make-closure-sample.o src/simple-parser.o src/Cut.o
 bin/simple-parser-test: bin/simple-parser-test.o src/simple-parser.o src/Cut.o
 	$(CC) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 bin/skim-tree:  $(SKIM_DEPS) bin/skim-tree.o src/analyze-tree.o src/libDict.so
