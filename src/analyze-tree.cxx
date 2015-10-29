@@ -14,7 +14,7 @@
 #include "Units.hh"
 
 #ifndef __ANALYZE_TREE_CUTFLOW__
-#define CUT_CONTINUE(cut) if(!cut){continue;};
+#define CUT_CONTINUE(cut) if(!(cut)){continue;};
 #else
 #define CUT_CONTINUE(cut) {};
 #endif

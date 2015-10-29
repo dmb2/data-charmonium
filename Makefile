@@ -8,11 +8,11 @@ LDFLAGS:=$(shell root-config --libs)\
 	$(shell fastjet-config --libs)\
 	-lNsubjettiness #-L ./lib #-lgcov
 WFLAGS= -Wextra -Wall 
-DFLAGS=-O0 -g3 -fno-inline #-fprofile-arcs -ftest-coverage 
-CXXFLAGS= $(shell root-config --ldflags)\
-	-pg -I$(INCDIR) -I$(ROOTINCDIR)\
+DFLAGS=-O3 #-O0 -g3 -fno-inline #-fprofile-arcs -ftest-coverage 
+CXXFLAGS=$(shell root-config --cflags)\
+	-pg -I$(INCDIR)\
 	$(shell fastjet-config --cxxflags)\
-	$(DFLAGS) $(WFLAGS) -ansi
+	$(DFLAGS) $(WFLAGS) 
 
 BINS:=$(patsubst %.cxx,%,$(wildcard bin/*.cxx)) bin/skim-tree-response
 BINOBJ:=$(patsubst %.cxx,%.o,$(wildcard bin/*.cxx)) bin/skim-tree-response.o
