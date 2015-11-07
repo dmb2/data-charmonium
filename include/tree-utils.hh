@@ -77,8 +77,9 @@ std::vector<TLorentzVector> buildMuons(const std::vector<double>* pt,
 				       const std::vector<double>* eta,
 				       const std::vector<double>* phi, 
 				       const std::vector<double>* e);
-TLorentzVector buildJPsiCand(const std::vector<TLorentzVector>& muons,
+std::pair<TLorentzVector,TLorentzVector> buildJPsiCand(const std::vector<TLorentzVector>& muons,
 			     const std::vector<int>& charge);
 double get_impact_sig(const std::vector<double>& d0, 
 		      const std::vector<double>& d0_err,
 		      const std::vector<int>& idx);
+double total_scale_factor(const std::vector<double>* scale_factors);

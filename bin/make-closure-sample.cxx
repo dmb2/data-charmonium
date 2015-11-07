@@ -69,7 +69,7 @@ int main(const int argc, const char* argv[]){
   std::map<std::string,TTree*> samples;
   for(int i=3; i < argc; i++ ){
     std::string fname(argv[i]);
-    std::vector<std::string> parts = split_string(fname,"./");
+    std::vector<std::string> parts = split_string(fname,'.');
     std::string dsid=parts[parts.size()-4];
     samples[dsid]=retrieve<TTree>(fname.c_str(),"mini");
     MSG_DEBUG("Processing "<<dsid);

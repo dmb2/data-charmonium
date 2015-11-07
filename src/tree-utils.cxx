@@ -105,31 +105,22 @@ std::vector<TLorentzVector> buildMuons(const std::vector<double>* pt,
   return muons;
 }
 
-TLorentzVector buildJPsiCand(const std::vector<TLorentzVector>& muons, const std::vector<int>& charge){
-  std::vector<TLorentzVector> dimuon_pairs;
-  TLorentzVector cand;
+std::pair<TLorentzVector,TLorentzVector> buildJPsiCand(const std::vector<TLorentzVector>& muons, const std::vector<int>& charge){
+  std::pair<TLorentzVector,TLorentzVector> cand;
+  TLorentzVector cand4vec;
+  double max_pt=0;
   for(size_t i = 0; i < muons.size(); i++){
     for(size_t j = i; j < muons.size(); j++){
-      cand = muons.at(i) + muons.at(j);
-      if(charge.at(i)*charge.at(j) < 0 && cand.M() > 2e3 && cand.M() < 6e3 ){
-	dimuon_pairs.push_back(cand);
+      cand4vec = muons.at(i) + muons.at(j);
+      if(charge.at(i)*charge.at(j) < 0 && 
+	 cand4vec.M() > 2e3 && cand4vec.M() < 6e3 &&
+	 cand4vec.Pt() > max_pt){
+	  max_pt=cand4vec.Pt();
+	  cand=std::pair<TLorentzVector,TLorentzVector>(muons.at(i),muons.at(j));
       }
     }
   }
-  size_t idx=0;
-  double max_pt=0;
-  if(dimuon_pairs.size()==0){
-    return TLorentzVector(0,0,0,0);
-  } 
-  for(std::vector<TLorentzVector>::const_iterator jpsi=dimuon_pairs.begin();
-      jpsi!=dimuon_pairs.end(); ++jpsi){
-    if(jpsi->Pt() > max_pt){
-      idx = jpsi-dimuon_pairs.begin();
-      max_pt = jpsi->Pt();
-    }
-
-  }
-  return dimuon_pairs.at(idx);
+  return cand;
 }
 double get_impact_sig(const std::vector<double>& d0, const std::vector<double>& d0_err,
 		      const std::vector<int>& idx){
@@ -138,4 +129,15 @@ double get_impact_sig(const std::vector<double>& d0, const std::vector<double>& 
     return -1;
   }
   return pow(d0[idx[0]]/d0_err[idx[0]],2)+pow(d0[idx[1]]/d0_err[idx[1]],2);
+}
+double total_scale_factor(const std::vector<double>* scale_factors){
+  if(scale_factors->size()==0){
+    MSG_ERR("Empty scale factors for event!");
+    return 0;
+  }
+  double total(scale_factors->at(0));
+  for(std::vector<double>::const_iterator sf=scale_factors->begin()+1; sf!=scale_factors->end(); ++sf){
+    total*=(*sf);
+  }
+  return total;
 }

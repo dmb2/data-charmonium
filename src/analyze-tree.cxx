@@ -24,7 +24,7 @@ bool verbose=true;
 
 int process_tree(tree_collection& Forest, real_cuts& CutDefReal, 
 		 category_cuts& CutDefCat, TTree& OutTree, 
-		 const char* muon_system, const std::string& jet_type, 
+		 const char* muon_variation, const std::string& jet_type, 
 		 const double weight){
   bool is_MC=(weight != 1.0);
   unsigned int squawk_every = 1e3;
@@ -66,9 +66,19 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     *t_jet_phi=NULL, *t_jet_E=NULL;
 
   char muon_prefix[50];
-  snprintf(muon_prefix,50,std::string(muon_system)=="" ? "Mu_MU%s": "Mu_MU_%s",muon_system);
+  snprintf(muon_prefix,50,"Mu_MU");
   setup_pt_eta_phi_e(Forest["Mu"],mu_pt,mu_eta,mu_phi,mu_E,muon_prefix);
+  if(std::string(muon_variation)!=""){
+    MSG_DEBUG("Overriding mu_pt branch for variation: "<<muon_variation);
+    snprintf(muon_prefix,50,"Mu_MU_pt%s",muon_variation);
+    Forest["Mu"]->SetBranchAddress(muon_prefix,&mu_pt);
+  }
+  std::vector<double> *MuSF(NULL),*MuSFSystErr(NULL),*MuSFStatErr(NULL),*MuSFTotalErr(NULL);
   Forest["Mu"]->SetBranchAddress("Mu_MU_charge",&mu_charge);
+  Forest["Mu"]->SetBranchAddress("Mu_MU_SF",&MuSF);
+  Forest["Mu"]->SetBranchAddress("Mu_MU_SFSystErr",&MuSFSystErr);
+  Forest["Mu"]->SetBranchAddress("Mu_MU_SFStatErr",&MuSFStatErr);
+  Forest["Mu"]->SetBranchAddress("Mu_MU_SFTotalErr",&MuSFTotalErr);
   Forest["AUX"]->SetBranchAddress("AvgIntPerXing",&pileup);
 
   Forest["JPsi2Trk"]->SetBranchAddress("VTX_mass",&psi_m);
@@ -91,7 +101,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   Forest[jet_type]->SetBranchAddress("JET_emfrac",&jet_emfrac);
   if(is_MC){
     setup_pt_eta_phi_e(Forest["AUX"], t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
-    const std::string t_jet_type = (jet_type=="MuonLCTopoJets" || jet_type=="TrackZJets") ? "MuonTruthJets" : "TruthJets";
+    const std::string t_jet_type = (jet_type=="MuonLCTopoJets" || jet_type.find("TrackZJets")!=std::string::npos) ? "MuonTruthJets" : "TruthJets";
     // MSG_DEBUG("Setting up with tree: "<<t_jet_type<<" using jet type: "<<jet_type);
     setup_pt_eta_phi_e(Forest[t_jet_type], t_jet_pt, t_jet_eta, t_jet_phi, t_jet_E, "JET");
     Forest[t_jet_type]->SetBranchAddress("JET_tau1",&t_jet_tau1);
@@ -150,9 +160,13 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   OutTree.Branch("jet_eta_p",&has_jet_eta);
   OutTree.Branch("jet_pt_p",&has_jet_pt);
 #endif
-
+  double SF(1.),SFSystErr(1.),SFStatErr(1.),SFTotalErr(1.);
   double w=weight;
   OutTree.Branch("weight", &w);
+  OutTree.Branch("SF", &SF);
+  OutTree.Branch("SFSystErr", &SFSystErr);
+  OutTree.Branch("SFStatErr", &SFStatErr);
+  OutTree.Branch("SFTotalErr", &SFTotalErr);
 
   Long64_t nEntries = Forest["AUX"]->GetEntries();
   if(verbose) {
@@ -163,21 +177,29 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   TLorentzVector candTruthJet(0,0,0,0);
   TLorentzVector candJPsi(0,0,0,0);
   size_t idx=0;
-  size_t jpsi_idx=0;
+  std::pair<TLorentzVector,TLorentzVector> jpsi_muons;
+  // size_t jpsi_idx=0;
 
   for(Long64_t entry=0; entry < nEntries; entry++){
     retrieve_values(Forest,entry);
-
+    
     if(entry%squawk_every==0 && verbose){
       MSG("Processing entry "<<entry);
     }
-    idx=0; jpsi_idx=0; delta_r=-1.; z=-1.;
+    idx=0; delta_r=-1.; z=-1.;//jpsi_idx=0
+    jpsi_muons=std::pair<TLorentzVector,TLorentzVector>(TLorentzVector(0,0,0,0),
+							TLorentzVector(0,0,0,0));
+    SF=1; SFSystErr=0.; SFStatErr=0.; SFTotalErr=0.;
+    
     jets.clear(); jets.reserve(jet_pt->size());
     CutDefCat["nominal"].pass();
     has_trigger = CutDefCat["trigger"].pass(is_MC || passed_trigger(*EF_trigger_names),w);
     has_num_jets = CutDefCat["num_jets"].pass(int(jet_pt->size()),w);
     CUT_CONTINUE(has_trigger);
     CUT_CONTINUE(has_num_jets);
+    if(mu_pt->size()==0){
+      continue;
+    }
     std::vector<size_t> good_indices = filter_by_pt(*jet_pt, CutDefReal["jet_pt"].cut_value());
     for(std::vector<size_t>::const_iterator itr=good_indices.begin();
 	itr!=good_indices.end(); ++itr){
@@ -188,6 +210,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 			   jet_E->at(*itr)*GeV);
       jets.push_back(tmp_vec);
     }
+    /*
     int mu1_idx=-1, mu2_idx=-1;
     CUT_CONTINUE((vtx_pt->size() > 0));
     for(size_t i = 0; i < vtx_pt->size(); i++){
@@ -206,10 +229,20 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       continue;
     }
     double mu_max_eta=std::max(fabs(mu_eta->at(mu1_idx)),fabs(mu_eta->at(mu2_idx)));
+    */
+    // candJPsi.SetPxPyPzE(vtx_px->at(jpsi_idx)*GeV, vtx_py->at(jpsi_idx)*GeV, vtx_pz->at(jpsi_idx)*GeV, vtx_e->at(jpsi_idx)*GeV);
+    // size_t mu_n = mu_pt->size();
+    jpsi_muons=buildJPsiCand(buildMuons(mu_pt,mu_eta,mu_phi,mu_E),*mu_charge);
+    double mu_max_eta=std::max(fabs(jpsi_muons.first.Eta()),
+			fabs(jpsi_muons.second.Eta()));
     has_mumu_eta = CutDefReal["mumu_eta"].pass(mu_max_eta,w);
     CUT_CONTINUE(has_mumu_eta);
-    candJPsi.SetPxPyPzE(vtx_px->at(jpsi_idx)*GeV, vtx_py->at(jpsi_idx)*GeV, vtx_pz->at(jpsi_idx)*GeV, vtx_e->at(jpsi_idx)*GeV);
-    // candJPsi=buildJPsiCand(buildMuons(mu_pt,mu_eta,mu_phi,mu_E),*mu_charge);
+
+    SF=total_scale_factor(MuSF);
+    SFStatErr=total_scale_factor(MuSFStatErr);
+    SFSystErr=total_scale_factor(MuSFSystErr);
+    SFTotalErr=total_scale_factor(MuSFTotalErr);
+    candJPsi=jpsi_muons.first + jpsi_muons.second;
     jpsi_pt=candJPsi.Pt();
     jpsi_eta=candJPsi.Eta();
     jpsi_rap=candJPsi.Rapidity();
@@ -243,7 +276,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     CUT_CONTINUE(has_delta_r);
     CUT_CONTINUE(has_jet_eta);
     CUT_CONTINUE(has_jet_pt);
-    if(jet_type == "TrackZJets" || jet_type == "MuonLCTopoJets"){
+    if(jet_type.find("TrackZJets")!=std::string::npos || jet_type == "MuonLCTopoJets"){
       z=(jpsi_pt)/candJet.Pt();
     }
     else {
@@ -275,7 +308,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       t_jpsi_m=tvec.M();
       t_delta_r=find_closest(*t_jet_pt,*t_jet_eta,*t_jet_phi,*t_jet_E, 
 			    candTruthJet, candJet,idx);
-      if(jet_type == "TrackZJets" || jet_type == "MuonLCTopoJets"){
+      if(jet_type.find("TrackZJets")!=std::string::npos  || jet_type == "MuonLCTopoJets"){
 	t_z=(t_jpsi_pt)/candTruthJet.Pt();
       }
       else {

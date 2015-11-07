@@ -48,6 +48,7 @@ int main(const int argc, const char* argv[]){
   }
   std::string inFName;
   std::string outFName;
+  bool runSystematics (false);
   real_cuts CutDefReals;
   category_cuts CutDefCats;
   double xsec(0.);
@@ -66,6 +67,9 @@ int main(const int argc, const char* argv[]){
     else if(opt->first=="crossSection"){
       xsec = atof(opt->second.c_str());
     }
+    else if (opt->first=="doSystematics"){
+      runSystematics = (opt->second == "True" || opt->second == "true");
+    }
   }
   if(argc==5){
     MSG("Overriding options in config file!");
@@ -78,9 +82,10 @@ int main(const int argc, const char* argv[]){
   
   TFile* file = TFile::Open(inFName.c_str());
   tree_collection Forest; 
-  const char* treeNames[] = {"AUX","LCTopoJets","TopoEMJets",/*"MuTracks",*/
-			     "MuonLCTopoJets","TrackZJets","Mu",
-			     "JPsi", "FakeJPsi", "JPsi2Trk","TRIG"};
+  const char* treeNames[] = {"AUX","LCTopoJets",/*"TopoEMJets","MuTracks",*/
+			     "MuonLCTopoJets",
+			     "TrackZJets","TrackZFilteredJets","TrackZSmearedJets",
+			     "Mu", "JPsi", "FakeJPsi", "JPsi2Trk","TRIG"};
   for(size_t i=0; i < sizeof(treeNames)/sizeof(*(treeNames)); i++){
     Forest[std::string(treeNames[i])]=retrieve<TTree>(file,treeNames[i]);
   }
@@ -90,18 +95,30 @@ int main(const int argc, const char* argv[]){
   }
   const double weight=xsec > 0 ? xsec/Forest["AUX"]->GetEntries() : fabs(xsec);
   // const char* muon_systems[] = {"","trkMS","trkMuonExtr","trkInnerExtr","trkComb"};
-   process(outFName.c_str(),Forest,CutDefReals, CutDefCats, "","TrackZJets",weight);
-  /*
-  const char* jet_systems[] = {"TrackZJets","LCTopoJets","MuonLCTopoJets"};
+  const char* muon_variations[] = {"","Smeared","SmearedLow","SmearedUp","SmearedIDUp","SmearedMSUp"};
+  const char* jet_variations[] = {"TrackZJets","TrackZFilteredJets","TrackZSmearedJets"};
   char outName[100];
-  std::vector<std::string> parts = split_string(inFName,"./");
-  for(size_t j=0; j < sizeof(jet_systems)/sizeof(*jet_systems); j++){
-    snprintf(outName,100,("%s.%s.mini.root"), parts.at(parts.size()-3).c_str(), jet_systems[j]);
-    process(outName,Forest,CutDefReals, CutDefCats, "",jet_systems[j],weight);
+  
+  //try to extract dsid
+  std::vector<std::string> parts = split_string(inFName,'.');
+  parts = split_string(parts[0],'/');
+  std::string dsid = parts.size()!=0 ? parts.back() : "";
+  if (runSystematics){
+    for(size_t j=0; j < sizeof(jet_variations)/sizeof(*jet_variations); j++){
+      snprintf(outName,100,("%s.%s.mini.root"), dsid.c_str(), jet_variations[j]);
+      process(outName,Forest,CutDefReals, CutDefCats, "",jet_variations[j],weight);
+    }
+    for(size_t i=0; i < sizeof(muon_variations)/sizeof(*muon_variations); i++){
+      snprintf(outName,100,("%s.Muon%s.mini.root"), dsid.c_str(), muon_variations[i]);
+      process(outName,Forest,CutDefReals, CutDefCats, muon_variations[i],"TrackZJets",weight);
+    }
   }
-  //*/
+  else{
+    process(outFName.c_str(),Forest,CutDefReals, CutDefCats, "","TrackZJets",weight);
+  }
+  
   for(tree_collection::iterator it=Forest.begin(); it != Forest.end(); ++it){
-    if(it->second) delete it->second;
+    delete it->second;
   }
   file->Close();
   if(file) delete file;
