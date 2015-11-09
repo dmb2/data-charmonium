@@ -1,4 +1,3 @@
-#include "AtlasStyle.hh"
 #include "TTree.h"
 #include "TROOT.h"
 #include "TStyle.h"
@@ -33,11 +32,6 @@ int main(const int argc, const char* argv[]){
   TTree* syst_down_tree = retrieve<TTree>(syst_down_fname,"mini");
   TTree* nominal_tree = retrieve<TTree>(nominal_fname,"mini");
 
-  AtlasStyle style;
-  style.SetAtlasStyle();
-  gStyle->SetFrameLineWidth(0.0);
-  double stops[]={0.0,0.25,0.5,0.75,1.0};
-  heat_gradient(gStyle,stops,sizeof(stops)/sizeof(*stops));
   // loop over all histograms
   // compute (syst-up - syst-down)/nominal
   // save result to file
@@ -58,6 +52,7 @@ int main(const int argc, const char* argv[]){
     TH1D* result = dynamic_cast<TH1D*>(base_hist->Clone((plot + "_syst").c_str()));
     result->Add(syst_up_hist,syst_down_hist,1,-1);
     result->Divide(nominal_hist);
+    nominal_hist->Write();
     result->Write();
   }
   // output.Write();

@@ -82,3 +82,13 @@ proc_files(){
 	$CMD $f $@
     done
 }
+summarize_systematics(){
+    local INFILE=$1;
+    local DSID=$(echo ${INFILE} | awk -F '.' '{print $1}');
+    local MUON_SYST=$(echo MuonSmeared{IDUp,MSUp,Up,});
+    local JET_SYST=$(echo TrackZ{Filtered,Smeared}Jets)
+    for syst in $MUON_SYST $JET_SYST;
+    do
+	make-systematic-plots ${INFILE} ${DSID}-systematics/${DSID}.$syst.mini.root ${INFILE} ${DSID}-systematics/${DSID}.${syst}.hist.root
+    done
+}

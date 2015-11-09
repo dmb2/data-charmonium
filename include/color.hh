@@ -1,3 +1,5 @@
+//-*- c++-mode -*-
+#pragma once
 class TStyle;
 
 typedef std::vector<int> tcolor_list;

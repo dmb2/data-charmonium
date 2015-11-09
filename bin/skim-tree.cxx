@@ -95,19 +95,23 @@ int main(const int argc, const char* argv[]){
   }
   const double weight=xsec > 0 ? xsec/Forest["AUX"]->GetEntries() : fabs(xsec);
   // const char* muon_systems[] = {"","trkMS","trkMuonExtr","trkInnerExtr","trkComb"};
-  const char* muon_variations[] = {"","Smeared","SmearedLow","SmearedUp","SmearedIDUp","SmearedMSUp"};
-  const char* jet_variations[] = {"TrackZJets","TrackZFilteredJets","TrackZSmearedJets"};
+  const char* muon_variations[] = {"Smeared","SmearedLow","SmearedUp","SmearedIDUp","SmearedMSUp"};
+  const char* jet_variations[] = {"TrackZFilteredJets","TrackZSmearedJets"};
   char outName[100];
   
   //try to extract dsid
-  std::vector<std::string> parts = split_string(inFName,'.');
+  std::vector<std::string> parts = split_string(outFName,'.');
   parts = split_string(parts[0],'/');
   std::string dsid = parts.size()!=0 ? parts.back() : "";
   if (runSystematics){
+    // nominal
+    process(outFName.c_str(),Forest,CutDefReals, CutDefCats, "","TrackZJets",weight);
+    // jet variations
     for(size_t j=0; j < sizeof(jet_variations)/sizeof(*jet_variations); j++){
       snprintf(outName,100,("%s.%s.mini.root"), dsid.c_str(), jet_variations[j]);
       process(outName,Forest,CutDefReals, CutDefCats, "",jet_variations[j],weight);
     }
+    // muon variations
     for(size_t i=0; i < sizeof(muon_variations)/sizeof(*muon_variations); i++){
       snprintf(outName,100,("%s.Muon%s.mini.root"), dsid.c_str(), muon_variations[i]);
       process(outName,Forest,CutDefReals, CutDefCats, muon_variations[i],"TrackZJets",weight);
