@@ -123,8 +123,8 @@ void norm_stack(THStack& stack){
   }
 }
 num_err integral_error(TH1D* hist){
-  num_err result={.val=0,.err=0};
-  num_err bin={.val=0,.err=0};
+  num_err result;
+  num_err bin;
   for(size_t i=1; i < size_t(hist->GetNbinsX())+1; i++){
     bin.val=hist->GetBinContent(i);
     bin.err=hist->GetBinError(i);
@@ -147,8 +147,8 @@ static std::vector<num_err> build_norm_factors( const TH2D *HistZvsE){
 }
 ///*
 static void norm_hist(TH1* hist,const std::vector<num_err> norm_factors){
-  num_err bc={.val=0,.err=0};
-  num_err nf={.val=0,.err=0};
+  num_err bc;
+  num_err nf;
   // MSG_DEBUG(hist->GetName());
   for(size_t i = 0; i < norm_factors.size(); i++){
     nf = norm_factors.at(i);

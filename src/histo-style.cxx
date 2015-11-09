@@ -21,13 +21,13 @@ aesthetic make_style(const char* leg_label, const char* leg_style,
 		     const Color_t color, const Style_t fill_style,
 		     const Style_t marker, const Size_t marker_size,
 		     const Style_t line_style){
-  aesthetic style={.leg_label=leg_label,
-		   .leg_style=leg_style,
-		   .color=color,
-		   .fill_style=fill_style,
-		   .marker=marker,
-		   .marker_size=marker_size,
-		   .line_style=line_style};
+  aesthetic style={leg_label,
+		   leg_style,
+		   color,
+		   fill_style,
+		   marker,
+		   marker_size,
+		   line_style};
   return style;
 }
 aesthetic hist_aes(const char* leg_label, const Color_t color, 
