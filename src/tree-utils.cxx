@@ -99,7 +99,7 @@ std::vector<TLorentzVector> buildMuons(const std::vector<double>* pt,
   muons.reserve(pt->size());
   TLorentzVector tmp;
   for(size_t i =0; i < pt->size(); i++){
-    tmp.SetPtEtaPhiE(pt->at(i), eta->at(i), phi->at(i), e->at(i));
+    tmp.SetPtEtaPhiE(pt->at(i)*GeV, eta->at(i), phi->at(i), e->at(i)*GeV);
     muons.push_back(tmp);
   }
   return muons;
@@ -113,7 +113,6 @@ std::pair<TLorentzVector,TLorentzVector> buildJPsiCand(const std::vector<TLorent
     for(size_t j = i; j < muons.size(); j++){
       cand4vec = muons.at(i) + muons.at(j);
       if(charge.at(i)*charge.at(j) < 0 && 
-	 cand4vec.M() > 2e3 && cand4vec.M() < 6e3 &&
 	 cand4vec.Pt() > max_pt){
 	  max_pt=cand4vec.Pt();
 	  cand=std::pair<TLorentzVector,TLorentzVector>(muons.at(i),muons.at(j));

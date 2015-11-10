@@ -243,10 +243,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     SFSystErr=total_scale_factor(MuSFSystErr);
     SFTotalErr=total_scale_factor(MuSFTotalErr);
     candJPsi=jpsi_muons.first + jpsi_muons.second;
-    candJPsi.SetPtEtaPhiE(candJPsi.Pt()*GeV,
-			  candJPsi.Eta(),
-			  candJPsi.Phi(),
-			  candJPsi.E()*GeV);
     jpsi_pt=candJPsi.Pt();
     jpsi_eta=candJPsi.Eta();
     jpsi_rap=candJPsi.Rapidity();
