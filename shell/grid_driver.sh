@@ -18,8 +18,7 @@ if [ "$CONFIG" == "Systematics.conf" ]; then
 	echo hadd "total_${syst}.mini.root" *${syst}.mini.root
 	hadd "total_${syst}.mini.root" *${syst}.mini.root
     done
-else
-    echo hadd output.mini.root "$result_files"
-    hadd output.mini.root "$result_files"
 fi
+echo hadd output.mini.root "$result_files"
+hadd output.mini.root "$result_files"
    
