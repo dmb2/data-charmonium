@@ -6,10 +6,11 @@ count = 0
 for f in "$INFILES"
 do
     out_file=$(basename "$f")
-    out_file="${out_file%.*}.mini.root"
+    out_file="${count}${out_file%.*}.mini.root"
     echo ./bin/skim-tree "$CONFIG" "$f" "$out_file" "$XS"
     ./bin/skim-tree "$CONFIG" "$f" "$out_file" "$XS"
     result_files+=" $out_file"
+    (( count+=1 ))
 done
 if [ "$CONFIG" == "Systematics.conf" ]; then
     for syst in MuonSmeared{IDUp,MSUp,Low,Up,} TrackZ{Filtered,Smeared}Jets
