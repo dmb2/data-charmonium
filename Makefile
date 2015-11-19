@@ -9,7 +9,7 @@ LDFLAGS:=$(shell root-config --libs)\
 	-lNsubjettiness #-L ./lib #-lgcov
 WFLAGS= -Wextra -Wall 
 DFLAGS=-O3 #-O0 -g3 -fno-inline #-fprofile-arcs -ftest-coverage 
-CXXFLAGS=$(shell root-config --cflags)\
+CXXFLAGS:=$(shell root-config --cflags)\
 	-pg -I$(INCDIR)\
 	$(shell fastjet-config --cxxflags)\
 	$(DFLAGS) $(WFLAGS) 
