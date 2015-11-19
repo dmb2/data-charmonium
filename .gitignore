@@ -40,3 +40,10 @@ simple-parser-test
 skim-tree
 skim-truth-tree
 truth-study-plots
+/bin/add-systematic-plots
+/bin/make-closure-sample
+/bin/make-systematic-plots
+/bin/print-plot-panels
+/bin/skim-tree-response
+/bin/test-err-prop
+/bin/tree-bug
