@@ -27,8 +27,8 @@ all: $(BINS)
 
 # KISS
 # this is why root sucks
-src/dict.cxx: include/LinkDef.h
-	rootcint -f $@ -c $(CXXFLAGS) -p $^
+src/dict.cxx: $(INCDIR)/LinkDef.h
+	rootcint -f $@ -c -I$(INCDIR) -p $^
 src/libDict.so: src/dict.cxx
 	$(CC) -shared -fPIC -o$@ $(CXXFLAGS) $^
 src/analyze-cut-tree.o: src/analyze-tree.cxx
