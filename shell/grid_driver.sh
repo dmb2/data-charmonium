@@ -3,6 +3,7 @@ CONFIG=$2
 XS=$3
 result_files=""
 count=0
+export LD_LIBRARY_PATH=${PWD}/src:${LD_LIBRARY_PATH}
 for f in $INFILES
 do
     out_file=$(basename "$f")
