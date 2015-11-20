@@ -4,9 +4,9 @@ XSEC_FILE=$2
 CONF=$3
 TAG=$4
 shift 4
-OUT_DS=$(echo $IN_DS | awk -F '.' '{ print "user.davidb." $2 "." $3 ".micro-"}')
+OUT_DS=$(echo $IN_DS | awk -F '.' '{ print "user.davidb." $3 "." $4 ".micro-"}')
 OUT_DS+="${TAG}/"
-DSID=$(echo ${IN_DS} | awk -F '.' '{print $2}')
+DSID=$(echo ${IN_DS} | awk -F '.' '{print $3}')
 
 XS=$(grep "$DSID" "$XSEC_FILE" | awk -F '=' '{print $2}')
 
