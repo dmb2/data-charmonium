@@ -1,10 +1,14 @@
 #!/bin/bash 
 IN_DS=$1
-TAG=$2
+XSEC_FILE=$2
 CONF=$3
-shift 3
+TAG=$4
+shift 4
 OUT_DS=$(echo $IN_DS | awk -F '.' '{ print "user.davidb." $2 "." $3 ".micro-"}')
 OUT_DS+="${TAG}/"
+DSID=$(echo ${IN_DS} | awk -F '.' '{print $2}')
+
+XS=$(grep "$DSID" "$XSEC_FILE" | awk -F '=' '{print $2}')
 
 OUTPUTS=output.mini.root
 if [ "${CONF}" == "Systematics.conf" ]; then
