@@ -17,9 +17,18 @@ if [ "$CONFIG" == "Systematics.conf" ]; then
     for syst in MuonSmeared{IDUp,MSUp,Low,Up,} TrackZ{Filtered,Smeared}Jets
     do
 	echo hadd "total_${syst}.mini.root" *${syst}.mini.root
-	hadd "total_${syst}.mini.root" *${syst}.mini.root
+	if [ "$count" == "1" ]; then
+	    cp *${syst}.mini.root "total_${syst}.mini.root"
+	else
+	    echo hadd "total_${syst}.mini.root" *${syst}.mini.root
+	    hadd "total_${syst}.mini.root" *${syst}.mini.root
+	fi
     done
 fi
-echo hadd output.mini.root "$result_files"
-hadd output.mini.root "$result_files"
+if [ "$count" == "1" ]; then
+    cp $result_files output.mini.root 
+else 
+    echo hadd output.mini.root "$result_files"
+    hadd output.mini.root "$result_files"
+fi
    
