@@ -1,2 +1,32 @@
 #!/bin/bash 
+IN_DS=$1
+TAG=$2
+CONF=$3
+shift 3
+OUT_DS=$(echo $IN_DS | awk -F '.' '{ print "user.davidb." $2 "." $3 ".micro-"}')
+OUT_DS+="${TAG}/"
 
+OUTPUTS=output.mini.root
+if [ "${CONF}" == "Systematics.conf" ]; then
+    OUTPUTS+=",total_TrackZSmearedJets.mini.root,total_MuonSmearedLow.mini.root,total_MuonSmeared.mini.root,total_MuonSmearedUp.mini.root,total_MuonSmearedMSUp.mini.root,total_TrackZFilteredJets.mini.root,total_MuonSmearedIDUp.mini.root"
+fi
+
+ROOT_VER=5.34/25
+CMT_TAG=x86_64-slc6-gcc48-opt
+# attempt to extract cmt tag and root version from the environment
+ROOT_DIR_TAG=$(which root | awk -F "/" '{print $8}')
+if [ "x${ROOT_DIR_TAG}" != "x" ]; then
+    echo "Overriding default root version and cmt tag with current environment:"
+    ROOT_VER=$(echo $ROOT_DIR_TAG | awk -F '-' '{print $1}' | sed 's,\([0-9].[0-9]\{2\}\).\([0-9]\{2\}\),\1/\2,g')
+    CMT_TAG=$(echo $ROOT_DIR_TAG | sed 's,[0-9\\.]*-,,')
+    echo "cmtConfig = ${CMT_TAG}"
+    echo "rootVer = ${ROOT_VER}"
+fi
+
+echo prun --inDS "$IN_DS" \
+       --outDS "$OUT_DS" \
+       --exec "./shell/grid_run.sh %IN ${CONF} ${XS}"\
+       --bexec "make clean; make"\
+       --outputs "${OUTPUTS}"\
+       --rootVer="${ROOT_VER}" --cmtConfig="${CMT_TAG}"\
+       $@
