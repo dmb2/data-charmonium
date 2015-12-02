@@ -5,7 +5,7 @@ std::vector<std::string> split_string(const std::string& input, const char& deli
   std::stringstream ss(input);
   std::string item;
   while(std::getline(ss,item,delim)){
-    MSG_DEBUG(item);
+    // MSG_DEBUG(item);
     result.push_back(item);
   }
   return result;

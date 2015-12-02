@@ -82,12 +82,17 @@ int main(const int argc, const char* argv[]){
   
   TFile* file = TFile::Open(inFName.c_str());
   tree_collection Forest; 
+  const char* jet_variations[] = {"TrackZFilteredJets","TrackZSmearedJets",
+				  "TrackZSmearedSimpleJets","TrackZScaledUpJets",
+				  "TrackZScaledDownJets"};
   const char* treeNames[] = {"AUX","LCTopoJets",/*"TopoEMJets","MuTracks",*/
-			     "MuonLCTopoJets",
-			     "TrackZJets","TrackZFilteredJets","TrackZSmearedJets",
+			     "MuonLCTopoJets", "TrackZJets",
 			     "Mu", "JPsi", "FakeJPsi", "JPsi2Trk","TRIG"};
-  for(size_t i=0; i < sizeof(treeNames)/sizeof(*(treeNames)); i++){
+  for(size_t i=0; i < LEN(treeNames); i++){
     Forest[std::string(treeNames[i])]=retrieve<TTree>(file,treeNames[i]);
+  }
+  for(size_t i=0; i < LEN(jet_variations); i++){
+    Forest[std::string(jet_variations[i])]=retrieve<TTree>(file,jet_variations[i]);
   }
   if(xsec > 0){
     Forest["TruthJets"]=retrieve<TTree>(file,"TruthJets");
@@ -96,7 +101,6 @@ int main(const int argc, const char* argv[]){
   const double weight=xsec > 0 ? xsec/Forest["AUX"]->GetEntries() : fabs(xsec);
   // const char* muon_systems[] = {"","trkMS","trkMuonExtr","trkInnerExtr","trkComb"};
   const char* muon_variations[] = {"Smeared","SmearedLow","SmearedUp","SmearedIDUp","SmearedMSUp"};
-  const char* jet_variations[] = {"TrackZFilteredJets","TrackZSmearedJets"};
   char outName[100];
   
   //try to extract dsid
@@ -107,12 +111,12 @@ int main(const int argc, const char* argv[]){
     // nominal
     process(outFName.c_str(),Forest,CutDefReals, CutDefCats, "","TrackZJets",weight);
     // jet variations
-    for(size_t j=0; j < sizeof(jet_variations)/sizeof(*jet_variations); j++){
+    for(size_t j=0; j < LEN(jet_variations); j++){
       snprintf(outName,100,("%s.%s.mini.root"), dsid.c_str(), jet_variations[j]);
       process(outName,Forest,CutDefReals, CutDefCats, "",jet_variations[j],weight);
     }
     // muon variations
-    for(size_t i=0; i < sizeof(muon_variations)/sizeof(*muon_variations); i++){
+    for(size_t i=0; i < LEN(muon_variations); i++){
       snprintf(outName,100,("%s.Muon%s.mini.root"), dsid.c_str(), muon_variations[i]);
       process(outName,Forest,CutDefReals, CutDefCats, muon_variations[i],"TrackZJets",weight);
     }
