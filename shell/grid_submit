@@ -29,7 +29,7 @@ fi
 
 echo prun --inDS "$IN_DS" \
        --outDS "$OUT_DS" \
-       --exec \""./shell/grid_run.sh %IN ${CONF} ${XS}"\"\
+       --exec \""./shell/grid_driver.sh %IN ${CONF} ${XS}"\"\
        --bexec \""make clean; make"\"\
        --outputs "${OUTPUTS}"\
        --rootVer="${ROOT_VER}" --cmtConfig="${CMT_TAG}"\

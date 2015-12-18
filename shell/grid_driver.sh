@@ -14,7 +14,9 @@ do
     (( count+=1 ))
 done
 if [ "$CONFIG" == "Systematics.conf" ]; then
-    for syst in MuonSmeared{IDUp,MSUp,Low,Up,} TrackZ{Filtered,Smeared}Jets
+    local MUON_SYST=$(echo MuonSmeared{IDUp,MSUp,Up,});
+    local JET_SYST=$(echo TrackZ{Filtered,Smeared,ScaledUp,RadialScaledUp}Jets)
+    for syst in $MUON_SYST $JET_SYST;
     do
 	echo hadd "total_${syst}.mini.root" *${syst}.mini.root
 	if [ "$count" == "1" ]; then
