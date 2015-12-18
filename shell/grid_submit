@@ -12,7 +12,12 @@ XS=$(grep "$DSID" "$XSEC_FILE" | awk -F '=' '{print $2}')
 
 OUTPUTS=output.mini.root
 if [ "${CONF}" == "Systematics.conf" ]; then
-    OUTPUTS+=",total_TrackZSmearedJets.mini.root,total_MuonSmearedLow.mini.root,total_MuonSmeared.mini.root,total_MuonSmearedUp.mini.root,total_MuonSmearedMSUp.mini.root,total_TrackZFilteredJets.mini.root,total_MuonSmearedIDUp.mini.root"
+    local MUON_SYST=$(echo MuonSmeared{IDUp,MSUp,Up,});
+    local JET_SYST=$(echo TrackZ{Filtered,Smeared,ScaledUp,RadialScaledUp}Jets)
+    for syst in $MUON_SYST $JET_SYST;
+    do
+	OUTPUTS+=",total_${syst}.mini.root"
+    done
 fi
 
 ROOT_VER=5.34/25
