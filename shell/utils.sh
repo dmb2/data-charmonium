@@ -85,10 +85,20 @@ proc_files(){
 summarize_systematics(){
     local INFILE=$1;
     local DSID=$(echo ${INFILE} | awk -F '.' '{print $1}');
-    local MUON_SYST=$(echo MuonSmeared{IDUp,MSUp,Up,Low,});
-    local JET_SYST=$(echo TrackZ{Filtered,Smeared,SimpleSmeared,Scaled{Up,Down}}Jets)
+    local MUON_SYST=$(echo MuonSmeared{IDUp,MSUp,Up,});
+    local JET_SYST=$(echo TrackZ{Filtered,Smeared,ScaledUp,RadialScaledUp}Jets)
+    declare -A SYST_PAIRS;
+    
     for syst in $MUON_SYST $JET_SYST;
     do
-	make-systematic-plots ${INFILE} ${DSID}-systematics/${DSID}.$syst.mini.root ${INFILE} ${DSID}-systematics/${DSID}.${syst}.hist.root
+	SYST_PAIRS["$syst"]="${INFILE}"
+    done
+    SYST_PAIRS["MuonSmearedUp"]="${DSID}-systematics/${DSID}.MuonSmearedLow.mini.root"
+    SYST_PAIRS["TrackZScaledUpJets"]="${DSID}-systematics/${DSID}.TrackZScaledDownJets.mini.root"
+    SYST_PAIRS["TrackZRadialScaledUpJets"]="${DSID}-systematics/${DSID}.TrackZRadialScaledDownJets.mini.root"
+    for syst in "${!SYST_PAIRS[@]}"
+    do
+	# echo "$syst ${SYST_PAIRS[$syst]}" 
+	make-systematic-plots "${DSID}-systematics/${DSID}.$syst.mini.root" "${SYST_PAIRS[$syst]}" "${INFILE}" "${DSID}-systematics/${DSID}.${syst}.hist.root"
     done
 }

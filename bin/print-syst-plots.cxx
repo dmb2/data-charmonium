@@ -1,5 +1,6 @@
 #include "TTree.h"
 #include "TROOT.h"
+#include "TColor.h"
 #include "TStyle.h"
 #include "TH1D.h"
 #include "TH1.h"
@@ -51,7 +52,10 @@ int main(const int argc, const char* argv[]){
   size_t idx=0;
   for(std::map<std::string,TFile*>::const_iterator f=files.begin(); f!=files.end();++f){
     MSG_DEBUG(f->first<<" => "<<colors.at(idx));
-    styles[f->first]=hist_aes(f->first.c_str(),colors.at(idx),0,0);
+    TColor* color = gROOT->GetColor(colors.at(idx));
+    
+    color->SetAlpha(0.4);
+    styles[f->first]=hist_aes(f->first.c_str(),color->GetNumber(),1001,0);
     idx++;
   }
   
@@ -59,18 +63,23 @@ int main(const int argc, const char* argv[]){
     const std::string& plot = *p;
     MSG_DEBUG(plot);
     TCanvas canv("canv","canv",600,600);
-    canv.SetLogy();
+    // canv.SetLogy();
     double max(10);
     TLegend *leg = init_legend();
     for(std::map<std::string,TFile*>::iterator f=files.begin();
 	f!=files.end(); ++f){
       TH1D* hist = retrieve<TH1D>(f->second,(plot+"_syst").c_str());
-      scale_errors(hist);
-      hist->GetYaxis()->SetTitle("Relative Systematic Error");
+      // scale_errors(hist);
+      // hist->GetYaxis()->SetTitle("Relative Systematic Error");
       style_hist(hist,styles[f->first]);
       add_to_legend(leg,hist,styles[f->first]);
-      hist->SetMaximum(max);
-      hist->Draw("H same");
+      // hist->SetMaximum(max);
+      TH1D* nom = dynamic_cast<TH1D*>(hist->Clone("tmp"));
+      nom->SetFillStyle(0);
+      nom->SetLineColor(kBlack);
+      hist->SetLineWidth(0);
+      nom->Draw("HIST same");
+      hist->Draw("e2 same");
     }
     leg->Draw();
     canv.SaveAs((plot+"_syst.pdf").c_str());

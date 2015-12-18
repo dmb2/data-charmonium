@@ -101,7 +101,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   Forest[jet_type]->SetBranchAddress("JET_emfrac",&jet_emfrac);
   if(is_MC){
     setup_pt_eta_phi_e(Forest["AUX"], t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
-    const std::string t_jet_type = (jet_type=="MuonLCTopoJets" || jet_type.find("TrackZJets")!=std::string::npos) ? "MuonTruthJets" : "TruthJets";
+    const std::string t_jet_type = (jet_type=="MuonLCTopoJets" || jet_type.find("TrackZ")!=std::string::npos) ? "MuonTruthJets" : "TruthJets";
     // MSG_DEBUG("Setting up with tree: "<<t_jet_type<<" using jet type: "<<jet_type);
     setup_pt_eta_phi_e(Forest[t_jet_type], t_jet_pt, t_jet_eta, t_jet_phi, t_jet_E, "JET");
     Forest[t_jet_type]->SetBranchAddress("JET_tau1",&t_jet_tau1);
@@ -276,7 +276,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     CUT_CONTINUE(has_delta_r);
     CUT_CONTINUE(has_jet_eta);
     CUT_CONTINUE(has_jet_pt);
-    if(jet_type.find("TrackZJets")!=std::string::npos || jet_type == "MuonLCTopoJets"){
+    if(jet_type.find("TrackZ")!=std::string::npos || jet_type == "MuonLCTopoJets"){
       z=(jpsi_pt)/candJet.Pt();
     }
     else {
@@ -308,7 +308,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       t_jpsi_m=tvec.M();
       t_delta_r=find_closest(*t_jet_pt,*t_jet_eta,*t_jet_phi,*t_jet_E, 
 			    candTruthJet, candJet,idx);
-      if(jet_type.find("TrackZJets")!=std::string::npos  || jet_type == "MuonLCTopoJets"){
+      if(jet_type.find("TrackZ")!=std::string::npos  || jet_type == "MuonLCTopoJets"){
 	t_z=(t_jpsi_pt)/candTruthJet.Pt();
       }
       else {

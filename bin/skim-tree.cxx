@@ -83,8 +83,8 @@ int main(const int argc, const char* argv[]){
   TFile* file = TFile::Open(inFName.c_str());
   tree_collection Forest; 
   const char* jet_variations[] = {"TrackZFilteredJets","TrackZSmearedJets",
-				  "TrackZSmearedSimpleJets","TrackZScaledUpJets",
-				  "TrackZScaledDownJets"};
+				  "TrackZScaledUpJets", "TrackZScaledDownJets",
+				  "TrackZRadialScaledUpJets", "TrackZRadialScaledDownJets"};
   const char* treeNames[] = {"AUX","LCTopoJets",/*"TopoEMJets","MuTracks",*/
 			     "MuonLCTopoJets", "TrackZJets",
 			     "Mu", "JPsi", "FakeJPsi", "JPsi2Trk","TRIG"};
