@@ -9,11 +9,11 @@ OUT_DS+="${TAG}/"
 DSID=$(echo ${IN_DS} | awk -F '.' '{print $3}')
 
 XS=$(grep "$DSID" "$XSEC_FILE" | awk -F '=' '{print $2}')
-
 OUTPUTS=output.mini.root
 if [ "${CONF}" == "Systematics.conf" ]; then
-    MUON_SYST=$(echo MuonSmeared{IDUp,MSUp,Up,});
-    JET_SYST=$(echo TrackZ{Filtered,Smeared,ScaledUp,RadialScaledUp}Jets)
+
+    MUON_SYST=$(echo Muon{Efficiency{Down,Up},Smeared{IDUp,Low,,MSUp,Up}});
+    JET_SYST=$(echo TrackZ{Filtered,RadialScaled{Up,Down},Scaled{Up,Down},Smeared}Jets)
     for syst in $MUON_SYST $JET_SYST;
     do
 	OUTPUTS+=",total_${syst}.mini.root"
