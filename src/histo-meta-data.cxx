@@ -5,12 +5,12 @@
 void init_hist2D_book(std::map<std::string,TH2D*>& Hist2DBook){
   Hist2DBook["jet_z:jet_e"] = new TH2D("jet_z:jet_E","Jet E vs Jet z;E [GeV]; z",
 				       25,0,500,
-				       10,0,1.);
+				       10,0,1.2);
   Hist2DBook["jet_e:jet_z"] = new TH2D("jet_E:jet_z","Jet z vs Jet E;z;E [GeV]",
-				       25,0,1,
+				       25,0,1.2,
 				       10,0,500);
   Hist2DBook["jpsi_pt:jet_z"] = new TH2D("jpsi_pt:jet_z","Jet z vs J/#psi p_T;p_T [GeV];E [GeV]",
-					 25,0,1,
+					 25,0,1.2,
 					 10,0,250);
   Hist2DBook["jet_z:jet_e"]->GetYaxis()->SetNdivisions(508);
   Hist2DBook["jet_z:jet_e"]->GetXaxis()->SetNdivisions(508);
@@ -21,8 +21,8 @@ void init_hist_book(std::map<std::string,TH1D*>& HistBook){
   HistBook["jet_eta"]=new TH1D("jet_eta","Jet #eta;#eta;evts/binwidth",50,-2.6,2.6);
   HistBook["jet_e"]=new TH1D("jet_e","Jet E;E [GeV]; evts/binwidth",50,0,500);
   HistBook["jet_m"]=new TH1D("jet_m","Jet Mass; M [GeV]; evts/binwidth",50,0,45);
-  HistBook["jet_z"]=new TH1D("jet_z","Jet Z;z;evts/binwidth",50,0,1.);
-  HistBook["jet_emfrac"]=new TH1D("jet_emfrac","Jet EM Fraction;EM Fraction;evts/binwidth",50,0,1.5);
+  HistBook["jet_z"]=new TH1D("jet_z","Jet Z;z;evts/binwidth",50,0,1.2);
+  // HistBook["jet_emfrac"]=new TH1D("jet_emfrac","Jet EM Fraction;EM Fraction;evts/binwidth",50,0,1.5);
 
   HistBook["tau1"]=new TH1D("tau1","N Subjettiness #tau_{1};#tau_{1};evts/binwidth",50,0,1.);
   HistBook["tau2"]=new TH1D("tau2","N Subjettiness #tau_{2};#tau_{2};evts/binwidth",50,0,1.);

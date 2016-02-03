@@ -93,6 +93,7 @@ summarize_systematics(){
     do
 	SYST_PAIRS["$syst"]="${INFILE}"
     done
+    SYST_PAIRS["MuonEfficiencyUp"]="${DSID}-systematics/${DSID}.MuonEfficiencyDown.mini.root"
     SYST_PAIRS["MuonSmearedUp"]="${DSID}-systematics/${DSID}.MuonSmearedLow.mini.root"
     SYST_PAIRS["TrackZScaledUpJets"]="${DSID}-systematics/${DSID}.TrackZScaledDownJets.mini.root"
     SYST_PAIRS["TrackZRadialScaledUpJets"]="${DSID}-systematics/${DSID}.TrackZRadialScaledDownJets.mini.root"

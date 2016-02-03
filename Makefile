@@ -6,7 +6,7 @@ ROOTSYS:=$(shell root-config --prefix)
 ROOTINCDIR:=$(shell root-config --incdir)
 LDFLAGS:=$(shell root-config --libs)
 WFLAGS= -Wextra -Wall 
-DFLAGS=-O3 #-O0 -g3 -fno-inline #-fprofile-arcs -ftest-coverage 
+DFLAGS=-O0 -g3 -fno-inline #-fprofile-arcs -ftest-coverage 
 CXXFLAGS:=$(shell root-config --cflags)\
 	-pg -I$(INCDIR)\
 	$(DFLAGS) $(WFLAGS) 

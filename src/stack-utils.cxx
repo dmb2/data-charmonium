@@ -157,7 +157,7 @@ static void norm_hist(TH1* hist,const std::vector<num_err> norm_factors){
       nf.err=0;
     }
     bc.val = hist->GetBinContent(i+1);///(nf > 0 ? nf : 1.);
-    bc.err = hist->GetBinError(i);
+    bc.err = hist->GetBinError(i+1);
     // MSG_DEBUG("Bin Content:"<<str_rep(bc));
     bc=div(bc,nf);
     // MSG_DEBUG("Bin Content:"<<str_rep(bc)<<" Norm Factor: "<<str_rep(nf));

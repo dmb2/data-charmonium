@@ -68,11 +68,13 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   char muon_prefix[50];
   snprintf(muon_prefix,50,"Mu_MU");
   setup_pt_eta_phi_e(Forest["Mu"],mu_pt,mu_eta,mu_phi,mu_E,muon_prefix);
-  if(std::string(muon_variation)!=""){
+  if(std::string(muon_variation)!="" && std::string(muon_variation).find("Efficiency")==std::string::npos){
     MSG_DEBUG("Overriding mu_pt branch for variation: "<<muon_variation);
     snprintf(muon_prefix,50,"Mu_MU_pt%s",muon_variation);
     Forest["Mu"]->SetBranchAddress(muon_prefix,&mu_pt);
   }
+    
+  
   std::vector<double> *MuSF(NULL),*MuSFSystErr(NULL),*MuSFStatErr(NULL),*MuSFTotalErr(NULL);
   Forest["Mu"]->SetBranchAddress("Mu_MU_charge",&mu_charge);
   Forest["Mu"]->SetBranchAddress("Mu_MU_SF",&MuSF);
@@ -84,6 +86,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   Forest["JPsi2Trk"]->SetBranchAddress("VTX_mass",&psi_m);
   Forest["JPsi2Trk"]->SetBranchAddress("VTX_pt",&psi_pt);
   const char* vtx_names[] = {"px","py","pz","e"};
+  MSG_DEBUG("JPsi Tree: "<<Forest["JPsi"]);
   setup_four_vector(Forest["JPsi"],vtx_px,vtx_py,vtx_pz,vtx_e,"VTX",vtx_names);
   Forest["JPsi"]->SetBranchAddress("MUONS_index",&mu_trk_idx);
   Forest["JPsi"]->SetBranchAddress("VTX_pt",&vtx_pt);
@@ -101,7 +104,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   Forest[jet_type]->SetBranchAddress("JET_emfrac",&jet_emfrac);
   if(is_MC){
     setup_pt_eta_phi_e(Forest["AUX"], t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
-    const std::string t_jet_type = (jet_type=="MuonLCTopoJets" || jet_type.find("TrackZ")!=std::string::npos) ? "MuonTruthJets" : "TruthJets";
+    const std::string t_jet_type = (jet_type=="MuonLCTopoJets" /*|| jet_type.find("TrackZ")!=std::string::npos */) ? "MuonTruthJets" : "TruthJets";
     // MSG_DEBUG("Setting up with tree: "<<t_jet_type<<" using jet type: "<<jet_type);
     setup_pt_eta_phi_e(Forest[t_jet_type], t_jet_pt, t_jet_eta, t_jet_phi, t_jet_E, "JET");
     Forest[t_jet_type]->SetBranchAddress("JET_tau1",&t_jet_tau1);
@@ -189,7 +192,14 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     idx=0; delta_r=-1.; z=-1.;//jpsi_idx=0
     jpsi_muons=std::pair<TLorentzVector,TLorentzVector>(TLorentzVector(0,0,0,0),
 							TLorentzVector(0,0,0,0));
-    SF=1; SFSystErr=0.; SFStatErr=0.; SFTotalErr=0.;
+    // SF=1; SFSystErr=0.; SFStatErr=0.; SFTotalErr=0.;
+    if(mu_pt->size()==0){
+      continue;
+    }
+    SF=total_scale_factor(MuSF);
+    SFStatErr=total_scale_factor(MuSFStatErr);
+    SFSystErr=total_scale_factor(MuSFSystErr);
+    SFTotalErr=total_scale_factor(MuSFTotalErr);
     
     jets.clear(); jets.reserve(jet_pt->size());
     CutDefCat["nominal"].pass();
@@ -197,9 +207,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     has_num_jets = CutDefCat["num_jets"].pass(int(jet_pt->size()),w);
     CUT_CONTINUE(has_trigger);
     CUT_CONTINUE(has_num_jets);
-    if(mu_pt->size()==0){
-      continue;
-    }
     std::vector<size_t> good_indices = filter_by_pt(*jet_pt, CutDefReal["jet_pt"].cut_value());
     for(std::vector<size_t>::const_iterator itr=good_indices.begin();
 	itr!=good_indices.end(); ++itr){
@@ -238,10 +245,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     has_mumu_eta = CutDefReal["mumu_eta"].pass(mu_max_eta,w);
     CUT_CONTINUE(has_mumu_eta);
 
-    SF=total_scale_factor(MuSF);
-    SFStatErr=total_scale_factor(MuSFStatErr);
-    SFSystErr=total_scale_factor(MuSFSystErr);
-    SFTotalErr=total_scale_factor(MuSFTotalErr);
     candJPsi=jpsi_muons.first + jpsi_muons.second;
     jpsi_pt=candJPsi.Pt();
     jpsi_eta=candJPsi.Eta();

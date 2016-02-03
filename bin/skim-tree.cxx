@@ -85,8 +85,8 @@ int main(const int argc, const char* argv[]){
   const char* jet_variations[] = {"TrackZFilteredJets","TrackZSmearedJets",
 				  "TrackZScaledUpJets", "TrackZScaledDownJets",
 				  "TrackZRadialScaledUpJets", "TrackZRadialScaledDownJets"};
-  const char* treeNames[] = {"AUX","LCTopoJets",/*"TopoEMJets","MuTracks",*/
-			     "MuonLCTopoJets", "TrackZJets",
+  const char* treeNames[] = {"AUX","LCTopoJets",/*"TopoEMJets","MuTracks","MuonLCTopoJets",*/
+			     "TrackZJets",
 			     "Mu", "JPsi", "FakeJPsi", "JPsi2Trk","TRIG"};
   for(size_t i=0; i < LEN(treeNames); i++){
     Forest[std::string(treeNames[i])]=retrieve<TTree>(file,treeNames[i]);
@@ -96,7 +96,7 @@ int main(const int argc, const char* argv[]){
   }
   if(xsec > 0){
     Forest["TruthJets"]=retrieve<TTree>(file,"TruthJets");
-    Forest["MuonTruthJets"]=retrieve<TTree>(file,"MuonTruthJets");
+    // Forest["MuonTruthJets"]=retrieve<TTree>(file,"MuonTruthJets");
   }
   const double weight=xsec > 0 ? xsec/Forest["AUX"]->GetEntries() : fabs(xsec);
   // const char* muon_systems[] = {"","trkMS","trkMuonExtr","trkInnerExtr","trkComb"};

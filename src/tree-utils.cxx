@@ -99,7 +99,7 @@ std::vector<TLorentzVector> buildMuons(const std::vector<double>* pt,
   muons.reserve(pt->size());
   TLorentzVector tmp;
   for(size_t i =0; i < pt->size(); i++){
-    tmp.SetPtEtaPhiE(pt->at(i)*GeV, eta->at(i), phi->at(i), e->at(i)*GeV);
+    tmp.SetPtEtaPhiM(pt->at(i)*GeV, eta->at(i), phi->at(i), 0.105658);
     muons.push_back(tmp);
   }
   return muons;
