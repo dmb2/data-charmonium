@@ -91,8 +91,10 @@ int main(const int argc, const char* argv[]){
   for(size_t i=0; i < LEN(treeNames); i++){
     Forest[std::string(treeNames[i])]=retrieve<TTree>(file,treeNames[i]);
   }
-  for(size_t i=0; i < LEN(jet_variations); i++){
-    Forest[std::string(jet_variations[i])]=retrieve<TTree>(file,jet_variations[i]);
+  if(runSystematics){
+    for(size_t i=0; i < LEN(jet_variations); i++){
+      Forest[std::string(jet_variations[i])]=retrieve<TTree>(file,jet_variations[i]);
+    }
   }
   if(xsec > 0){
     Forest["TruthJets"]=retrieve<TTree>(file,"TruthJets");
