@@ -61,15 +61,19 @@ int main(const int argc, const char* argv[]){
   AtlasStyle style;
   style.SetAtlasStyle();
   std::map<std::string, TFile*> files;
+  std::string base_name;
   std::vector<std::string> parts;
   hist_book HistBook;
   init_hist_book(HistBook);
   std::vector<std::string> plots = map_keys(HistBook);
   for(int i=1; i < argc; i++ ){
     parts=split_string(argv[i],'.');
+    base_name=parts.at(0);
     files[parts.at(parts.size()-3)]=new TFile(argv[i]);
     // MSG_DEBUG(parts.at(parts.size()-3));
   }
+  MSG_DEBUG(base_name+".total.hist.root");
+  TFile outFile((base_name+".total.hist.root").c_str(),"RECREATE");
   std::map<std::string,aesthetic> styles;
   std::vector<int> colors = qualitative(WARM,files.size());
   
@@ -134,6 +138,7 @@ int main(const int argc, const char* argv[]){
       rel_err->SetMaximum(max);
       rel_err->Draw("H same");
     }
+    tot_err->Write();
     aesthetic tot_aes = hist_aes("Total Syst Error",TColor::GetColorTransparent(kBlack,0.4),1001,0);
     TH1D* rel_err = dynamic_cast<TH1D*>(tot_err->Clone((std::string(tot_err->GetName())+"_rel_err").c_str()));
     scale_errors(rel_err);
@@ -147,10 +152,9 @@ int main(const int argc, const char* argv[]){
     style_hist(tot_err,tot_aes);
     canv.cd(1);
     tot_err->Draw("e2 same");
-    
     canv.cd();
     leg->Draw();
     canv.SaveAs((plot+"_syst.pdf").c_str());
   }
-  
+  outFile.Close();
 }
