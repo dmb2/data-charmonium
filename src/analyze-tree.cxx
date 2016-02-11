@@ -182,7 +182,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   size_t idx=0;
   std::pair<TLorentzVector,TLorentzVector> jpsi_muons;
   // size_t jpsi_idx=0;
-
+  MSG("Weight: "<<weight);
   for(Long64_t entry=0; entry < nEntries; entry++){
     retrieve_values(Forest,entry);
     
@@ -200,13 +200,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     SFStatErr=total_scale_factor(MuSFStatErr);
     SFSystErr=total_scale_factor(MuSFSystErr);
     SFTotalErr=total_scale_factor(MuSFTotalErr);
-    w*=SF;
-    if(std::string(muon_variation) == "EfficiencyUp"){
-      w*=(1+SFTotalErr);
-    }
-    else if(std::string(muon_variation) == "EfficiencyDown"){
-      w*=(1-SFTotalErr);
-    }
     
     jets.clear(); jets.reserve(jet_pt->size());
     CutDefCat["nominal"].pass();
