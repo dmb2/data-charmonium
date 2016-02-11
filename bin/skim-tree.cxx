@@ -102,7 +102,7 @@ int main(const int argc, const char* argv[]){
   }
   const double weight=xsec > 0 ? xsec/Forest["AUX"]->GetEntries() : fabs(xsec);
   // const char* muon_systems[] = {"","trkMS","trkMuonExtr","trkInnerExtr","trkComb"};
-  const char* muon_variations[] = {"Smeared","SmearedLow","SmearedUp","SmearedIDUp","SmearedMSUp"};
+  const char* muon_variations[] = {"Smeared","SmearedLow","SmearedUp","SmearedIDUp","SmearedMSUp","EfficiencyUp","EfficiencyDown"};
   char outName[100];
   
   //try to extract dsid

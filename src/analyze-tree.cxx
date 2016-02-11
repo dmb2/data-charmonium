@@ -200,6 +200,13 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     SFStatErr=total_scale_factor(MuSFStatErr);
     SFSystErr=total_scale_factor(MuSFSystErr);
     SFTotalErr=total_scale_factor(MuSFTotalErr);
+    w*=SF;
+    if(std::string(muon_variation) == "EfficiencyUp"){
+      w*=(1+SFTotalErr);
+    }
+    else if(std::string(muon_variation) == "EfficiencyDown"){
+      w*=(1-SFTotalErr);
+    }
     
     jets.clear(); jets.reserve(jet_pt->size());
     CutDefCat["nominal"].pass();
