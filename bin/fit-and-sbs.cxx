@@ -27,8 +27,10 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
   RooDataSet data("data","data",RooArgSet(*mass,*tau),RooFit::Import(*tree));
   RooAbsPdf* model = build_model(mass,tau);
   RooFitResult* result = Fit(model,data);
+  result->Print();
   print_plot(mass,&data,model,"mass",";J/#psi Mass [GeV]",lumi);
   print_plot(tau,&data,model,"tau",";J/#psi Proper Decay Time [ps]",lumi);
+  /*
   double mass_width = get_par_val(&result->floatParsFinal(),"sigma_m");
   double mass_mean = get_par_val(&result->floatParsFinal(),"mean_m");
   add_region(mass, "SB", 
@@ -61,7 +63,7 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
   sep_var_info["tau"].regions=tau->getBinningNames();
   sep_var_info["tau"].sts_ratio=div(get_yield(tau_sig,tau,"Sig",covmat),
 				    get_yield(tau_sig,tau,"SB",covmat));
-  result->Print();
+  */
 }
 void psi_fit(TTree* tree,RooRealVar* mass, RooRealVar* tau,
 	     std::map<std::string,sb_info>& sep_var_info,
@@ -109,7 +111,8 @@ int main(const int argc, const char* argv[]){
   std::map<std::string,sb_info> sep_var_info;
   jpsi_fit(tree,mass,tau,sep_var_info,lumi);
   // psi_fit(tree,mass,tau,sep_var_info,lumi);
-  MSG_DEBUG(make_cut_expr(mass->getBinningNames(),"Sig") + " && "
+  /*
+    MSG_DEBUG(make_cut_expr(mass->getBinningNames(),"Sig") + " && "
 	    + make_cut_expr(tau->getBinningNames(),"Sig"));
   for(std::map<std::string,sb_info>::const_iterator it=sep_var_info.begin(); it !=sep_var_info.end(); ++it){
     const std::string& name = it->first;
@@ -119,6 +122,7 @@ int main(const int argc, const char* argv[]){
       MSG_DEBUG("\t"<<*r);
     }
   }
+
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
   const char* variables[] = {"jet_pt","jet_eta", "jet_z", "jet_e", 
@@ -143,5 +147,6 @@ int main(const int argc, const char* argv[]){
     c1.SaveAs((std::string(variables[i])+"_sbs_sub.pdf").c_str());
     print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
   }
+  */
   return 0;
 }
