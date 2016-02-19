@@ -216,7 +216,7 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   style_hist(nonprompt_hist,styles["non_prompt"]);
   // style_hist(psi_hist,styles["psi_bkg"]);
   
-  add_to_legend(&leg,sig_hist,styles["periodA"]);
+  add_to_legend(&leg,sig_hist,styles["data"]);
   add_to_legend(&leg,comb_hist,styles["comb_bkg"]);
   add_to_legend(&leg,nonprompt_hist,styles["non_prompt"]);
   // add_to_legend(&leg,psi_hist,styles["psi_bkg"]);
@@ -287,7 +287,7 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
   TLegend leg = *init_legend();
   std::map<std::string,aesthetic> styles;
   init_hist_styles(styles);
-  signal->SetMaximum(1.2*signal->GetMaximum());
+  // signal->SetMaximum(1.2*signal->GetMaximum());
   
   THStack* stack = build_stack(base_hist,&leg,styles,cut_expr);
   stack->Draw("H e1");
@@ -296,10 +296,11 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
   double m_max=signal->GetMaximum();
   // MSG_DEBUG("Stack: "<<s_max<<" Master: "<<m_max);
   signal->SetMaximum((s_max > m_max ? s_max : m_max)*1.2);
+  stack->SetMaximum((s_max > m_max ? s_max : m_max)*1.2);
 
   leg.Draw();
   add_atlas_badge(canv,0.2,0.9,lumi,INTERNAL);
-  add_to_legend(&leg,signal,styles["periodA"]);
+  add_to_legend(&leg,signal,styles["data"]);
   char outname[256];
   snprintf(outname,sizeof(outname)/sizeof(*outname),
 	   "%s_sbs_p8%s",base_hist->GetName(),suffix);

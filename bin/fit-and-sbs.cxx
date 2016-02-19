@@ -30,7 +30,7 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
   result->Print();
   print_plot(mass,&data,model,"mass",";J/#psi Mass [GeV]",lumi);
   print_plot(tau,&data,model,"tau",";J/#psi Proper Decay Time [ps]",lumi);
-  /*
+
   double mass_width = get_par_val(&result->floatParsFinal(),"sigma_m");
   double mass_mean = get_par_val(&result->floatParsFinal(),"mean_m");
   add_region(mass, "SB", 
@@ -63,7 +63,8 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
   sep_var_info["tau"].regions=tau->getBinningNames();
   sep_var_info["tau"].sts_ratio=div(get_yield(tau_sig,tau,"Sig",covmat),
 				    get_yield(tau_sig,tau,"SB",covmat));
-  */
+
+
 }
 void psi_fit(TTree* tree,RooRealVar* mass, RooRealVar* tau,
 	     std::map<std::string,sb_info>& sep_var_info,
@@ -104,14 +105,13 @@ int main(const int argc, const char* argv[]){
   TTree* tree = retrieve<TTree>(file,argv[2]);
   const double lumi=atof(argv[3]);
 
-  RooRealVar *mass = new RooRealVar("jpsi_m","jpsi_m",JPSIMASS, JPSIMASS-0.5, JPSIMASS+0.5);
+  RooRealVar *mass = new RooRealVar("jpsi_m","jpsi_m",JPSIMASS, JPSIMASS-0.4, JPSIMASS+0.5);
   RooRealVar *tau = new RooRealVar("jpsi_tau","Lifetime",-2.,5);
   //unfortunately the order matters, psi_fit uses the fit result of
   //jpsi_fit to define the jpsi mass window
   std::map<std::string,sb_info> sep_var_info;
   jpsi_fit(tree,mass,tau,sep_var_info,lumi);
   // psi_fit(tree,mass,tau,sep_var_info,lumi);
-  /*
     MSG_DEBUG(make_cut_expr(mass->getBinningNames(),"Sig") + " && "
 	    + make_cut_expr(tau->getBinningNames(),"Sig"));
   for(std::map<std::string,sb_info>::const_iterator it=sep_var_info.begin(); it !=sep_var_info.end(); ++it){
@@ -139,14 +139,15 @@ int main(const int argc, const char* argv[]){
     TH1* sig_final = print_sbs_stack(tree,HistBook[variables[i]],".pdf",
 				     sep_var_info,lumi);
     TCanvas c1("c1","Canv",600,600);
+    sig_final->SetMaximum(1.2*sig_final->GetMaximum());
     sig_final->Draw("e0");
     add_atlas_badge(c1,0.2,0.9,lumi,INTERNAL);
     TLegend leg=*init_legend();
-    leg.AddEntry(sig_final,"Period A Data");
+    leg.AddEntry(sig_final,"2012 Data");
     leg.Draw();
     c1.SaveAs((std::string(variables[i])+"_sbs_sub.pdf").c_str());
     print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
   }
-  */
+
   return 0;
 }

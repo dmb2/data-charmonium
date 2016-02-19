@@ -117,5 +117,6 @@ void init_hist_styles(std::map<std::string,aesthetic>& styles){
   styles["octet"]=hist_aes("Octet",TColor::GetColor(55,126,184),1001,kSolid);
 
   styles["periodA"]=data_aes("Period A Data",TColor::GetColor(0,0,0),kFullCircle,kSolid);
+  styles["data"]=data_aes("2012 Data",TColor::GetColor(0,0,0),kFullCircle,kSolid);
   styles["master"]=data_aes("MC Comparison ",TColor::GetColor(0,0,0),kDot,kSolid);
 }
