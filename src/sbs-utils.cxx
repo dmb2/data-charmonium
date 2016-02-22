@@ -234,8 +234,8 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   snprintf(outname,256,"%s_sbs_stk%s",base_hist->GetName(),suffix);
   add_atlas_badge(c1,0.2,0.9,lumi,INTERNAL);
   c1.SaveAs(outname);
-  snprintf(outname,256,"%s_sbs_stk%s",base_hist->GetName(),".root");
-  c1.SaveAs(outname);
+  // snprintf(outname,256,"%s_sbs_stk%s",base_hist->GetName(),".root");
+  // c1.SaveAs(outname);
 
   TH1* sig_final = dynamic_cast<TH1*>(sig_hist->Clone((std::string("sf_")+base_hist->GetName()).c_str()));
   double integral(0.);
@@ -249,6 +249,11 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   MSG_DEBUG("| Total Yield | "<<str_rep(signal_yield)<<"| "<<str_rep(div(signal_yield,signal_yield))<<" |");
   MSG_DEBUG("| Combinatoric | "<<str_rep(comb_yield)<<"| "<<str_rep(div(comb_yield,signal_yield))<<" |");
   MSG_DEBUG("| Non-Prompt | "<<str_rep(nonprompt_yield)<<"| "<<str_rep(div(nonprompt_yield,signal_yield))<<" |");
+  
+  MSG_DEBUG("Closure Test:");
+  num_err numerator = sub(signal_yield,add(comb_yield,nonprompt_yield));
+  num_err denominator = sub(signal_yield,comb_yield);
+  MSG_DEBUG("R = (Sig - Comb - NP)/(Sig - Comb) = "<< str_rep(numerator)<<" / "<< str_rep(denominator)<< " = "<<str_rep(div(numerator,denominator)));
   sig_final->Add(comb_hist,-1);
   sig_final->Add(nonprompt_hist,-1);
   // sig_final->Add(psi_hist,-1);

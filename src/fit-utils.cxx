@@ -179,6 +179,6 @@ void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model,
   }
   add_atlas_badge(canv,0.2,0.9,lumi,INTERNAL);
   canv.SaveAs(OFName);
-  snprintf(OFName,100,"%s_fit_final.root",key);
-  canv.SaveAs(OFName);
+  // snprintf(OFName,100,"%s_fit_final.root",key);
+  // canv.SaveAs(OFName);
 }
