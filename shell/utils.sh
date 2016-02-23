@@ -112,3 +112,14 @@ process_systematics(){
     mv $DSID.{M,T}*.mini.root "$DSID-systematics/"
     summarize_systematics $FILE
 }
+
+# usage: get_ami_exsec DSID.ami_dset/
+# returns string (in fb): DSID=xsec
+get_ami_xsec(){
+    local dset_info=$(ami show dataset info $1)
+    local xsec=$(echo $dset_info | grep -o "crossSection : [0-9\.E+-]*" | sed 's,crossSection : ,,' | sed 's/[eE]+\{0,1\}/*10^/g')
+    local filt_eff=$(echo $dset_info | grep -o "GenFiltEff : [0-9\.E+-]*" | sed 's,GenFiltEff : ,,' | sed 's/[eE]+\{0,1\}/*10^/g')
+    local XS=$(awk "BEGIN {print ${xsec}*${filt_eff}*1e6}")
+    local DSID=$(basename $1 | awk -F '.' '{print $2}')
+    echo "${DSID}=${XS}"
+}
