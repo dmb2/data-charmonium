@@ -110,7 +110,7 @@ process_systematics(){
     skim-tree Systematics.conf $FILE $(echo $(basename $FILE .root)).mini.root $XS
     mkdir -p "$DSID-systematics"
     mv $DSID.{M,T}*.mini.root "$DSID-systematics/"
-    summarize_systematics $FILE
+    summarize_systematics $(echo $(basename $FILE .root)).mini.root
 }
 
 # usage: get_ami_exsec DSID.ami_dset/
