@@ -130,6 +130,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     OutTree.Branch("truth_jet_m",&cand_t_jet_m);
     OutTree.Branch("truth_delta_r",&t_delta_r);
   }
+  OutTree.Branch("trigger_names",&EF_trigger_names);
   OutTree.Branch("psi_m",&cand_psi_m);
   OutTree.Branch("jpsi_s",&jpsi_s);
   OutTree.Branch("jpsi_lxy",&jpsi_lxy);
