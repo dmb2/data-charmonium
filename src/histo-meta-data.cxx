@@ -31,7 +31,7 @@ void init_hist_book(std::map<std::string,TH1D*>& HistBook){
   HistBook["tau21"]=new TH1D("tau21","N Subjettiness #tau_{21};#tau_{21};evts/binwidth",50,0,1.2);
   HistBook["delta_r"]=new TH1D("delta_r","#Delta R(J/#psi,Jet); #Delta R; evts/binwidth",50,0,.2);
 
-  HistBook["psi_m"]=new TH1D("psi_m","J/#psi + 2 Tracks Mass; M(#mu #mu Trk Trk) [GeV]; evts/binwidth",50,2.5,6);
+  HistBook["psi_m"]=new TH1D("psi_m","J/#psi + 2 Tracks Mass; M(#mu #mu Trk Trk) [GeV]; evts/binwidth",50,3.3,4.1);
 
   HistBook["jpsi_pt"]=new TH1D("jpsi_pt","J/#psi p_{T};p_{T} [GeV];evts/binwidth",50,0,300);
   HistBook["jpsi_eta"]=new TH1D("jpsi_eta","J/#psi #eta;#eta;evts/binwidth",50,-2.6,2.6);
@@ -87,6 +87,9 @@ void init_hist_styles(std::map<std::string,aesthetic>& styles){
 
   styles["psi_bkg"]=hist_aes("#psi(2S) Background",TColor::GetColor(0,104,55),1001,kSolid);
   styles["comb_bkg"]=hist_aes("Comb. Background",TColor::GetColor(240,59,32),1001,kSolid);
+
+  styles["208202.Pythia8B_AU2_CTEQ6L1_bb_Jpsimu6mu6"]=hist_aes("bb Non Prompt Background",TColor::GetColor(189,0,38),1001,kSolid);
+  styles["208207.Pythia8B_AU2_CTEQ6L1_anti_bb_Jpsimu6mu6"]=hist_aes(" #bar{bb} Non Prompt Background",TColor::GetColor(189,0,38),1001,kSolid);
   
   //Oranges
   styles["208004.trkComb.LCTopoJets"]=hist_aes("#mu Comb, Jet LCTopo",TColor::GetColor(254,204,92),1001,kSolid);

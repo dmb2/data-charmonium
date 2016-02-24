@@ -29,6 +29,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   bool is_MC=(weight != 1.0);
   unsigned int squawk_every = 1e3;
   std::vector<std::string>* EF_trigger_names=NULL;
+  int trigger_cat(0);
   double pileup(0.);
   double tau1(0),tau2(0),tau3(0),tau21(0),tau32(0);
   double jpsi_s(0.);
@@ -130,6 +131,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     OutTree.Branch("truth_jet_m",&cand_t_jet_m);
     OutTree.Branch("truth_delta_r",&t_delta_r);
   }
+  OutTree.Branch("trigger_category",&trigger_cat);
   OutTree.Branch("psi_m",&cand_psi_m);
   OutTree.Branch("jpsi_s",&jpsi_s);
   OutTree.Branch("jpsi_lxy",&jpsi_lxy);
@@ -189,6 +191,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     if(entry%squawk_every==0 && verbose){
       MSG("Processing entry "<<entry);
     }
+    trigger_cat=0;
     idx=0; delta_r=-1.; z=-1.;//jpsi_idx=0
     jpsi_muons=std::pair<TLorentzVector,TLorentzVector>(TLorentzVector(0,0,0,0),
 							TLorentzVector(0,0,0,0));
@@ -207,6 +210,18 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     has_num_jets = CutDefCat["num_jets"].pass(int(jet_pt->size()),w);
     CUT_CONTINUE(has_trigger);
     CUT_CONTINUE(has_num_jets);
+    for(std::vector<std::string>::const_iterator name=EF_trigger_names->begin();
+	name!=EF_trigger_names->end(); ++name){
+
+      if(*name == "EF_mu36_tight"){
+	trigger_cat=1;
+	break;
+      }
+      if(*name == "EF_mu24i_tight"){
+	trigger_cat=2;
+	break;
+      }
+    }
     std::vector<size_t> good_indices = filter_by_pt(*jet_pt, CutDefReal["jet_pt"].cut_value());
     for(std::vector<size_t>::const_iterator itr=good_indices.begin();
 	itr!=good_indices.end(); ++itr){
