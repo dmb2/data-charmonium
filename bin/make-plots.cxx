@@ -35,7 +35,7 @@ void print_plots(const char* sample_names[], const size_t n_samp, const double t
   init_hist_book(HistBook);
   std::map<std::string,TH2D*> Hist2DBook;
   init_hist2D_book(Hist2DBook);
-  for(std::map<std::string,TH1D*>::iterator item=HistBook.begin(); 
+  for(std::map<std::string,TH1D*>::iterator item=HistBook.begin();
       item != HistBook.end(); ++item){
     TH1D* hist = item->second;
     setup_hist(hist);
@@ -45,12 +45,14 @@ void print_plots(const char* sample_names[], const size_t n_samp, const double t
     const std::string& plot = *p;
     print_ratio_hist(sample_trees,plot,HistBook[plot],".pdf", target_lumi);
   }
+  /*
   plots = map_keys(Hist2DBook);
   for(std::vector<std::string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
     const std::string& plot = *p;
     print_2D_stack(sample_trees,plot,Hist2DBook[plot],".pdf", target_lumi);
     print_2D_slices(sample_trees,plot,Hist2DBook[plot],"_sliced.pdf", target_lumi);
-  }    
+  }
+  */
 }
 
 int main(const int argc, const char* argv[]){

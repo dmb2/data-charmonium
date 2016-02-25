@@ -74,3 +74,4 @@ T* retrieve(const char* fname,const char* objname){
   return NULL;
 }
 std::vector<std::string> split_string(const std::string& input, const char& delims);
+std::string str_join(const std::string base, const std::vector<std::string>&,const size_t start, const size_t end);

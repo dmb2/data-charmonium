@@ -9,7 +9,7 @@
 #include "TTree.h"
 
 //Local
-#include "cut-flow-studies.hh"
+#include "analyze-tree.hh"
 #include "root-sugar.hh"
 #include "Units.hh"
 
@@ -32,7 +32,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   int trigger_cat(0);
   double pileup(0.);
   double tau1(0),tau2(0),tau3(0),tau21(0),tau32(0);
-  double jpsi_s(0.);
   double z(0.), delta_r(999.);
   double jpsi_lxy(-99999.);
   double jpsi_vtx_z(99999.);
@@ -133,7 +132,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   }
   OutTree.Branch("trigger_category",&trigger_cat);
   OutTree.Branch("psi_m",&cand_psi_m);
-  OutTree.Branch("jpsi_s",&jpsi_s);
   OutTree.Branch("jpsi_lxy",&jpsi_lxy);
   OutTree.Branch("jpsi_vtx_z",&jpsi_vtx_z);
   OutTree.Branch("jpsi_tau",&jpsi_tau);

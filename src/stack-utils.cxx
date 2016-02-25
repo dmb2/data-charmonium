@@ -51,10 +51,12 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
 
     TTree* const tree = samples[name];
     std::string suffix = cut_index == 0 ? "" : str_join("_",cut_branches,0,cut_index+1);
+    // MSG_DEBUG(suffix);
     if(suffix.find("(")!=std::string::npos){
       suffix.replace(suffix.find("("),suffix.rfind(")"),"signal_region");
     } 
     TH1* hist =(TH1*)base_hist->Clone((name+plot+"_"+ suffix).c_str());
+    // MSG_DEBUG(hist->GetName());
     hist_list[i]=hist;
     cut_expr=((cut_index == 0) ? "weight" : "weight*" 
 	      + str_join("*",cut_branches,0,cut_index+1));
@@ -194,7 +196,7 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
   const size_t n_row = static_cast<size_t>(ceil(n_bins_y/(n_col+0.)));
   TCanvas canv(("2D_stk_canv_"+plot).c_str(),"2D Stack",600*n_col,600*n_row);
   TLatex decorator;
-  TLegend* leg = make_legend(0.66,0.01,.33,.25);
+  TLegend* leg = init_legend(0.66,0.01,.33,.25);
   std::map<std::string,aesthetic> hist_styles;
   init_hist_styles(hist_styles);
   std::vector<std::string> sample_names=map_keys(samples);

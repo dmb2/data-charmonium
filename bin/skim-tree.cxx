@@ -7,7 +7,7 @@
 #include <map>
 // Local Includes
 #include "simple-parser.hh"
-#include "cut-flow-studies.hh"
+#include "analyze-tree.hh"
 #include "Units.hh"
 #include "tree-utils.hh"
 #include "root-sugar.hh"

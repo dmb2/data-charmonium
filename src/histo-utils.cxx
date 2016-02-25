@@ -75,26 +75,6 @@ TH2D* setup_response_hist(TH1* hist){
   delete color;
   return hist2D;
 }
-std::vector<std::string> add_prefix(std::string prefix, std::vector<std::string> strings){
-  std::vector<std::string> result;
-  result.reserve(strings.size());
-  for(std::vector<std::string>::const_iterator str=strings.begin(); str!=strings.end(); ++str){
-    result.push_back(prefix + *str);
-  }
-  return result;
-}
-std::string str_join(const std::string base, 
-		const std::vector<std::string>& strings,
-		const size_t start, const size_t end){
-  if(start==end || strings.size()==0){
-    return "";
-  }
-  std::string result(strings[start]);
-  for(size_t i=(start+1); i < end; i++){
-    result+=(base + strings[i]);
-  }
-  return result;
-}
 void draw_histo(TTree* tree,const char* branch_name, const char* hist_name, 
 		const char* cut_expr){
   char branch_expr[500];
@@ -126,32 +106,6 @@ void set_pad_margins(TVirtualPad* pad,int pad_pos, int N_hists,int n_col,int n_r
     pad->SetBottomMargin(0);
   }
 }
-std::vector<std::pair<double,double> > make_roc_pairs(TH1* signal, TH1* background){
-  std::vector<std::pair<double,double> > result;
-  if(signal->GetDimension()!=background->GetDimension()){
-    std::cout << "Error: Dimension mismatch! - make_roc_pairs"<<std::endl;
-    return result;
-  }
-  else if (signal->GetDimension() > 1 ){
-    std::cout <<"Error: Only 1D hists are supported. - make_roc_pairs"<<std::endl;
-  }
-  else if(signal->GetNbinsX() != background->GetNbinsX()){
-    std::cout<<"Error: NbinsX mismatch. - make_roc_pairs"<<std::endl;
-  }
-  // reserve space for the histograms
-  result.reserve(signal->GetNbinsX());
-  // saves having to integrate Nbins times.
-  double N_bkg(0.);
-  double N_sig(0.);
-  for(size_t i=signal->GetNbinsX(); i > 0; --i){
-    N_bkg+=background->GetBinContent(i);
-    N_sig+=signal->GetBinContent(i);
-    result.push_back(std::pair<double,double>(N_sig/(N_bkg+N_sig),
-					      1-N_bkg/(N_bkg + N_sig)));
-  }
-  return result;
-}
-
 TH1* make_response_hist(TH1* base_hist, TTree* tree, 
 			const std::vector<std::string>& cut_branches,size_t cut_index, 
 			const std::string& plot){
@@ -276,6 +230,7 @@ static void style_err_hist(TH1D* hist,int color){
   hist->SetMarkerStyle(kDot);
   hist->SetMarkerSize(0);
 }
+// TODO Either remove, or refactor
 void print_profile_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 			const std::string& suffix,
 			TH1* (*make_hist)(TH1*,TTree*,
@@ -339,13 +294,6 @@ void print_hist(TTree* tree, const std::string& plot,
   hist->Draw("H COLZ");
   decorator.DrawLatexNDC(0.,0.05,hist->GetTitle());
   canv.SaveAs((plot+suffix).c_str());
-}
-TLegend* make_legend(double x, double y, double width, double height){
-  TLegend* leg = new TLegend(x,y,x+width,y+height);
-  leg->SetFillColor(0);
-  leg->SetFillStyle(0);
-  leg->SetBorderSize(0);
-  return leg;
 }
 void print_cut_hist(TTree* tree, const std::vector<std::string>& cut_branches,
 		const std::string& plot, TH1* base_hist, 

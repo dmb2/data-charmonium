@@ -37,15 +37,11 @@ TH2D* setup_res_vtxz_hist(TH1* hist);
 TH2D* setup_res_dif_hist(TH1* hist);
 TH2D* setup_rel_res_hist(TH1* hist);
 TH2D* setup_response_hist(TH1* hist);
-std::vector<std::string> add_prefix(std::string prefix, std::vector<std::string> strings);
-std::string str_join(const std::string base, const std::vector<std::string>&,const size_t start, const size_t end);
 void draw_histo(TTree* tree,const char* branch_name, const char* hist_name, 
 		const char* cut_expr);
 TLegend* init_legend(double x1=0.75,double y1=0.68, double x2=0.99,double y2=0.92);
 void remove_axis(TAxis* axis);
 void set_pad_margins(TVirtualPad* pad,int pad_pos,int N_hists,int n_col=3,int n_row=2,bool y_axis=true);
-TLegend* make_legend(double x, double y, double width, double height);
-void make_roc_list(TH1* signal, TH1* background);
 TH1* make_response_hist(TH1* base_hist, TTree* tree, 
 			const std::vector<std::string>& cut_branches,size_t cut_index, 
 			const std::string& plot);
