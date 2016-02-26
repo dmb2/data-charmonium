@@ -165,22 +165,16 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   const std::list<std::string>& psi_regions=sep_var_info["psi_m"].regions;
   const num_err& mass_stsR=sep_var_info["mass"].sts_ratio;
   const num_err& np_frac=sep_var_info["tau"].sts_ratio;
-  // const num_err& psi_stsR=sep_var_info["psi_m"].sts_ratio;
 
   //This covers:
-  // S = S' + R*SB(mass) + F*SB(tau) + Q*S(psi_m)
+  // S = S' + R*SB(mass) + F*SB(tau)
   // S  == Observed signal in tau/mass signal region
   // S' == Real prompt J/\psi contribution
   // R  == Signal-to-Sideband ratio from mass fit
   // SB(mass) == Mass side band hist
   // F  == non-prompt fraction from fit
   // SB(tau) == Tau sideband hist
-  // Q  == Branching fractions to estimate \psi(2S) contamination
-  // S(psi_m) = Signal of \psi(2S)
 
-  //TODO make this a num_err and usethe PDG errors for the numbers
-  ///BR(\psi(2S)->J/\psi X)/BR(\psi(2S)->J/\psi\pi\pi)
-  // const double jpsi_pi_br(0.609/0.3445);
   TLegend leg = *init_legend();
   std::map<std::string,aesthetic> styles;
   init_hist_styles(styles);
@@ -195,18 +189,6 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   // Tau SB Hist
   TH1* nonprompt_hist = make_bkg_hist(base_hist,tree,tau_regions,mass_regions,"tau_stk_sb",np_frac);
 
-  // Psi Mass Hist
-  /*
-  TH1* psi_hist = make_normal_hist(base_hist,tree,base_hist->GetName(),
-				   (signal_cut_expr + "&& "+ make_cut_expr(psi_regions,"Sig")).c_str(),
-				   "_stk_psi_sig");
-  TH1* psi_sb_hist = make_normal_hist(base_hist,tree,base_hist->GetName(),
-				      (signal_cut_expr + "&& "+ make_cut_expr(psi_regions, "SB")).c_str(),"_stk_psi_sb");
-  scale_hist(psi_sb_hist,psi_stsR);
-  // psi_sb_hist->Scale(-psi_stsR.val);
-  psi_hist->Add(psi_sb_hist,-1);
-  psi_hist->Scale(jpsi_pi_br);
-  */
   THStack stack("sbs_stack",base_hist->GetTitle());
   stack.SetHistogram((TH1*)base_hist->Clone((std::string("stack_sbs")+base_hist->GetName()).c_str()));
   sig_hist->SetLineColor(kBlack);
@@ -214,14 +196,11 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   
   style_hist(comb_hist,styles["comb_bkg"]);
   style_hist(nonprompt_hist,styles["non_prompt"]);
-  // style_hist(psi_hist,styles["psi_bkg"]);
   
   add_to_legend(&leg,sig_hist,styles["data"]);
   add_to_legend(&leg,comb_hist,styles["comb_bkg"]);
   add_to_legend(&leg,nonprompt_hist,styles["non_prompt"]);
-  // add_to_legend(&leg,psi_hist,styles["psi_bkg"]);
 
-  // stack.Add(psi_hist);
   stack.Add(nonprompt_hist);
   stack.Add(comb_hist); 
 
@@ -238,25 +217,10 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   // c1.SaveAs(outname);
 
   TH1* sig_final = dynamic_cast<TH1*>(sig_hist->Clone((std::string("sf_")+base_hist->GetName()).c_str()));
-  double integral(0.);
-  double int_err(0.);
-  integral=sig_final->IntegralAndError(0,sig_final->GetNbinsX(),int_err);
-  num_err signal_yield={integral,int_err};
-  integral=comb_hist->IntegralAndError(0,comb_hist->GetNbinsX(),int_err);
-  num_err comb_yield={integral,int_err};
-  integral=nonprompt_hist->IntegralAndError(0,nonprompt_hist->GetNbinsX(),int_err);
-  num_err nonprompt_yield={integral,int_err};
-  MSG_DEBUG("| Total Yield | "<<str_rep(signal_yield)<<"| "<<str_rep(div(signal_yield,signal_yield))<<" |");
-  MSG_DEBUG("| Combinatoric | "<<str_rep(comb_yield)<<"| "<<str_rep(div(comb_yield,signal_yield))<<" |");
-  MSG_DEBUG("| Non-Prompt | "<<str_rep(nonprompt_yield)<<"| "<<str_rep(div(nonprompt_yield,signal_yield))<<" |");
-  
-  MSG_DEBUG("Closure Test:");
-  num_err numerator = sub(signal_yield,add(comb_yield,nonprompt_yield));
-  num_err denominator = sub(signal_yield,comb_yield);
-  MSG_DEBUG("R = (Sig - Comb - NP)/(Sig - Comb) = "<< str_rep(numerator)<<" / "<< str_rep(denominator)<< " = "<<str_rep(div(numerator,denominator)));
+
   sig_final->Add(comb_hist,-1);
   sig_final->Add(nonprompt_hist,-1);
-  // sig_final->Add(psi_hist,-1);
+
   return sig_final;
 }
 THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aesthetic> styles, 
@@ -269,19 +233,16 @@ THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aestheti
     "208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1",
     "208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"
   };
-  char fname[500];
   for(size_t i=0; i < LEN(samp_names); i++){
     const std::string name(samp_names[i]);
-    snprintf(fname,LEN(fname),"%s.mini.root",name.c_str());
-    TTree* tree = retrieve<TTree>(fname,"mini");
-    TH1* hist=dynamic_cast<TH1*>(base_hist->Clone((name+base_hist->GetName()+"_p8_stk").c_str()));
-    draw_histo(tree,base_hist->GetName(),hist->GetName(),cut_expr);
+    TH1* hist= build_syst_hist(base_hist,name,cut_expr);
     stack->Add(hist);
     style_hist(hist,styles[name]);
     add_to_legend(leg, hist, styles[name]);
   }
   return stack;
 }
+
 void print_pythia_stack(TH1* base_hist, TH1* signal, 
 			const double lumi,const char* cut_expr,
 			const char* suffix){
@@ -310,9 +271,9 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
   snprintf(outname,sizeof(outname)/sizeof(*outname),
 	   "%s_sbs_p8%s",base_hist->GetName(),suffix);
   canv.SaveAs(outname);
-  snprintf(outname,sizeof(outname)/sizeof(*outname),
-	   "%s_sbs_p8%s",base_hist->GetName(),".root");
-  canv.SaveAs(outname);
+  // snprintf(outname,sizeof(outname)/sizeof(*outname),
+  // 	   "%s_sbs_p8%s",base_hist->GetName(),".root");
+  // canv.SaveAs(outname);
 }
 
 RooAbsPdf* find_component(RooAbsPdf* PDF,const char* name){

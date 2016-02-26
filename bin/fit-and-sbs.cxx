@@ -66,34 +66,6 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
 
 
 }
-void psi_fit(TTree* tree,RooRealVar* mass, RooRealVar* tau,
-	     std::map<std::string,sb_info>& sep_var_info,
-	     const double lumi){
-  RooRealVar *psi_m = new RooRealVar("psi_m","psi_m",PSIMASS,PSIMASS-0.25,PSIMASS+0.25);
-  RooDataSet data("psi_data","jpsi_data",RooArgSet(*mass,*tau,*psi_m),RooFit::Import(*tree));
-  const std::string jpsi_sig_expr = make_cut_expr(mass->getBinningNames(),"Sig") + " && "
-    + make_cut_expr(tau->getBinningNames(),"Sig");
-  data.reduce(jpsi_sig_expr.c_str());
-  RooAbsPdf* model = build_psi_model(psi_m);
-  RooFitResult* fit_result = Fit(model,data);
-  print_plot(psi_m,&data,model,"psi_m",";#psi(2S) Mass [GeV]",lumi);
-  double mass_width = get_par_val(&fit_result->floatParsFinal(),"psi_m_sigma");
-  double mass_mean = get_par_val(&fit_result->floatParsFinal(),"psi_m_mean");
-  add_region(psi_m, "SB", 
-	     mass_mean - 10*mass_width,
-	     mass_mean -  3*mass_width);
-  add_region(psi_m,"Sig",
-	     mass_mean - 3*mass_width,
-	     mass_mean + 3*mass_width);
-  add_region(psi_m,"SB",
-	     mass_mean + 3*mass_width,
-	     mass_mean + 10*mass_width);
-  RooAbsPdf* bkg = find_component(model,"Background");
-  const double* covmat = fit_result->covarianceMatrix().GetMatrixArray();
-  sep_var_info["psi_m"].regions=psi_m->getBinningNames();
-  sep_var_info["psi_m"].sts_ratio=div(get_yield(bkg,psi_m,"Sig",covmat),get_yield(bkg,psi_m,"SB",covmat));
-  fit_result->Print();
-}
 int main(const int argc, const char* argv[]){
   if(argc !=4){
     usage(argv[0]);
@@ -107,12 +79,9 @@ int main(const int argc, const char* argv[]){
 
   RooRealVar *mass = new RooRealVar("jpsi_m","jpsi_m",JPSIMASS, JPSIMASS-0.4, JPSIMASS+0.5);
   RooRealVar *tau = new RooRealVar("jpsi_tau","Lifetime",-2.,5);
-  //unfortunately the order matters, psi_fit uses the fit result of
-  //jpsi_fit to define the jpsi mass window
   std::map<std::string,sb_info> sep_var_info;
   jpsi_fit(tree,mass,tau,sep_var_info,lumi);
-  // psi_fit(tree,mass,tau,sep_var_info,lumi);
-    MSG_DEBUG(make_cut_expr(mass->getBinningNames(),"Sig") + " && "
+  MSG_DEBUG(make_cut_expr(mass->getBinningNames(),"Sig") + " && "
 	    + make_cut_expr(tau->getBinningNames(),"Sig"));
   for(std::map<std::string,sb_info>::const_iterator it=sep_var_info.begin(); it !=sep_var_info.end(); ++it){
     const std::string& name = it->first;
@@ -132,7 +101,7 @@ int main(const int argc, const char* argv[]){
     + " && " + make_cut_expr(tau->getBinningNames(),"Sig");
   char cut_expr[1024];
   snprintf(cut_expr,sizeof(cut_expr)/sizeof(*cut_expr),
-	   "(%s)*weight*%.4g",
+	   "(%s)*weight*%.4g*SF",
 	   jpsi_sig_region.c_str(),
 	   lumi);
   for(size_t i=0; i < LEN(variables); i++){

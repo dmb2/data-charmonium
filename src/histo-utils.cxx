@@ -128,8 +128,8 @@ TH1* make_normal_hist(TH1* base_hist, TTree* tree,
   if(uniq_suffix.find("&&")!=std::string::npos){
     uniq_suffix="signal_region";
   }
-  const std::string weight_expr=cut_branches.size()==0 ? "weight" :
-    "weight*"+str_join("*",cut_branches,0,cut_index+1);
+  const std::string weight_expr=cut_branches.size()==0 ? "SF*weight" :
+    "SF*weight*"+str_join("*",cut_branches,0,cut_index+1);
   MSG_DEBUG(weight_expr);
   return make_normal_hist(base_hist,tree,plot,
 			  weight_expr.c_str(),"_NRM_"+std::string(count_str)+uniq_suffix);
@@ -287,13 +287,51 @@ void print_hist(TTree* tree, const std::string& plot,
   TLatex decorator;
   decorator.SetTextSize(0.04);
   MSG_DEBUG("Warning: using truth_jet_pt cut!");
-  const std::string weight_expr="weight*(" +
+  const std::string weight_expr="SF*weight*(" +
     str_join("*",cut_branches, 0,cut_branches.size())+" && truth_jet_pt > 45)";
   // MSG_DEBUG(weight_expr);
   TH1* hist = make_hist(base_hist,tree,plot,weight_expr.c_str(),"_nom");
   hist->Draw("H COLZ");
   decorator.DrawLatexNDC(0.,0.05,hist->GetTitle());
   canv.SaveAs((plot+suffix).c_str());
+}
+TH1* build_syst_hist(TH1* base_hist, const std::string& samp_name,
+		     const char* cut_expr){
+  std::map<std::string,std::string> syst_map;
+  syst_map["MuonEfficiency"]="";
+  syst_map["MuonSmearedUp"]="MuonSmearedLow";
+  syst_map["TrackZRadialScaledUpJets"]="TrackZRadialScaledDownJets";
+  syst_map["TrackZScaledUpJets"]="TrackZScaledDownJets";
+  syst_map["MuonSmearedIDUp"]="";
+  syst_map["MuonSmeared"]="";
+  syst_map["MuonSmearedMSUp"]="";
+  syst_map["TrackZFilteredJets"]="";
+  syst_map["TrackZSmearedJets"]="";
+  char fname[256];
+  snprintf(fname,LEN(fname),"%s.mini.root",samp_name.c_str());
+  TTree* tree = retrieve<TTree>(fname,"mini");
+  TH1* nom_hist = make_normal_hist(base_hist,tree,base_hist->GetName(), cut_expr, samp_name);
+  std::string dsid=split_string(samp_name,'.').at(0);
+  std::string syst_cut_expr(cut_expr);
+  MSG_DEBUG(syst_cut_expr);
+  for(std::map<std::string,std::string>::const_iterator it = syst_map.begin();
+      it!=syst_map.end(); ++it){
+    const std::string& var_up = it->first;
+    const std::string& var_down = it->second;
+    MSG_DEBUG("Processing up:"<<var_up<<" and down: "<<var_down);
+    double sf = var_down=="" ? 1.0 : 0.5;
+    bool mu_eff=(var_up=="MuonEfficiency");
+    snprintf(fname,LEN(fname),"%s-systematics/%s.%s.mini.root",dsid.c_str(),dsid.c_str(),var_up.c_str());
+    TTree* up_tree = mu_eff ? tree : retrieve<TTree>(fname,"mini");
+    snprintf(fname,LEN(fname),"%s-systematics/%s.%s.mini.root",dsid.c_str(),dsid.c_str(),var_down.c_str());
+    TTree* down_tree = var_down!="" && !mu_eff ? retrieve<TTree>(fname,"mini") : tree;
+    
+    TH1* syst_up_hist = make_normal_hist(base_hist,up_tree,base_hist->GetName(), mu_eff ? (std::string(cut_expr)+"*(1+SFTotalErr)").c_str(): cut_expr,samp_name+"_syst_up");
+    TH1* syst_down_hist = make_normal_hist(base_hist,down_tree,base_hist->GetName(),mu_eff ? (std::string(cut_expr)+"*(1-SFTotalErr)").c_str():cut_expr,samp_name+"_syst_down");
+    syst_up_hist->Add(syst_down_hist,sf);
+    
+  }
+  return nom_hist;
 }
 void print_cut_hist(TTree* tree, const std::vector<std::string>& cut_branches,
 		const std::string& plot, TH1* base_hist, 
