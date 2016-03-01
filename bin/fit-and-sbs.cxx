@@ -94,9 +94,9 @@ int main(const int argc, const char* argv[]){
 
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
-  const char* variables[] = {"jet_pt","jet_eta", "jet_z", "jet_e", 
-			     "jpsi_pt","jpsi_eta",
-			     "tau1","tau2", "tau3","tau21","tau32"};
+  const char* variables[] = {/*"jet_pt","jet_eta", "jet_z", "jet_e", */
+			     "jpsi_pt"/*,"jpsi_eta",
+					"tau1","tau2", "tau3","tau21","tau32"*/};
   const std::string jpsi_sig_region = make_cut_expr(mass->getBinningNames(),"Sig") 
     + " && " + make_cut_expr(tau->getBinningNames(),"Sig");
   char cut_expr[1024];
@@ -107,14 +107,6 @@ int main(const int argc, const char* argv[]){
   for(size_t i=0; i < LEN(variables); i++){
     TH1* sig_final = print_sbs_stack(tree,HistBook[variables[i]],".pdf",
 				     sep_var_info,lumi);
-    TCanvas c1("c1","Canv",600,600);
-    sig_final->SetMaximum(1.2*sig_final->GetMaximum());
-    sig_final->Draw("e0");
-    add_atlas_badge(c1,0.2,0.9,lumi,INTERNAL);
-    TLegend leg=*init_legend();
-    leg.AddEntry(sig_final,"2012 Data");
-    leg.Draw();
-    c1.SaveAs((std::string(variables[i])+"_sbs_sub.pdf").c_str());
     print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
   }
 

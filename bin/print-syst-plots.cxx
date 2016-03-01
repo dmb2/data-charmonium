@@ -20,39 +20,7 @@ void usage(const char* name){
   MSG("Usage: "<< name << " [DSID.variation.hist.root]");
   MSG("Prints histograms outputted by make-systematics-plots, input name matters! ");
 }
-void scale_errors(TH1D* hist){
-  double err(0);
-  double content(0);
-  for(int i=0; i < hist->GetNbinsX(); ++i){
-    err=hist->GetBinError(i);
-    content=hist->GetBinContent(i);
-    // MSG_DEBUG("err: "<<err<< " content: "<<content);
-    hist->SetBinError(i,0);
-    hist->SetBinContent(i,content > 0 ? err/content : 0);
-  }
-}
-void add_err(TH1D* hista, TH1D* histb){
-  if(hista->GetNbinsX()!=histb->GetNbinsX()){
-    MSG_ERR("Bin size mismatch: "<<hista->GetNbinsX()<<" vs "<<histb->GetNbinsX());
-    return;
-  }
-  num_err a; num_err b;
-  for(int i=0; i < hista->GetNbinsX(); i++){
-    a.val=0; a.err=hista->GetBinError(i);
-    b.val=0; b.err=histb->GetBinError(i);
-    // MSG_DEBUG("a: "<<str_rep(a)<< " b: "<<str_rep(b)<<" a+b: "<<str_rep(add(a,b)));
-    hista->SetBinError(i,add(a,b).err);
-  }
-}
-bool has_non_zero_error(TH1* hist){
-  // double tot_err=0;
-  for(int i=1; i < hist->GetNbinsX(); i++){
-    if(hist->GetBinError(i) != 0){
-      return true;
-    }
-  }
-  return false;
-}
+
 int main(const int argc, const char* argv[]){
   if(argc < 2){
     usage(argv[0]);

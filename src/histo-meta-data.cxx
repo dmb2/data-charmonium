@@ -52,6 +52,7 @@ void init_cut_names(std::map<std::string,std::string>& cut_names){
 }
 
 void init_hist_styles(std::map<std::string,aesthetic>& styles){
+  styles["global_syst_err"]=hist_aes("Systematic Error",TColor::GetColorTransparent(kBlack,0.4),1001,0);
   styles["1S0_8"]=hist_aes("^{1}S^{(8)}_{0}",TColor::GetColor(222,235,247),1001,kSolid);
   styles["3S1_8"]=hist_aes("^{3}S^{(8)}_{1}",TColor::GetColor(158,202,225),1001,kSolid);
   styles["3PJ_8"]=hist_aes("^{3}P^{(8)}_{J}",TColor::GetColor(49,130,189),1001,kSolid);

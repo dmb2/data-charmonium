@@ -14,6 +14,7 @@
 
 #include "histo-utils.hh"
 #include "root-sugar.hh"
+#include "math.hh"
 void setup_hist(TH1* hist){
   hist->Sumw2();
   hist->SetMarkerStyle(1);
@@ -130,7 +131,7 @@ TH1* make_normal_hist(TH1* base_hist, TTree* tree,
   }
   const std::string weight_expr=cut_branches.size()==0 ? "SF*weight" :
     "SF*weight*"+str_join("*",cut_branches,0,cut_index+1);
-  MSG_DEBUG(weight_expr);
+  // MSG_DEBUG(weight_expr);
   return make_normal_hist(base_hist,tree,plot,
 			  weight_expr.c_str(),"_NRM_"+std::string(count_str)+uniq_suffix);
 }
@@ -295,7 +296,7 @@ void print_hist(TTree* tree, const std::string& plot,
   decorator.DrawLatexNDC(0.,0.05,hist->GetTitle());
   canv.SaveAs((plot+suffix).c_str());
 }
-TH1* build_syst_hist(TH1* base_hist, const std::string& samp_name,
+TH1* build_syst_err_hist(TH1* base_hist, const std::string& samp_name,
 		     const char* cut_expr){
   std::map<std::string,std::string> syst_map;
   syst_map["MuonEfficiency"]="";
@@ -310,29 +311,74 @@ TH1* build_syst_hist(TH1* base_hist, const std::string& samp_name,
   char fname[256];
   snprintf(fname,LEN(fname),"%s.mini.root",samp_name.c_str());
   TTree* tree = retrieve<TTree>(fname,"mini");
-  TH1* nom_hist = make_normal_hist(base_hist,tree,base_hist->GetName(), cut_expr, samp_name);
+  TH1* tot_err = dynamic_cast<TH1*>(base_hist->Clone((base_hist->GetName()+samp_name+"_tot_err").c_str()));
   std::string dsid=split_string(samp_name,'.').at(0);
   std::string syst_cut_expr(cut_expr);
   MSG_DEBUG(syst_cut_expr);
+  tot_err->Clear();
+  /*
+  for(int i=0; i < tot_err->GetNbinsX(); i++){
+    tot_err->SetBinContent(i,0);
+    tot_err->SetBinError(i,0);
+  }
+  */
   for(std::map<std::string,std::string>::const_iterator it = syst_map.begin();
       it!=syst_map.end(); ++it){
     const std::string& var_up = it->first;
     const std::string& var_down = it->second;
-    MSG_DEBUG("Processing up:"<<var_up<<" and down: "<<var_down);
+    // MSG_DEBUG("Processing up:"<<var_up<<" and down: "<<var_down);
     double sf = var_down=="" ? 1.0 : 0.5;
     bool mu_eff=(var_up=="MuonEfficiency");
     snprintf(fname,LEN(fname),"%s-systematics/%s.%s.mini.root",dsid.c_str(),dsid.c_str(),var_up.c_str());
     TTree* up_tree = mu_eff ? tree : retrieve<TTree>(fname,"mini");
     snprintf(fname,LEN(fname),"%s-systematics/%s.%s.mini.root",dsid.c_str(),dsid.c_str(),var_down.c_str());
     TTree* down_tree = var_down!="" && !mu_eff ? retrieve<TTree>(fname,"mini") : tree;
-    
-    TH1* syst_up_hist = make_normal_hist(base_hist,up_tree,base_hist->GetName(), mu_eff ? (std::string(cut_expr)+"*(1+SFTotalErr)").c_str(): cut_expr,samp_name+"_syst_up");
-    TH1* syst_down_hist = make_normal_hist(base_hist,down_tree,base_hist->GetName(),mu_eff ? (std::string(cut_expr)+"*(1-SFTotalErr)").c_str():cut_expr,samp_name+"_syst_down");
-    syst_up_hist->Add(syst_down_hist,sf);
-    
+
+    TH1* syst_up_hist = make_normal_hist(base_hist,up_tree,base_hist->GetName(),
+					 mu_eff ? (std::string(cut_expr)+"*(1+SFTotalErr)").c_str(): cut_expr,
+					 samp_name+"_syst_up");
+    TH1* syst_down_hist = make_normal_hist(base_hist,down_tree,base_hist->GetName(),
+					   mu_eff ? (std::string(cut_expr)+"*(1-SFTotalErr)").c_str():cut_expr,
+					   samp_name+"_syst_down");
+    syst_up_hist->Add(syst_down_hist,-sf);
+    add_err(tot_err,syst_up_hist);
   }
-  return nom_hist;
+  return tot_err;
 }
+void scale_errors(TH1* hist){
+  double err(0);
+  double content(0);
+  for(int i=0; i < hist->GetNbinsX(); ++i){
+    err=hist->GetBinError(i);
+    content=hist->GetBinContent(i);
+    // MSG_DEBUG("err: "<<err<< " content: "<<content);
+    hist->SetBinError(i,0);
+    hist->SetBinContent(i,content > 0 ? err/content : 0);
+  }
+}
+void add_err(TH1* hista, TH1* histb){
+  if(hista->GetNbinsX()!=histb->GetNbinsX()){
+    MSG_ERR("Bin size mismatch: "<<hista->GetNbinsX()<<" vs "<<histb->GetNbinsX());
+    return;
+  }
+  num_err a; num_err b;
+  for(int i=0; i < hista->GetNbinsX(); i++){
+    a.val=0; a.err=hista->GetBinError(i);
+    b.val=0; b.err=histb->GetBinError(i);
+    // MSG_DEBUG("a: "<<str_rep(a)<< " b: "<<str_rep(b)<<" a+b: "<<str_rep(add(a,b)));
+    hista->SetBinError(i,add(a,b).err);
+  }
+}
+bool has_non_zero_error(TH1* hist){
+  // double tot_err=0;
+  for(int i=1; i < hist->GetNbinsX(); i++){
+    if(hist->GetBinError(i) != 0){
+      return true;
+    }
+  }
+  return false;
+}
+
 void print_cut_hist(TTree* tree, const std::vector<std::string>& cut_branches,
 		const std::string& plot, TH1* base_hist, 
 		std::map<std::string,std::string>& CutNames, std::string file_suffix,

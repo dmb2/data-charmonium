@@ -233,13 +233,22 @@ THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aestheti
     "208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1",
     "208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"
   };
+  TH1* tot_syst_err = dynamic_cast<TH1*>(base_hist->Clone((std::string(base_hist->GetName())+"_global_syst_err").c_str()));
+  tot_syst_err->Clear();
+  style_hist(tot_syst_err,styles["global_syst_err"]);
+  add_to_legend(leg,tot_syst_err,styles["global_syst_err"]);
   for(size_t i=0; i < LEN(samp_names); i++){
     const std::string name(samp_names[i]);
-    TH1* hist= build_syst_hist(base_hist,name,cut_expr);
+    TH1* syst_err= build_syst_err_hist(base_hist,name,cut_expr);
+    TTree* tree = retrieve<TTree>((name+".mini.root").c_str(),"mini");
+    TH1* hist = make_normal_hist(base_hist,tree,base_hist->GetName(), cut_expr, name);
     stack->Add(hist);
     style_hist(hist,styles[name]);
     add_to_legend(leg, hist, styles[name]);
+    add_err(tot_syst_err,syst_err);
   }
+  MSG_DEBUG("built syst err hist named: "<<tot_syst_err->GetName());
+  stack->Add(tot_syst_err);
   return stack;
 }
 
@@ -247,7 +256,7 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
 			const double lumi,const char* cut_expr,
 			const char* suffix){
   TCanvas canv(("pythia_canv_"+std::string(base_hist->GetName())).c_str(),"Stack",600,600);
-  if(std::string(base_hist->GetName())=="jet_pt"){
+  if(std::string(base_hist->GetName()).find("pt")!=std::string::npos){
     canv.SetLogy(true);
   }
   TLegend leg = *init_legend();
@@ -256,6 +265,17 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
   // signal->SetMaximum(1.2*signal->GetMaximum());
   
   THStack* stack = build_stack(base_hist,&leg,styles,cut_expr);
+  TIter next(stack->GetHists());
+  TH1* hist = NULL;
+  while((hist=dynamic_cast<TH1*>(next()))){
+    MSG_DEBUG(hist->GetName());
+    /*
+    if(std::string(hist->GetName()).find("global_syst_err")!=std::string::npos){
+      stack->RecursiveRemove(hist);
+      break;
+    }
+    */
+  }
   stack->Draw("H e1");
   signal->Draw("e0 same");
   double s_max=stack->GetStack()!=NULL ? ((TH1*)stack->GetStack()->Last())->GetMaximum() : 0.;
