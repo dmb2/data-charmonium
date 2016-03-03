@@ -108,13 +108,19 @@ void init_hist_styles(std::map<std::string,aesthetic>& styles){
   styles["208004..TopoEMJets"]=hist_aes("#mu, Jet TopoEM",TColor::GetColor(120,198,121),1001,kSolid);
   styles["208004..TrackZJets"]=hist_aes("#mu, Jet TrackZ",TColor::GetColor(223,101,176),1001,kSolid);
 
-  styles["non_prompt.tau_sb"]=hist_aes("MC Tau SB",TColor::GetColor(253,141,60),1001,kSolid);
+  styles["non_prompt.mu24i_tight"]=hist_aes("MC (mu24 Isolated)",TColor::GetColor(240,59,32),1001,kSolid); 
+  styles["non_prompt.mu36_tight"]=hist_aes("MC (mu36)",TColor::GetColor(152,0,67),1001,kSolid); 
+  styles["non_prompt.tau_sb"]=hist_aes("MC (Trig OR)",TColor::GetColor(253,141,60),1001,kSolid);
+
   styles["non_prompt.signal_region"]=hist_aes("MC Signal Region",TColor::GetColor(120,198,121),1001,kSolid);
 
 
   styles["full2012.mass_sb_1"]=hist_aes("Data Low Mass SB",TColor::GetColor(215,181,216),1001,kSolid);
   styles["full2012.mass_sb_2"]=hist_aes("Data High Mass SB ",TColor::GetColor(223,101,176),1001,kSolid); 
-  styles["full2012.tau_sb"]=hist_aes("Data Tau SB",TColor::GetColor(221,28,119),1001,kSolid); 
+
+  styles["full2012.tau_sb"]=hist_aes("Data Tau SB (Trig OR)",TColor::GetColor(221,28,119),1001,kSolid); 
+  styles["full2012.mu24i_tight"]=hist_aes("Data Tau SB (mu24 Isolated)",TColor::GetColor(240,59,32),1001,kSolid); 
+  styles["full2012.mu36_tight"]=hist_aes("Data Tau SB (mu36 )",TColor::GetColor(49,163,84),1001,kSolid); 
 
   styles["LCTopoJets"]=hist_aes("Calo Jets",TColor::GetColor(55,126,184),1001,kSolid);
   styles["MuonLCTopoJets"]=hist_aes("Muon+Calo Jets ",TColor::GetColor(228,26,28),1001,kSolid); 

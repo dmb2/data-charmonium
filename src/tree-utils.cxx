@@ -85,7 +85,8 @@ int passed_trigger(std::vector<std::string>& trigger_names){
   //cf https://twiki.cern.ch/twiki/bin/view/Atlas/MuonTriggerPhysicsTriggerRecommendations2012
   for(std::vector<std::string>::const_iterator name=trigger_names.begin();
       name!=trigger_names.end(); ++name){
-    if(*name == "EF_mu36_tight" || *name == "EF_mu24i_tight"){
+    // isolated trigger introduces non-trivial biases
+    if(*name == "EF_mu36_tight" /*|| *name == "EF_mu24i_tight"*/){
       return 1;
     }
   }
