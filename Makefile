@@ -56,5 +56,5 @@ bin/cut-flow-plots: $(HISTO_DEPS) bin/cut-flow-plots.o
 %.o: %.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@
 clean:
-	-rm $(BINS) $(BINOBJ) $(HISTO_DEPS) $(SKIM_DEPS) src/dict.cxx src/dict.h src/libDict.so
+	-rm $(BINS) $(wildcard bin/*.o) $(wildcard src/*.o) src/dict.cxx src/dict.h src/libDict.so
 # DO NOT DELETE
