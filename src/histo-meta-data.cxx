@@ -75,6 +75,84 @@ void init_hist_styles(std::map<std::string,aesthetic>& styles){
   styles["208413.Pythia8B_AU2_CTEQ6L1_chib_Jpsimu3p5mu3p5Jpsimu3p5mu3p5"]=hist_aes("#chi_{b}#rightarrow 2 J/#psi",TColor::GetColor(0,109,44),1001,kSolid);
   styles["208400.Pythia8B_AU2_CTEQ6L1_Bs_Jpsimu3p5mu3p5_phi"]=hist_aes("B_{s}#rightarrow J/#psi #phi",TColor::GetColor(24,138,59),1001,kSolid);
   styles["208432.Pythia8B_AU2_CTEQ6L1_Bplus_Jpsi_mu3p5mu3p5_piplus"]=hist_aes("B^{+} #rightarrow J/#psi #pi^{+}",TColor::GetColor(86,128,79),1001,kSolid);
+=======
+  cut_names["mu_trigger_p"]="1 #mu Trigger, 2012";
+
+}
+void init_leg_names(std::map<std::string,std::string>& leg_map){
+  leg_map["1S0_8"]="^{1}S^{(8)}_{0}";
+  leg_map["3S1_8"]="^{3}S^{(8)}_{8}";
+  leg_map["3PJ_8"]="^{3}P^{(8)}_{J}";
+  leg_map["3S1_1"]="^{3}S^{(1)}_{1}";
+  leg_map["3PJ_1"]="^{3}P^{(1)}_{J}";
+
+  leg_map["208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8"]="^{1}S^{(8)}_{0}";
+  leg_map["208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"]="^{3}S^{(1)}_{8}";
+  leg_map["208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8"]="^{3}P^{(8)}_{J}";
+  leg_map["208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1"]="^{3}S^{(1)}_{1}";
+  leg_map["208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1"]="^{3}P^{(1)}_{J}";
+
+
+  leg_map["108601.PythiaBc_Bc_JPsi_mu2p5mu2p5_Pi"]="B_{c}#rightarrow J/#psi #pi";
+  leg_map["108606.PythiaBc_Bc_JPsi_mu2p5mu2p5_3Pi"]="B_{c}#rightarrow J/#psi 3#pi";
+  leg_map["208022.Pythia8B_AU2_CTEQ6L1_pp_Psi2S_JpsiPiPi"]="#psi(2S) #rightarrow J/#psi 2#pi";
+  leg_map["208023.Pythia8B_AU2_CTEQ6L1_pp_X3872_JpsiPiPi"]="X(3872) #rightarrow J/#psi 2#pi";
+  leg_map["208401.Pythia8B_AU2_CTEQ6L1_Bs_Jpsimu4mu4_phi"]="B_{s}#rightarrow J/#psi #phi";
+  leg_map["208413.Pythia8B_AU2_CTEQ6L1_chib_Jpsimu3p5mu3p5Jpsimu3p5mu3p5"]="#chi_{b}#rightarrow 2 J/#psi";
+
+  leg_map["208004.trkComb.LCTopoJets"]="#mu Comb, Jet LCTopo";
+  leg_map["208004.trkInnerExtr.LCTopoJets"]="#mu ID Extr., Jet LCTopo";
+  leg_map["208004.trkMS.LCTopoJets"]="#mu MS, Jet LCTopo";
+  leg_map["208004.trkMuonExtr.LCTopoJets"]="#mu MS Extr., Jet LCTopo";
+
+  leg_map["208004.trkComb.TopoEMJets"]="#mu Comb, Jet TopoEM";
+  leg_map["208004.trkInnerExtr.TopoEMJets"]="#mu ID Extr., Jet TopoEM";
+  leg_map["208004.trkMS.TopoEMJets"]="#mu MS, Jet Topoem";
+  leg_map["208004.trkMuonExtr.TopoEMJets"]="#mu MS Extr., Jet TopoEM";
+
+  leg_map["208004.trkComb.TrackZJets"]="#mu Comb, Jet TrackZ";
+  leg_map["208004.trkInnerExtr.TrackZJets"]="#mu ID Extr., Jet TrackZ";
+  leg_map["208004.trkMS.TrackZJets"]="#mu MS, Jet TrackZ";
+  leg_map["208004.trkMuonExtr.TrackZJets"]="#mu MS Extr., Jet TrackZ";
+
+  leg_map["208004..LCTopoJets"]="#mu, Jet LCTopo";
+  leg_map["208004..TopoEMJets"]="#mu, Jet TopoEM";
+  leg_map["208004..TrackZJets"]="#mu, Jet TrackZ";
+
+  leg_map["LCTopoJets"]="Jet LCTopo";
+  leg_map["MULCTopoJets"]="Jet #mu+LCTopo";
+  leg_map["TopoEMJets"]="Jet TopoEM";
+  leg_map["TrackZJets"]="Jet TrackZ";
+
+  leg_map["singlet.MuonLCTopoJets"]="Singlet";
+  leg_map["octet.MuonLCTopoJets"]="Octet";
+
+  leg_map["master"]="Signal";
+  leg_map["periodA"]="Period A Data";
+}
+void init_colors(std::map<std::string,int>& colors){
+  // Octet colors
+  colors["1S0_8"]=TColor::GetColor(222,235,247);
+  colors["3S1_8"]=TColor::GetColor(158,202,225);
+  colors["3PJ_8"]=TColor::GetColor(49,130,189);
+  // Singlet colors
+  colors["3S1_1"]=TColor::GetColor(252,146,114);
+  colors["3PJ_1"]=TColor::GetColor(222,45,38);  
+
+  colors["208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8"]=TColor::GetColor(222,235,247);
+  colors["208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"]=TColor::GetColor(158,202,225);
+  colors["208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8"]=TColor::GetColor(49,130,189); 
+
+  colors["208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1"]=TColor::GetColor(252,146,114);
+  colors["208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1"]=TColor::GetColor(222,45,38);  
+
+
+  // non-prompt BKG Colors
+  colors["108601.PythiaBc_Bc_JPsi_mu2p5mu2p5_Pi"]=TColor::GetColor(186,228,179);
+  colors["108606.PythiaBc_Bc_JPsi_mu2p5mu2p5_3Pi"]=TColor::GetColor(116,196,118);
+  colors["208401.Pythia8B_AU2_CTEQ6L1_Bs_Jpsimu4mu4_phi"]=TColor::GetColor(49,163,84);
+  colors["208413.Pythia8B_AU2_CTEQ6L1_chib_Jpsimu3p5mu3p5Jpsimu3p5mu3p5"]=TColor::GetColor(0,109,44);
+>>>>>>> Stashed changes
   // feed down
   styles["208022.Pythia8B_AU2_CTEQ6L1_pp_Psi2S_JpsiPiPi"]=hist_aes("#psi(2S) #rightarrow J/#psi 2#pi",TColor::GetColor(158,154,200),1001,kSolid);
   styles["208023.Pythia8B_AU2_CTEQ6L1_pp_X3872_JpsiPiPi"]=hist_aes("X(3872) #rightarrow J/#psi 2#pi",TColor::GetColor(106,81,163),1001,kSolid);
@@ -111,9 +189,7 @@ void init_hist_styles(std::map<std::string,aesthetic>& styles){
   styles["non_prompt.mu24i_tight"]=hist_aes("MC (mu24 Isolated)",TColor::GetColor(240,59,32),1001,kSolid); 
   styles["non_prompt.mu36_tight"]=hist_aes("MC (mu36)",TColor::GetColor(152,0,67),1001,kSolid); 
   styles["non_prompt.tau_sb"]=hist_aes("MC (Trig OR)",TColor::GetColor(253,141,60),1001,kSolid);
-
   styles["non_prompt.signal_region"]=hist_aes("MC Signal Region",TColor::GetColor(120,198,121),1001,kSolid);
-
 
   styles["full2012.mass_sb_1"]=hist_aes("Data Low Mass SB",TColor::GetColor(215,181,216),1001,kSolid);
   styles["full2012.mass_sb_2"]=hist_aes("Data High Mass SB ",TColor::GetColor(223,101,176),1001,kSolid); 
