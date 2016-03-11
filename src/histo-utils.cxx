@@ -21,6 +21,7 @@ void setup_global_style(){
   AtlasStyle style;
   style.SetAtlasStyle();
   gStyle->SetFrameLineWidth(0.0);
+  gStyle->SetPalette(1);
 }
 
 void setup_hist(TH1* hist){

@@ -67,9 +67,6 @@ int main(const int argc, const char* argv[]){
     return 0;
   }
   setup_global_style();
-
-  gStyle->SetFrameLineWidth(0.0);
-  gStyle->SetPalette(1);
   print_stack_plots(argv[2],&argv[3],argc-3,atof(argv[1]));
   return 0;
 }

@@ -59,10 +59,9 @@ int main(const int argc, const char* argv[]){
     return 0;
   }
   setup_global_style();
-  gStyle->SetFrameLineWidth(0.0);
   double stops[]={0.0,0.25,0.5,0.75,1.0};
   heat_gradient(gStyle,stops,sizeof(stops)/sizeof(*stops));
-  // gStyle->SetPalette(1);
+
   print_plots(&argv[2],argc-2,atof(argv[1]));
   return 0;
 }
