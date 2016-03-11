@@ -267,17 +267,16 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
 
   TIter next(stack->GetHists());
   TH1* hist = NULL;
-  double N_sig = signal->GetEntries();
+  double N_sig = signal->Integral();
   TH1* tot_syst_err=(TH1*)stack->GetStack()->Last()->Clone("tot_syst_err");
-  double N_MC = tot_syst_err->GetEntries();
-  // tot_syst_err->Reset("E");
+  double N_MC = tot_syst_err->Integral();
   for(int i =0; i < tot_syst_err->GetNbinsX(); i++){
     tot_syst_err->SetBinError(i,0);
   }
-  // MSG_DEBUG("N sig: "<<N_sig<<" N_tot_MC: "<<N_MC<<" sf: "<<N_sig/N_MC);
+  MSG_DEBUG("N sig: "<<N_sig<<" N_tot_MC: "<<N_MC<<" sf: "<<N_sig/N_MC);
   while((hist=dynamic_cast<TH1*>(next()))){
     // MSG_DEBUG(hist->GetName());
-    // hist->Scale(N_sig / N_MC);
+    hist->Scale(N_sig / N_MC);
     if(std::string(hist->GetName()).find("global_syst_err")!=std::string::npos){
       stack->RecursiveRemove(hist);
       break;
