@@ -314,14 +314,7 @@ TH1* build_syst_err_hist(TH1* base_hist, const std::string& samp_name,
   TH1* tot_err = dynamic_cast<TH1*>(base_hist->Clone((base_hist->GetName()+samp_name+"_tot_err").c_str()));
   std::string dsid=split_string(samp_name,'.').at(0);
   std::string syst_cut_expr(cut_expr);
-  MSG_DEBUG(syst_cut_expr);
-  tot_err->Clear();
-  /*
-  for(int i=0; i < tot_err->GetNbinsX(); i++){
-    tot_err->SetBinContent(i,0);
-    tot_err->SetBinError(i,0);
-  }
-  */
+  tot_err->Reset("ICES");
   for(std::map<std::string,std::string>::const_iterator it = syst_map.begin();
       it!=syst_map.end(); ++it){
     const std::string& var_up = it->first;

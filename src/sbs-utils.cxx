@@ -124,6 +124,52 @@ void scale_hist(TH1* hist, num_err scale_factor){
     return;
   }
 }
+static TH1* make_np_syst_hist(TH1* base_hist, const TH1* tau_template, 
+			      const std::list<std::string>& mass_regions, 
+			      const std::list<std::string>& tau_regions){
+  const std::string sig_expr = make_cut_expr(mass_regions,"Sig") + " && "+make_cut_expr(tau_regions,"Sig");
+  MSG_DEBUG("signal region: "<<sig_expr);
+  const std::string tau_sb_expr = make_cut_expr(mass_regions,"Sig")+ " && "+make_cut_expr(tau_regions,"SB");
+  MSG_DEBUG("tau sb region: "<<tau_sb_expr);
+  TTree* np_tree = retrieve<TTree>("non_prompt.mini.root","mini");
+  TH1* sig_hist = make_normal_hist(base_hist,np_tree,base_hist->GetName(),sig_expr.c_str(),"_np_sig_syst");
+  TH1* sb_hist = make_normal_hist(base_hist,np_tree,base_hist->GetName(),tau_sb_expr.c_str(),"_np_sb_syst");
+  sig_hist->Add(sb_hist,-1.0);
+  sig_hist->Divide(sb_hist);
+  double rel_err(0);
+  for(int i=0; i < sb_hist->GetNbinsX(); i++){
+    rel_err=sig_hist->GetBinContent(i);
+    sig_hist->SetBinError(i,rel_err*tau_template->GetBinContent(i));
+    sig_hist->SetBinContent(i,0);
+  }
+  return sig_hist;
+}
+static TH1* make_comb_syst_hist(TH1* base_hist, TTree* tree, 
+				const std::list<std::string>& mass_regions, 
+				const std::list<std::string>& tau_regions,
+				const num_err sf){
+  std::list<std::string> sb1;
+  std::list<std::string> sb2;
+  for(std::list<std::string>::const_iterator it = mass_regions.begin();
+      it != mass_regions.end(); ++it){
+    if(it->find("SB")!=std::string::npos){
+      sb1.size() == 0 ? sb1.push_back(*it) : sb2.push_back(*it);
+    }
+  }
+  const std::string sb1_expr = make_cut_expr(sb1,"SB") + " && "+make_cut_expr(tau_regions,"Sig");
+  const std::string sb2_expr = make_cut_expr(sb2,"SB") + " && "+make_cut_expr(tau_regions,"Sig");
+
+  TH1* sb1_hist = make_normal_hist(base_hist,tree,base_hist->GetName(),sb1_expr.c_str(),"cmb_syst_sb1");
+  TH1* sb2_hist = make_normal_hist(base_hist,tree,base_hist->GetName(),sb2_expr.c_str(),"cmb_syst_sb2");
+  double sb1_bc(0),sb2_bc(0);
+  for(int i=0; i < sb1_hist->GetNbinsX(); i++){
+    sb1_bc=sb1_hist->GetBinContent(i);
+    sb2_bc=sb2_hist->GetBinContent(i);
+    sb1_hist->SetBinError(i,0.5*fabs(sb1_bc-sb2_bc)*sf.val);
+    sb1_hist->SetBinContent(i,0);
+  }
+  return sb1_hist;
+}
 TH1* make_bkg_hist(TH1* base_hist, TTree* tree, 
 		   const std::list<std::string>& sb_regions, 
 		   const std::list<std::string>&  sig_regions,
@@ -184,10 +230,18 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   TH1* sig_hist = make_normal_hist(base_hist, tree, base_hist->GetName(),
 				   signal_cut_expr.c_str(),"_stk_sig");
 
-  // Mass SB Hist
+  // Mass SB Hist 
+  
+  // There is not a bug here, mass_regions should be first for
+  // make_bkg_hist for comb_hist and flipped for nonprompt_hist, see
+  // further discussion in make_bkg_hist
   TH1* comb_hist =  make_bkg_hist(base_hist,tree,mass_regions,tau_regions,"mass_stk_sb",mass_stsR);
+  TH1* comb_syst_hist = make_comb_syst_hist(base_hist,tree,mass_regions,tau_regions,mass_stsR);
+  add_err(comb_hist,comb_syst_hist);
   // Tau SB Hist
   TH1* nonprompt_hist = make_bkg_hist(base_hist,tree,tau_regions,mass_regions,"tau_stk_sb",np_frac);
+  TH1* np_syst_hist = make_np_syst_hist(base_hist,nonprompt_hist,mass_regions,tau_regions);
+  add_err(nonprompt_hist,np_syst_hist);
 
   THStack stack("sbs_stack",base_hist->GetTitle());
   stack.SetHistogram((TH1*)base_hist->Clone((std::string("stack_sbs")+base_hist->GetName()).c_str()));
@@ -234,7 +288,7 @@ THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aestheti
     "208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"
   };
   TH1* tot_syst_err = dynamic_cast<TH1*>(base_hist->Clone((std::string(base_hist->GetName())+"_global_syst_err").c_str()));
-  tot_syst_err->Clear();
+  tot_syst_err->Reset("ICES");
   style_hist(tot_syst_err,styles["global_syst_err"]);
   add_to_legend(leg,tot_syst_err,styles["global_syst_err"]);
   for(size_t i=0; i < LEN(samp_names); i++){
@@ -247,7 +301,6 @@ THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aestheti
     add_to_legend(leg, hist, styles[name]);
     add_err(tot_syst_err,syst_err);
   }
-  MSG_DEBUG("built syst err hist named: "<<tot_syst_err->GetName());
   stack->Add(tot_syst_err);
   return stack;
 }
@@ -268,15 +321,18 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
   TIter next(stack->GetHists());
   TH1* hist = NULL;
   while((hist=dynamic_cast<TH1*>(next()))){
-    MSG_DEBUG(hist->GetName());
-    /*
+    // MSG_DEBUG(hist->GetName());
     if(std::string(hist->GetName()).find("global_syst_err")!=std::string::npos){
+      MSG("Removing: "<<hist->GetName());
       stack->RecursiveRemove(hist);
       break;
     }
-    */
   }
+  TH1* tot_stack = dynamic_cast<TH1*>(stack->GetStack()->Last()->Clone("tot_err"));
+  add_err(tot_stack,hist);
   stack->Draw("H e1");
+  tot_stack->SetFillColor(TColor::GetColorTransparent(kBlack,0.4));
+  tot_stack->Draw("e2 same");
   signal->Draw("e0 same");
   double s_max=stack->GetStack()!=NULL ? ((TH1*)stack->GetStack()->Last())->GetMaximum() : 0.;
   double m_max=signal->GetMaximum();
@@ -291,9 +347,6 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
   snprintf(outname,sizeof(outname)/sizeof(*outname),
 	   "%s_sbs_p8%s",base_hist->GetName(),suffix);
   canv.SaveAs(outname);
-  // snprintf(outname,sizeof(outname)/sizeof(*outname),
-  // 	   "%s_sbs_p8%s",base_hist->GetName(),".root");
-  // canv.SaveAs(outname);
 }
 
 RooAbsPdf* find_component(RooAbsPdf* PDF,const char* name){
