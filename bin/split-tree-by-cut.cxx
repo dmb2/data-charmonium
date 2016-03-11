@@ -29,10 +29,14 @@ int main(const int argc, const char* argv[]){
   char outFName[256];
   // char cutstring[256];
   std::map<std::string,std::string> cut_regions;
+  /*
   cut_regions["mass_sb_1"] = "(2.17 < jpsi_m && jpsi_m < 2.841) && (-1 < jpsi_tau && jpsi_tau < 0.25)";
   cut_regions["mass_sb_2"] = "(3.345 < jpsi_m && jpsi_m < 3.764) && (-1 < jpsi_tau && jpsi_tau < 0.25)";
   cut_regions["tau_sb"] = "(2.841 < jpsi_m && jpsi_m < 3.345) && (jpsi_tau > 0.25)";
   cut_regions["signal_region"] = "(2.841 < jpsi_m && jpsi_m < 3.345) && (-1 < jpsi_tau && jpsi_tau < 0.25)";
+  */
+  cut_regions["mu36_tight"]="trigger_category == 1";
+  cut_regions["mu24i_tight"]="trigger_category == 2";
   for(std::map<std::string,std::string>::const_iterator it=cut_regions.begin(); it!=cut_regions.end(); ++it){
     const std::string& name = it->first;
     const std::string& cut_expr = it->second;
