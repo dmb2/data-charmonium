@@ -34,14 +34,14 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
   double mass_width = get_par_val(&result->floatParsFinal(),"sigma_m");
   double mass_mean = get_par_val(&result->floatParsFinal(),"mean_m");
   add_region(mass, "SB", 
-	     mass_mean - 11*mass_width,
+	     mass_mean - 13*mass_width,
 	     mass_mean -  3*mass_width);
   add_region(mass,"Sig",
 	     mass_mean - 3*mass_width,
 	     mass_mean + 3*mass_width);
   add_region(mass,"SB",
 	     mass_mean + 3*mass_width,
-	     mass_mean + 8*mass_width);
+	     mass_mean + 6*mass_width);
   add_region(tau,"Sig", -1,0.25);
   add_region(tau,"SB",0.25,50);
   const double* covmat = result->covarianceMatrix().GetMatrixArray();
@@ -77,7 +77,7 @@ int main(const int argc, const char* argv[]){
   TTree* tree = retrieve<TTree>(file,argv[2]);
   const double lumi=atof(argv[3]);
 
-  RooRealVar *mass = new RooRealVar("jpsi_m","jpsi_m",JPSIMASS, JPSIMASS-0.4, JPSIMASS+0.5);
+  RooRealVar *mass = new RooRealVar("jpsi_m","jpsi_m",JPSIMASS, JPSIMASS-0.4, JPSIMASS+0.5); // stay away from the psi(2S)
   RooRealVar *tau = new RooRealVar("jpsi_tau","Lifetime",-2.,5);
   std::map<std::string,sb_info> sep_var_info;
   jpsi_fit(tree,mass,tau,sep_var_info,lumi);
@@ -94,9 +94,10 @@ int main(const int argc, const char* argv[]){
 
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
-  const char* variables[] = {/*"jet_pt","jet_eta", "jet_z", "jet_e", */
-			     "jpsi_pt"/*,"jpsi_eta",
-					"tau1","tau2", "tau3","tau21","tau32"*/};
+  const char* variables[] = {//"jet_pt","jet_eta", "jet_z", "jet_e", 
+    "jpsi_pt","jpsi_eta",
+			     //"tau1","tau2", "tau3","tau21","tau32"
+  };
   const std::string jpsi_sig_region = make_cut_expr(mass->getBinningNames(),"Sig") 
     + " && " + make_cut_expr(tau->getBinningNames(),"Sig");
   char cut_expr[1024];
@@ -104,6 +105,7 @@ int main(const int argc, const char* argv[]){
 	   "(%s)*weight*%.4g*SF",
 	   jpsi_sig_region.c_str(),
 	   lumi);
+
   for(size_t i=0; i < LEN(variables); i++){
     TH1* sig_final = print_sbs_stack(tree,HistBook[variables[i]],".pdf",
 				     sep_var_info,lumi);

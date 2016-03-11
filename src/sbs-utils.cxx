@@ -234,7 +234,7 @@ THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aestheti
     "208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"
   };
   TH1* tot_syst_err = dynamic_cast<TH1*>(base_hist->Clone((std::string(base_hist->GetName())+"_global_syst_err").c_str()));
-  tot_syst_err->Clear();
+  tot_syst_err->Reset("ICE");
   style_hist(tot_syst_err,styles["global_syst_err"]);
   add_to_legend(leg,tot_syst_err,styles["global_syst_err"]);
   for(size_t i=0; i < LEN(samp_names); i++){
@@ -247,7 +247,7 @@ THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aestheti
     add_to_legend(leg, hist, styles[name]);
     add_err(tot_syst_err,syst_err);
   }
-  MSG_DEBUG("built syst err hist named: "<<tot_syst_err->GetName());
+  // MSG_DEBUG("built syst err hist named: "<<tot_syst_err->GetName());
   stack->Add(tot_syst_err);
   return stack;
 }
@@ -262,22 +262,35 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
   TLegend leg = *init_legend();
   std::map<std::string,aesthetic> styles;
   init_hist_styles(styles);
-  // signal->SetMaximum(1.2*signal->GetMaximum());
   
   THStack* stack = build_stack(base_hist,&leg,styles,cut_expr);
+
   TIter next(stack->GetHists());
   TH1* hist = NULL;
+  double N_sig = signal->GetEntries();
+  TH1* tot_syst_err=(TH1*)stack->GetStack()->Last()->Clone("tot_syst_err");
+  double N_MC = tot_syst_err->GetEntries();
+  // tot_syst_err->Reset("E");
+  for(int i =0; i < tot_syst_err->GetNbinsX(); i++){
+    tot_syst_err->SetBinError(i,0);
+  }
+  // MSG_DEBUG("N sig: "<<N_sig<<" N_tot_MC: "<<N_MC<<" sf: "<<N_sig/N_MC);
   while((hist=dynamic_cast<TH1*>(next()))){
-    MSG_DEBUG(hist->GetName());
-    /*
+    // MSG_DEBUG(hist->GetName());
+    // hist->Scale(N_sig / N_MC);
     if(std::string(hist->GetName()).find("global_syst_err")!=std::string::npos){
       stack->RecursiveRemove(hist);
       break;
     }
-    */
   }
+  
+  tot_syst_err->Add(hist);
   stack->Draw("H e1");
   signal->Draw("e0 same");
+  tot_syst_err->SetFillColor(TColor::GetColorTransparent(kBlack,0.4));
+  tot_syst_err->SetLineColor(TColor::GetColorTransparent(kBlack,0.4));
+  tot_syst_err->SetMarkerColor(TColor::GetColorTransparent(kBlack,0.4));
+  tot_syst_err->Draw("e2 same");
   double s_max=stack->GetStack()!=NULL ? ((TH1*)stack->GetStack()->Last())->GetMaximum() : 0.;
   double m_max=signal->GetMaximum();
   // MSG_DEBUG("Stack: "<<s_max<<" Master: "<<m_max);
