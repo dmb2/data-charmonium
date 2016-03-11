@@ -15,8 +15,6 @@
 #include "histo-meta-data.hh"
 #include "root-sugar.hh"
 
-#include "AtlasStyle.hh"
-
 void usage(const char* name){
   std::cout <<"Usage: "<< name << " target_lumi (fb) reference_file.root [mc_samples.root]"<<std::endl;
 }
@@ -68,8 +66,8 @@ int main(const int argc, const char* argv[]){
     usage(argv[0]);
     return 0;
   }
-  AtlasStyle style;
-  style.SetAtlasStyle();
+  setup_global_style();
+
   gStyle->SetFrameLineWidth(0.0);
   gStyle->SetPalette(1);
   print_stack_plots(argv[2],&argv[3],argc-3,atof(argv[1]));

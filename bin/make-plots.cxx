@@ -17,8 +17,6 @@
 #include "color.hh"
 #include "root-sugar.hh"
 
-#include "AtlasStyle.hh"
-
 void usage(const char* name){
   MSG("Usage: "<< name << " target_lumi (fb) [mc_samples.root]");
 }
@@ -60,8 +58,7 @@ int main(const int argc, const char* argv[]){
     usage(argv[0]);
     return 0;
   }
-  AtlasStyle style;
-  style.SetAtlasStyle();
+  setup_global_style();
   gStyle->SetFrameLineWidth(0.0);
   double stops[]={0.0,0.25,0.5,0.75,1.0};
   heat_gradient(gStyle,stops,sizeof(stops)/sizeof(*stops));

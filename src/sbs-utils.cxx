@@ -128,9 +128,7 @@ static TH1* make_np_syst_hist(TH1* base_hist, const TH1* tau_template,
 			      const std::list<std::string>& mass_regions, 
 			      const std::list<std::string>& tau_regions){
   const std::string sig_expr = make_cut_expr(mass_regions,"Sig") + " && "+make_cut_expr(tau_regions,"Sig");
-  MSG_DEBUG("signal region: "<<sig_expr);
   const std::string tau_sb_expr = make_cut_expr(mass_regions,"Sig")+ " && "+make_cut_expr(tau_regions,"SB");
-  MSG_DEBUG("tau sb region: "<<tau_sb_expr);
   TTree* np_tree = retrieve<TTree>("non_prompt.mini.root","mini");
   TH1* sig_hist = make_normal_hist(base_hist,np_tree,base_hist->GetName(),sig_expr.c_str(),"_np_sig_syst");
   TH1* sb_hist = make_normal_hist(base_hist,np_tree,base_hist->GetName(),tau_sb_expr.c_str(),"_np_sb_syst");
@@ -288,7 +286,11 @@ THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aestheti
     "208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"
   };
   TH1* tot_syst_err = dynamic_cast<TH1*>(base_hist->Clone((std::string(base_hist->GetName())+"_global_syst_err").c_str()));
-  tot_syst_err->Reset("ICES");
+  // tot_syst_err->Reset("ICES");
+  for(int i =0; i < tot_syst_err->GetNbinsX(); i++){
+    tot_syst_err->SetBinContent(i,0);
+    tot_syst_err->SetBinError(i,0);
+  }
   style_hist(tot_syst_err,styles["global_syst_err"]);
   add_to_legend(leg,tot_syst_err,styles["global_syst_err"]);
   for(size_t i=0; i < LEN(samp_names); i++){
@@ -318,18 +320,20 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
   
   THStack* stack = build_stack(base_hist,&leg,styles,cut_expr);
 
-  TIter next(stack->GetHists());
-  TH1* hist = NULL;
   double N_sig = signal->Integral();
   TH1* tot_syst_err=(TH1*)stack->GetStack()->Last()->Clone("tot_syst_err");
   double N_MC = tot_syst_err->Integral();
   for(int i =0; i < tot_syst_err->GetNbinsX(); i++){
     tot_syst_err->SetBinError(i,0);
   }
-  MSG_DEBUG("N sig: "<<N_sig<<" N_tot_MC: "<<N_MC<<" sf: "<<N_sig/N_MC);
+
+  TH1* hist = NULL;
+  for(int i = 0; i < stack->GetStack()->GetEntries(); i++){
+    hist = dynamic_cast<TH1*>(stack->GetStack()->At(i));
+    hist->Scale(N_sig/N_MC);
+  }
+  TIter next(stack->GetHists());
   while((hist=dynamic_cast<TH1*>(next()))){
-    // MSG_DEBUG(hist->GetName());
-    hist->Scale(N_sig / N_MC);
     if(std::string(hist->GetName()).find("global_syst_err")!=std::string::npos){
       MSG("Removing: "<<hist->GetName());
       stack->RecursiveRemove(hist);
@@ -337,7 +341,12 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
     }
   }
   tot_syst_err->Add(hist);
+  tot_syst_err->Scale(N_sig/N_MC);
+
   stack->Draw("H e1");
+  stack->GetXaxis()->SetTitle(signal->GetXaxis()->GetTitle());
+  stack->GetYaxis()->SetTitle(signal->GetYaxis()->GetTitle());
+  
   signal->Draw("e0 same");
   tot_syst_err->SetFillColor(TColor::GetColorTransparent(kBlack,0.4));
   tot_syst_err->SetLineColor(TColor::GetColorTransparent(kBlack,0.4));

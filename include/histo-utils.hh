@@ -32,6 +32,7 @@ enum status_t {
   PRELIMINARY,
   APPROVED,
   INTERNAL };
+void setup_global_style();
 void setup_hist(TH1* hist);
 TH2D* setup_res_vtxz_hist(TH1* hist);
 TH2D* setup_res_dif_hist(TH1* hist);

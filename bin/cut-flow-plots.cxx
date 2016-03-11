@@ -12,7 +12,6 @@
 #include "TLatex.h"
 #include "TROOT.h"
 
-#include "AtlasStyle.hh"
 #include "root-sugar.hh"
 #include "histo-utils.hh"
 #include "histo-meta-data.hh"
@@ -27,8 +26,7 @@ int main(const int argc, const char* argv[]){
     usage(argv[0]);
     return 0;
   }
-  AtlasStyle style;
-  style.SetAtlasStyle();
+  setup_global_style();
   double stops[]={0.0,0.25,0.5,0.75,1.0};
   heat_gradient(gStyle,stops,sizeof(stops)/sizeof(*stops));
   TTree* CutTree = retrieve<TTree>(argv[1],"mini");

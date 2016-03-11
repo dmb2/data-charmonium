@@ -14,7 +14,6 @@
 #include "histo-utils.hh"
 #include "histo-style.hh"
 #include "plot-utils.hh"
-#include "AtlasStyle.hh"
 
 void usage(const char* name){
   MSG("Usage: "<< name << " [DSID.variation.hist.root]");
@@ -26,8 +25,7 @@ int main(const int argc, const char* argv[]){
     usage(argv[0]);
     return 0;
   }
-  AtlasStyle style;
-  style.SetAtlasStyle();
+  setup_global_style();
   std::map<std::string, TFile*> files;
   std::string base_name;
   std::vector<std::string> parts;

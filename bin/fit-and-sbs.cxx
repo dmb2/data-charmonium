@@ -16,8 +16,6 @@
 #include "RooFitResult.h"
 #include "RooDataSet.h"
 
-#include "AtlasStyle.hh"
-
 void usage(const char* name){
   MSG("Usage: "<<name<<" input.root tree_name lumi");
 }
@@ -71,8 +69,7 @@ int main(const int argc, const char* argv[]){
     usage(argv[0]);
     return 1;
   }
-  AtlasStyle style;
-  style.SetAtlasStyle();
+  setup_global_style();
   TFile* file = TFile::Open(argv[1]);
   TTree* tree = retrieve<TTree>(file,argv[2]);
   const double lumi=atof(argv[3]);
@@ -94,9 +91,9 @@ int main(const int argc, const char* argv[]){
 
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
-  const char* variables[] = {"jet_pt","jet_eta", "jet_z", "jet_e", 
+  const char* variables[] = {/*"jet_pt","jet_eta", "jet_e", */"jet_z", 
 			     "jpsi_pt","jpsi_eta",
-			     "tau1","tau2", "tau3","tau21","tau32"};
+			     /*"tau1","tau2", "tau3","tau21","tau32"*/};
   const std::string jpsi_sig_region = make_cut_expr(mass->getBinningNames(),"Sig") 
     + " && " + make_cut_expr(tau->getBinningNames(),"Sig");
   char cut_expr[1024];
