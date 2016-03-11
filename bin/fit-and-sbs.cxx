@@ -94,10 +94,9 @@ int main(const int argc, const char* argv[]){
 
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
-  const char* variables[] = {//"jet_pt","jet_eta", "jet_z", "jet_e", 
-    "jpsi_pt","jpsi_eta",
-			     //"tau1","tau2", "tau3","tau21","tau32"
-  };
+  const char* variables[] = {"jet_pt","jet_eta", "jet_z", "jet_e", 
+			     "jpsi_pt","jpsi_eta",
+			     "tau1","tau2", "tau3","tau21","tau32"};
   const std::string jpsi_sig_region = make_cut_expr(mass->getBinningNames(),"Sig") 
     + " && " + make_cut_expr(tau->getBinningNames(),"Sig");
   char cut_expr[1024];
