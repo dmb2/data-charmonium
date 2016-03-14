@@ -235,31 +235,44 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   // further discussion in make_bkg_hist
   TH1* comb_hist =  make_bkg_hist(base_hist,tree,mass_regions,tau_regions,"mass_stk_sb",mass_stsR);
   TH1* comb_syst_hist = make_comb_syst_hist(base_hist,tree,mass_regions,tau_regions,mass_stsR);
+  TH1* comb_stat_hist = dynamic_cast<TH1*>(comb_hist->Clone("comb_stat_hist"));
   add_err(comb_hist,comb_syst_hist);
   // Tau SB Hist
   TH1* nonprompt_hist = make_bkg_hist(base_hist,tree,tau_regions,mass_regions,"tau_stk_sb",np_frac);
   TH1* np_syst_hist = make_np_syst_hist(base_hist,nonprompt_hist,mass_regions,tau_regions);
+  TH1* np_stat_hist = dynamic_cast<TH1*>(nonprompt_hist->Clone("np_stat_hist"));
   add_err(nonprompt_hist,np_syst_hist);
 
   THStack stack("sbs_stack",base_hist->GetTitle());
+  THStack err_stack("err_stack",base_hist->GetTitle());
+  
   stack.SetHistogram((TH1*)base_hist->Clone((std::string("stack_sbs")+base_hist->GetName()).c_str()));
+  
   sig_hist->SetLineColor(kBlack);
   sig_hist->SetFillStyle(0);
-  
+  make_transparent(styles["comb_bkg"],0.4);
+  make_transparent(styles["non_prompt"],0.4);
+
   style_hist(comb_hist,styles["comb_bkg"]);
   style_hist(nonprompt_hist,styles["non_prompt"]);
-  
+  style_hist(comb_stat_hist,styles["comb_bkg"]);
+  style_hist(np_stat_hist,styles["non_prompt"]);
+
   add_to_legend(&leg,sig_hist,styles["data"]);
   add_to_legend(&leg,comb_hist,styles["comb_bkg"]);
   add_to_legend(&leg,nonprompt_hist,styles["non_prompt"]);
 
   stack.Add(nonprompt_hist);
   stack.Add(comb_hist); 
+  err_stack.Add(np_stat_hist);
+  err_stack.Add(comb_stat_hist);
 
   TCanvas c1("Canvas","Canvas",600,600);
-  stack.Draw("H e1");
+  stack.Draw("e2");
+  err_stack.Draw("e2 same");
   sig_hist->Draw("e0 same");
-  stack.SetMaximum(1.2*std::max(stack.GetMaximum(),sig_hist->GetMaximum()));
+  stack.SetMaximum(1.4*std::max(stack.GetMaximum(),sig_hist->GetMaximum()));
+  stack.SetMinimum(std::min(stack.GetMinimum(),sig_hist->GetMinimum()));
   leg.Draw();
   char outname[256];
   snprintf(outname,256,"%s_sbs_stk%s",base_hist->GetName(),suffix);
