@@ -38,6 +38,20 @@ void init_hist_book(std::map<std::string,TH1D*>& HistBook){
   HistBook["jpsi_m"]=new TH1D("jpsi_m","J/#psi Mass; M(#mu#mu) [GeV]; evts/binwidth",50,2.,4.);
   HistBook["jpsi_lxy"]=new TH1D("jpsi_lxy","J/#psi L_{xy}; L_{xy} [mm]; evts/binwidth",50,-4,10);
   HistBook["jpsi_tau"]= new TH1D("jpsi_tau","J/#psi c#tau; c#tau; evts/binwidth",50,-1,5);
+  
+  // Doctor the y axis titles for binwidth
+  char axis_title[200];
+  std::string unit;
+  for(std::map<std::string,TH1D*>::iterator it=HistBook.begin();
+      it!=HistBook.end(); ++it){
+    TH1D* hist = it->second;
+    std::string x_axis_title(hist->GetXaxis()->GetTitle());
+    size_t start = x_axis_title.rfind("[");
+    size_t end = x_axis_title.rfind("]");
+    unit = start == std::string::npos ? "" : x_axis_title.substr(start,end);
+    snprintf(axis_title,200,"Events / %.3g %s",hist->GetBinWidth(1),unit.c_str());
+    hist->GetYaxis()->SetTitle(axis_title);
+  }
 }
 void init_cut_names(std::map<std::string,std::string>& cut_names){
   cut_names["mu_trigger_p"]="Trigger";
@@ -53,20 +67,20 @@ void init_cut_names(std::map<std::string,std::string>& cut_names){
 
 void init_hist_styles(std::map<std::string,aesthetic>& styles){
   styles["global_syst_err"]=hist_aes("Systematic Error",TColor::GetColorTransparent(kBlack,0.4),1001,0);
-  styles["1S0_8"]=hist_aes("^{1}S^{(8)}_{0}",TColor::GetColor(222,235,247),1001,kSolid);
-  styles["3S1_8"]=hist_aes("^{3}S^{(8)}_{1}",TColor::GetColor(158,202,225),1001,kSolid);
+  styles["1S0_8"]=hist_aes("^{1}S^{(8)}_{0}",TColor::GetColor(8,81,156),1001,kSolid);
+  styles["3S1_8"]=hist_aes("^{3}S^{(8)}_{1}",TColor::GetColor(107,174,214),1001,kSolid);
   styles["3PJ_8"]=hist_aes("^{3}P^{(8)}_{J}",TColor::GetColor(49,130,189),1001,kSolid);
   // Singlet styles	                    
-  styles["3S1_1"]=hist_aes("^{3}S^{(1)}_{1}",TColor::GetColor(252,146,114),1001,kSolid);
-  styles["3PJ_1"]=hist_aes("^{3}P^{(1)}_{J}",TColor::GetColor(222,45,38),1001,kSolid);  
+  styles["3S1_1"]=hist_aes("^{3}S^{(1)}_{1}",TColor::GetColor(222,45,38),1001,kSolid);
+  styles["3PJ_1"]=hist_aes("^{3}P^{(1)}_{J}",TColor::GetColor(165,15,21),1001,kSolid);  
 
   // Octet styles
-  styles["208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8"]=hist_aes("^{1}S^{(8)}_{0}",TColor::GetColor(222,235,247),1001,kSolid);
-  styles["208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"]=hist_aes("^{3}S^{(8)}_{1}",TColor::GetColor(158,202,225),1001,kSolid);
+  styles["208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8"]=hist_aes("^{1}S^{(8)}_{0}",TColor::GetColor(8,81,156),1001,kSolid);
+  styles["208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"]=hist_aes("^{3}S^{(8)}_{1}",TColor::GetColor(107,174,214),1001,kSolid);
   styles["208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8"]=hist_aes("^{3}P^{(8)}_{J}",TColor::GetColor(49,130,189),1001,kSolid); 
   // Singlet styles						                        
-  styles["208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1"]=hist_aes("^{3}S^{(1)}_{1}",TColor::GetColor(252,146,114),1001,kSolid);
-  styles["208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1"]=hist_aes("^{3}P^{(1)}_{J}",TColor::GetColor(222,45,38),1001,kSolid);  
+  styles["208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1"]=hist_aes("^{3}S^{(1)}_{1}",TColor::GetColor(222,45,38),1001,kSolid);
+  styles["208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1"]=hist_aes("^{3}P^{(1)}_{J}",TColor::GetColor(165,15,21),1001,kSolid);  
 
   // non-prompt BKG Styles
   styles["108601.PythiaBc_Bc_JPsi_mu2p5mu2p5_Pi"]=hist_aes("B_{c}#rightarrow J/#psi #pi",TColor::GetColor(186,228,179),1001,kSolid);

@@ -22,6 +22,7 @@ void setup_global_style(){
   style.SetAtlasStyle();
   gStyle->SetFrameLineWidth(0.0);
   gStyle->SetPalette(1);
+  gStyle->SetTitleYOffset(1.6);
 }
 
 void setup_hist(TH1* hist){

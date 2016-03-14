@@ -243,13 +243,13 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   TH1* np_stat_hist = dynamic_cast<TH1*>(nonprompt_hist->Clone("np_stat_hist"));
   add_err(nonprompt_hist,np_syst_hist);
 
-  THStack stack("sbs_stack",base_hist->GetTitle());
-  THStack err_stack("err_stack",base_hist->GetTitle());
-  
-  stack.SetHistogram((TH1*)base_hist->Clone((std::string("stack_sbs")+base_hist->GetName()).c_str()));
-  
-  sig_hist->SetLineColor(kBlack);
-  sig_hist->SetFillStyle(0);
+  TH1* sig_final = dynamic_cast<TH1*>(sig_hist->Clone((std::string("sf_")+base_hist->GetName()).c_str()));
+  sig_final->Add(comb_hist,-1);
+  sig_final->Add(nonprompt_hist,-1);
+
+  // The rest of this function is printing the plot 
+  style_hist(sig_hist,styles["data"]);
+
   make_transparent(styles["comb_bkg"],0.4);
   make_transparent(styles["non_prompt"],0.4);
 
@@ -262,18 +262,27 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   add_to_legend(&leg,comb_hist,styles["comb_bkg"]);
   add_to_legend(&leg,nonprompt_hist,styles["non_prompt"]);
 
-  stack.Add(nonprompt_hist);
-  stack.Add(comb_hist); 
-  err_stack.Add(np_stat_hist);
-  err_stack.Add(comb_stat_hist);
-
   TCanvas c1("Canvas","Canvas",600,600);
-  stack.Draw("e2");
-  err_stack.Draw("e2 same");
-  sig_hist->Draw("e0 same");
-  stack.SetMaximum(1.4*std::max(stack.GetMaximum(),sig_hist->GetMaximum()));
-  stack.SetMinimum(std::min(stack.GetMinimum(),sig_hist->GetMinimum()));
+  sig_hist->Draw("e0");
   leg.Draw();
+  nonprompt_hist->DrawCopy("e2 same");
+  np_stat_hist->Draw("e2 same");
+  nonprompt_hist->SetFillStyle(0);
+  nonprompt_hist->Draw("HIST same");
+  TH1* comb_stack = dynamic_cast<TH1*>(comb_hist->Clone("comb_stack"));
+  comb_stack->Add(nonprompt_hist);
+  for(int i =0; i < comb_stack->GetNbinsX(); i++){
+    comb_stack->SetBinError(i,comb_hist->GetBinError(i));
+    comb_stat_hist->SetBinContent(i,comb_stack->GetBinContent(i));
+  }
+  comb_stack->DrawCopy("e2 same");
+  comb_stat_hist->Draw("e2 same");
+  comb_stack->SetFillStyle(0);
+  comb_stack->Draw("HIST same");
+  
+  sig_hist->SetMaximum(1.4*std::max(comb_stack->GetMaximum(),sig_hist->GetMaximum()));
+  sig_hist->SetMinimum(std::min(comb_stack->GetMinimum(),sig_hist->GetMinimum()));
+  sig_hist->Draw("e0 same");
   char outname[256];
   snprintf(outname,256,"%s_sbs_stk%s",base_hist->GetName(),suffix);
   add_atlas_badge(c1,0.2,0.9,lumi,INTERNAL);
@@ -281,10 +290,6 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   // snprintf(outname,256,"%s_sbs_stk%s",base_hist->GetName(),".root");
   // c1.SaveAs(outname);
 
-  TH1* sig_final = dynamic_cast<TH1*>(sig_hist->Clone((std::string("sf_")+base_hist->GetName()).c_str()));
-
-  sig_final->Add(comb_hist,-1);
-  sig_final->Add(nonprompt_hist,-1);
 
   return sig_final;
 }
@@ -292,11 +297,11 @@ THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aestheti
 		     const char* cut_expr){
   THStack* stack = new THStack(("pythia_stk_"+std::string(base_hist->GetName())).c_str(),"Stack");
   const char* samp_names[]={
-    "208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8",
     "208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1",
-    "208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8",
     "208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1",
-    "208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"
+    "208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8",
+    "208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8",
+    "208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8"
   };
   TH1* tot_syst_err = dynamic_cast<TH1*>(base_hist->Clone((std::string(base_hist->GetName())+"_global_syst_err").c_str()));
   // tot_syst_err->Reset("ICES");
@@ -356,7 +361,7 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
   tot_syst_err->Add(hist);
   tot_syst_err->Scale(N_sig/N_MC);
 
-  stack->Draw("H e1");
+  stack->Draw("HIST");
   stack->GetXaxis()->SetTitle(signal->GetXaxis()->GetTitle());
   stack->GetYaxis()->SetTitle(signal->GetYaxis()->GetTitle());
   
@@ -368,9 +373,9 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
   double s_max=stack->GetStack()!=NULL ? ((TH1*)stack->GetStack()->Last())->GetMaximum() : 0.;
   double m_max=signal->GetMaximum();
   // MSG_DEBUG("Stack: "<<s_max<<" Master: "<<m_max);
-  signal->SetMaximum((s_max > m_max ? s_max : m_max)*1.2);
-  stack->SetMaximum((s_max > m_max ? s_max : m_max)*1.2);
-
+  // signal->SetMaximum((s_max > m_max ? s_max : m_max)*1.2);
+  stack->SetMaximum((std::max(s_max,m_max))*1.4);
+  stack->SetMinimum(1.1*std::min(signal->GetMinimum(),stack->GetMinimum()));
   leg.Draw();
   add_atlas_badge(canv,0.2,0.9,lumi,INTERNAL);
   add_to_legend(&leg,signal,styles["data"]);
