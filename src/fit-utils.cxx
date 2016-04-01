@@ -156,6 +156,7 @@ void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model,
     add_component(frame,model,"Background",kBlue);
     add_leg_comp(leg,frame,"Signal");
     add_leg_comp(leg,frame,"Background");
+    frame->SetMaximum(1.2*frame->GetMaximum());
   }
   if(std::string(key)=="tau"){
     add_component(frame,model,"Background",kBlue);
@@ -166,7 +167,8 @@ void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model,
     // add_leg_comp(leg,frame,"NonPromptTauBkg");
     add_leg_comp(leg,frame,"PromptTauSig");
     add_leg_comp(leg,frame,"NonPromptTauSig");
-    frame->SetAxisRange(-1.1,3.0);
+    frame->SetMaximum(5*frame->GetMaximum());
+    frame->SetAxisRange(-0.5,1.0);
   }
   TCanvas canv(key,key,600,600);
   frame->Draw();
@@ -177,7 +179,7 @@ void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model,
   if(std::string(key)=="tau"){
     canv.SetLogy(true);
   }
-  add_atlas_badge(canv,0.2,0.9,lumi,INTERNAL);
+  add_atlas_badge(canv,0.2,0.9,lumi);
   canv.SaveAs(OFName);
   // snprintf(OFName,100,"%s_fit_final.root",key);
   // canv.SaveAs(OFName);

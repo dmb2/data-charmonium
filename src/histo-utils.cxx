@@ -208,11 +208,20 @@ void add_atlas_badge(TVirtualPad& canv,const double x, const double y,
 		     const double lumi_fb, const status_t status){
   canv.cd();
   std::string status_label="";
-  if (status==PRELIMINARY){
+  switch(status){
+  case PRELIMINARY:
     status_label="Preliminary";
-  }
-  else if (status==INTERNAL){
+    break;
+  case INTERNAL:
     status_label="Internal";
+    break;
+  case APPROVED:
+    status_label="Approved";
+    break;
+  case WIP:
+    status_label="Work In Progress";
+  default:
+    status_label="";
   }
   // canv.cd();
   Double_t tsize(0.04);

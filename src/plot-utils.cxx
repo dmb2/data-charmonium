@@ -69,10 +69,10 @@ void print_ratio_hist(std::map<std::string,TTree*>& samples, const std::string& 
   remove_axis(stack->GetHistogram()->GetXaxis());
   leg->Draw();
   if(plot=="jet_z"){
-    add_atlas_badge(canv,0.2,0.6,target_lumi,INTERNAL);
+    add_atlas_badge(canv,0.2,0.6,target_lumi);
   }
   else{
-    add_atlas_badge(canv,0.2,0.9,target_lumi,INTERNAL);
+    add_atlas_badge(canv,0.2,0.9,target_lumi);
   }
   decorator.DrawLatexNDC(0.,0.05,base_hist->GetTitle());
   TPad* rpad = split_canvas(&canv,0.3);

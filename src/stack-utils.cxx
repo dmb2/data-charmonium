@@ -110,7 +110,7 @@ void print_2D_stack(std::map<std::string,TTree*> samples,const std::string& plot
     decorator.DrawLatexNDC(0.25,0.25,hist_styles[name].leg_label);
   }
   canv.cd(0);
-  add_atlas_badge(canv,0.66,0.25,target_lumi,INTERNAL);
+  add_atlas_badge(canv,0.66,0.25,target_lumi);
   decorator.SetTextSize(0.04);
   decorator.DrawLatex(0.01,0.02,base_hist->GetTitle());
   std::string outname=plot+suffix;
@@ -260,7 +260,7 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
 
   canv.cd(0);
   // this damn thing is too big
-  add_atlas_badge(canv,0.4,0.1,target_lumi,INTERNAL);
+  add_atlas_badge(canv,0.4,0.1,target_lumi);
   leg->Draw();
   decorator.SetTextSize(0.04);
   decorator.DrawLatex(0.38,0.01,base_hist->GetTitle());
@@ -296,7 +296,7 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
   leg.AddEntry(master,"MC12");
   leg.Draw();
   decorator.DrawLatexNDC(0.,0.05,master->GetTitle());
-  add_atlas_badge(canv,0.2,0.9,target_lumi,INTERNAL);
+  add_atlas_badge(canv,0.2,0.9,target_lumi);
   canv.SaveAs((plot+suffix).c_str());
 }
 void print_cut_stack(std::map<std::string,TTree*>& samples, 
@@ -347,6 +347,6 @@ void print_cut_stack(std::map<std::string,TTree*>& samples,
   leg.Draw();
   decorator.SetTextSize(0.04);
   decorator.DrawLatex(0.0,0.05,base_hist->GetTitle());
-  // add_atlas_badge(canv,0.2,0.9,target_lumi,INTERNAL);
+  // add_atlas_badge(canv,0.2,0.9,target_lumi);
   canv.SaveAs((plot+file_suffix).c_str());
 }
