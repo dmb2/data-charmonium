@@ -11,6 +11,7 @@
 #include "TStyle.h"
 #include "TLatex.h"
 #include "TColor.h"
+#include "TGaxis.h"
 
 #include "histo-utils.hh"
 #include "root-sugar.hh"
@@ -23,6 +24,7 @@ void setup_global_style(){
   gStyle->SetFrameLineWidth(0.0);
   gStyle->SetPalette(1);
   gStyle->SetTitleYOffset(1.6);
+  TGaxis::SetMaxDigits(4);
 }
 
 void setup_hist(TH1* hist){
@@ -208,21 +210,22 @@ void add_atlas_badge(TVirtualPad& canv,const double x, const double y,
 		     const double lumi_fb, const status_t status){
   canv.cd();
   std::string status_label="";
-  switch(status){
-  case PRELIMINARY:
+
+  if(status==PRELIMINARY){
     status_label="Preliminary";
-    break;
-  case INTERNAL:
+  } 
+  else if(status==INTERNAL){
     status_label="Internal";
-    break;
-  case APPROVED:
+  } 
+  else if(status==APPROVED){
     status_label="Approved";
-    break;
-  case WIP:
+  } 
+  else if(status==WIP){
     status_label="Work In Progress";
-  default:
+  } else {
     status_label="";
   }
+  
   // canv.cd();
   Double_t tsize(0.04);
   TLatex l; 
