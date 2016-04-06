@@ -41,7 +41,7 @@ TH2D* setup_rel_res_hist(TH1* hist);
 TH2D* setup_response_hist(TH1* hist);
 void draw_histo(TTree* tree,const char* branch_name, const char* hist_name, 
 		const char* cut_expr);
-TLegend* init_legend(double x1=0.70,double y1=0.60, double x2=0.92,double y2=0.92);
+TLegend* init_legend(double x1=0.65,double y1=0.50, double x2=0.92,double y2=0.92);
 void remove_axis(TAxis* axis);
 void set_pad_margins(TVirtualPad* pad,int pad_pos,int N_hists,int n_col=3,int n_row=2,bool y_axis=true);
 TH1* make_response_hist(TH1* base_hist, TTree* tree, 

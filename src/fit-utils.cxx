@@ -134,7 +134,13 @@ static void add_leg_comp(TLegend* leg,RooPlot* frame, const char* comp_name){
   //char name[100];
   //snprintf(name,100,"%s%s",comp_name,key);
   RooCurve * curve = frame->getCurve(comp_name);
-  leg->AddEntry(curve,comp_name,"l");
+  std::map<std::string,std::string> pretty_names;
+  pretty_names["PromptTauSig"]="Prompt Signal";
+  pretty_names["NonPromptTauSig"]="Non-prompt Signal";
+  pretty_names["PlotModel"]="Total";
+  pretty_names["Signal"]="Signal";
+  pretty_names["Background"]="Background";
+  leg->AddEntry(curve,pretty_names[comp_name].c_str(),"l");
 }
 void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model, 
 		const char* key,const char* title, 

@@ -28,7 +28,7 @@ void init_hist_book(std::map<std::string,TH1D*>& HistBook){
   HistBook["tau3"]=new TH1D("tau3","N Subjettiness #tau_{3};#tau_{3};evts/binwidth",50,0,0.25);
   HistBook["tau32"]=new TH1D("tau32","N Subjettiness #tau_{32};#tau_{32};evts/binwidth",50,0,1.2);
   HistBook["tau21"]=new TH1D("tau21","N Subjettiness #tau_{21};#tau_{21};evts/binwidth",50,0,1.2);
-  HistBook["delta_r"]=new TH1D("delta_r","#Delta R(J/#psi,Jet); #Delta R; evts/binwidth",50,0,.2);
+  HistBook["delta_r"]=new TH1D("delta_r","#Delta R(J/#psi,Jet); #Delta R; evts/binwidth",50,0,.08);
 
   HistBook["psi_m"]=new TH1D("psi_m","J/#psi + 2 Tracks Mass; M(#mu #mu Trk Trk) [GeV]; evts/binwidth",50,3.3,4.1);
 
@@ -93,11 +93,11 @@ void init_hist_styles(std::map<std::string,aesthetic>& styles){
   styles["208022.Pythia8B_AU2_CTEQ6L1_pp_Psi2S_JpsiPiPi"]=hist_aes("#psi(2S) #rightarrow J/#psi 2#pi",TColor::GetColor(158,154,200),1001,kSolid);
   styles["208023.Pythia8B_AU2_CTEQ6L1_pp_X3872_JpsiPiPi"]=hist_aes("X(3872) #rightarrow J/#psi 2#pi",TColor::GetColor(106,81,163),1001,kSolid);
 
-  styles["non_prompt"]=hist_aes("Non Prompt Background",TColor::GetColor(152,0,67),1001,kSolid);
-  styles["feed_down"]=hist_aes("Feed Down Sources",TColor::GetColor(0,104,55),1001,kSolid);
+  styles["non_prompt"]=hist_aes("Non-Prompt",TColor::GetColor(152,0,67),1001,kSolid);
+  styles["feed_down"]=hist_aes("Feed Down",TColor::GetColor(0,104,55),1001,kSolid);
 
-  styles["psi_bkg"]=hist_aes("#psi(2S) Background",TColor::GetColor(0,104,55),1001,kSolid);
-  styles["comb_bkg"]=hist_aes("Comb. Background",TColor::GetColor(240,59,32),1001,kSolid);
+  styles["psi_bkg"]=hist_aes("#psi(2S)",TColor::GetColor(0,104,55),1001,kSolid);
+  styles["comb_bkg"]=hist_aes("Combinatoric",TColor::GetColor(240,59,32),1001,kSolid);
 
   styles["208202.Pythia8B_AU2_CTEQ6L1_bb_Jpsimu6mu6"]=hist_aes("bb Non Prompt Background",TColor::GetColor(120,198,121),1001,kSolid);
   styles["208207.Pythia8B_AU2_CTEQ6L1_anti_bb_Jpsimu6mu6"]=hist_aes(" #bar{bb} Non Prompt Background",TColor::GetColor(120,198,121),1001,kSolid);
@@ -122,8 +122,8 @@ void init_hist_styles(std::map<std::string,aesthetic>& styles){
   styles["208004..TopoEMJets"]=hist_aes("#mu, Jet TopoEM",TColor::GetColor(120,198,121),1001,kSolid);
   styles["208004..TrackZJets"]=hist_aes("#mu, Jet TrackZ",TColor::GetColor(223,101,176),1001,kSolid);
 
-  styles["non_prompt.mu24i_tight"]=hist_aes("MC (mu24 Isolated)",TColor::GetColor(240,59,32),1001,kSolid); 
-  styles["non_prompt.mu36_tight"]=hist_aes("MC (mu36)",TColor::GetColor(152,0,67),1001,kSolid); 
+  styles["non_prompt.mu24i_tight"]=hist_aes("MC Isolated",TColor::GetColor(240,59,32),1001,kSolid); 
+  styles["non_prompt.mu36_tight"]=hist_aes("MC Non-isolated",TColor::GetColor(152,0,67),1001,kSolid); 
   styles["non_prompt.tau_sb"]=hist_aes("MC (Trig OR)",TColor::GetColor(253,141,60),1001,kSolid);
 
   styles["non_prompt.signal_region"]=hist_aes("MC Signal Region",TColor::GetColor(120,198,121),1001,kSolid);
@@ -132,9 +132,9 @@ void init_hist_styles(std::map<std::string,aesthetic>& styles){
   styles["full2012.mass_sb_1"]=hist_aes("Data Low Mass SB",TColor::GetColor(215,181,216),1001,kSolid);
   styles["full2012.mass_sb_2"]=hist_aes("Data High Mass SB ",TColor::GetColor(223,101,176),1001,kSolid); 
 
-  styles["full2012.tau_sb"]=hist_aes("Data Tau SB (Trig OR)",TColor::GetColor(221,28,119),1001,kSolid); 
-  styles["full2012.mu24i_tight"]=hist_aes("Data Tau SB (mu24 Isolated)",TColor::GetColor(240,59,32),1001,kSolid); 
-  styles["full2012.mu36_tight"]=hist_aes("Data Tau SB (mu36 )",TColor::GetColor(49,163,84),1001,kSolid); 
+  styles["full2012.tau_sb"]=hist_aes("Data Tau SB",TColor::GetColor(221,28,119),1001,kSolid); 
+  styles["full2012.mu24i_tight"]=hist_aes("Isolated",TColor::GetColor(240,59,32),1001,kSolid); 
+  styles["full2012.mu36_tight"]=hist_aes("Non-Isolated",TColor::GetColor(49,163,84),1001,kSolid); 
 
   styles["LCTopoJets"]=hist_aes("Calo Jets",TColor::GetColor(55,126,184),1001,kSolid);
   styles["MuonLCTopoJets"]=hist_aes("Muon+Calo Jets ",TColor::GetColor(228,26,28),1001,kSolid); 
