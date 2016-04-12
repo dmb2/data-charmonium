@@ -117,12 +117,17 @@ void print_2D_stack(std::map<std::string,TTree*> samples,const std::string& plot
   replace(outname.begin(),outname.end(),':','_');
   canv.SaveAs(outname.c_str());
 }
-void norm_stack(THStack& stack){
+double norm_stack(THStack& stack){
   TIter next(stack.GetHists());
   TH1* h = NULL;
+  double max(0);
   while((h = dynamic_cast<TH1*>(next()))){
     h->Scale(1/h->Integral());
+    if(h->GetMaximum() > max){
+      max=h->GetMaximum();
+    }
   }
+  return max;
 }
 num_err integral_error(TH1D* hist){
   num_err result;

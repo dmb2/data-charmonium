@@ -18,10 +18,10 @@ TPad* split_canvas(TPad* canvas, float fraction){
   canvas->SetBottomMargin(fraction); canvas->Modified(); canvas->Update();
   TPad* rpad = new TPad("rpad","",0.,0.,1.0,fraction);
   rpad->SetFillStyle(0);
-  rpad->SetMargin(canvas->GetLeftMargin(),canvas->GetRightMargin(),0.3,0.1);
+  rpad->SetMargin(canvas->GetLeftMargin(),canvas->GetRightMargin(),0.3,0.01);
   rpad->Draw(); 
-  rpad->SetTicks(1,1);
-  rpad->SetGrid(0,1);
+  rpad->SetTicks(0,1);
+  // rpad->SetGrid(0,1);
   //rpad->cd();
   rpad->Clear();
   return rpad;
@@ -41,6 +41,18 @@ void draw_ratios(TPad* pad,THStack* stack){
   for(std::vector<TH1*>::iterator hist = ratios.begin(); hist!=ratios.end(); ++hist){
     (*hist)->Divide(base);
     (*hist)->Draw("H same");
+    
+    TAxis* y_axis = (*hist)->GetYaxis();
+    TAxis* x_axis = (*hist)->GetXaxis();
+    y_axis->SetTitle("Ratio");
+    y_axis->SetTitleSize(0.15);
+    y_axis->SetTitleOffset(0.5);
+    y_axis->SetLabelSize(0.15);
+    y_axis->SetNdivisions(5);
+    x_axis->SetTitleSize(0.15);
+    x_axis->SetLabelSize(0.15);
+    x_axis->SetTickLength(0.07);
+    x_axis->SetTitleOffset(0.9);
   }
 }
 void print_ratio_hist(std::map<std::string,TTree*>& samples, const std::string& plot,
@@ -59,13 +71,17 @@ void print_ratio_hist(std::map<std::string,TTree*>& samples, const std::string& 
   cb.push_back("");
   THStack* stack = make_stack(base_hist,samples,cb,0,plot,*leg,target_lumi);
   canv.cd();
-  norm_stack(*stack);
+  double max = norm_stack(*stack);
+
   TIter next(stack->GetHists());
   TH1* h = NULL;
   while((h = dynamic_cast<TH1*>(next()))){
     h->SetFillStyle(0);
   }
+
   stack->Draw("H nostack");
+  stack->SetMaximum(1.3*max);
+  stack->GetHistogram()->GetYaxis()->SetTitle("Arbitrary Units");
   remove_axis(stack->GetHistogram()->GetXaxis());
   leg->Draw();
   if(plot=="jet_z"){
@@ -74,7 +90,7 @@ void print_ratio_hist(std::map<std::string,TTree*>& samples, const std::string& 
   else{
     add_atlas_badge(canv,0.2,0.9,target_lumi);
   }
-  decorator.DrawLatexNDC(0.,0.05,base_hist->GetTitle());
+  // decorator.DrawLatexNDC(0.,0.05,base_hist->GetTitle());
   TPad* rpad = split_canvas(&canv,0.3);
   draw_ratios(rpad,stack);
   canv.SaveAs((plot + suffix).c_str());

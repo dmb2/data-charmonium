@@ -75,7 +75,7 @@ TH1* build_syst_err_hist(TH1* base_hist, const std::string& samp_name,
 			 const char* cut_expr);
 
 void add_atlas_badge(TVirtualPad& canv,const double x, const double y, 
-		     const double lumi_fb, const status_t status=INTERNAL);
+		     const double lumi_fb, const status_t status=WIP);
 void print_profile_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 			const std::string& suffix,
 			TH1* (*make_hist)(TH1*,TTree*,

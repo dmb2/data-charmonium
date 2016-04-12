@@ -67,20 +67,20 @@ void init_cut_names(std::map<std::string,std::string>& cut_names){
 
 void init_hist_styles(std::map<std::string,aesthetic>& styles){
   styles["global_syst_err"]=hist_aes("Systematic Error",TColor::GetColorTransparent(kBlack,0.4),1001,0);
-  styles["1S0_8"]=hist_aes("^{1}S^{(8)}_{0}",TColor::GetColor(8,81,156),1001,kSolid);
-  styles["3S1_8"]=hist_aes("^{3}S^{(8)}_{1}",TColor::GetColor(107,174,214),1001,kSolid);
-  styles["3PJ_8"]=hist_aes("^{3}P^{(8)}_{J}",TColor::GetColor(49,130,189),1001,kSolid);
+  styles["1S0_8"]=hist_aes("^{1}S^{(8)}_{0} Octet",TColor::GetColor(8,81,156),1001,kSolid);
+  styles["3S1_8"]=hist_aes("^{3}S^{(8)}_{1} Octet",TColor::GetColor(107,174,214),1001,kSolid);
+  styles["3PJ_8"]=hist_aes("^{3}P^{(8)}_{J} Octet",TColor::GetColor(49,130,189),1001,kSolid);
   // Singlet styles	                    
-  styles["3S1_1"]=hist_aes("^{3}S^{(1)}_{1}",TColor::GetColor(222,45,38),1001,kSolid);
-  styles["3PJ_1"]=hist_aes("^{3}P^{(1)}_{J}",TColor::GetColor(165,15,21),1001,kSolid);  
+  styles["3S1_1"]=hist_aes("^{3}S^{(1)}_{1} Singlet",TColor::GetColor(222,45,38),1001,kSolid);
+  styles["3PJ_1"]=hist_aes("^{3}P^{(1)}_{J} Singlet",TColor::GetColor(165,15,21),1001,kSolid);  
 
   // Octet styles
-  styles["208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8"]=hist_aes("^{1}S^{(8)}_{0}",TColor::GetColor(8,81,156),1001,kSolid);
-  styles["208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"]=hist_aes("^{3}S^{(8)}_{1}",TColor::GetColor(107,174,214),1001,kSolid);
-  styles["208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8"]=hist_aes("^{3}P^{(8)}_{J}",TColor::GetColor(49,130,189),1001,kSolid); 
+  styles["208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8"]=hist_aes("^{1}S^{(8)}_{0} Octet",TColor::GetColor(8,81,156),1001,kSolid);
+  styles["208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"]=hist_aes("^{3}S^{(8)}_{1} Octet",TColor::GetColor(107,174,214),1001,kSolid);
+  styles["208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8"]=hist_aes("^{3}P^{(8)}_{J} Octet",TColor::GetColor(49,130,189),1001,kSolid); 
   // Singlet styles						                        
-  styles["208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1"]=hist_aes("^{3}S^{(1)}_{1}",TColor::GetColor(222,45,38),1001,kSolid);
-  styles["208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1"]=hist_aes("^{3}P^{(1)}_{J}",TColor::GetColor(165,15,21),1001,kSolid);  
+  styles["208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1"]=hist_aes("^{3}S^{(1)}_{1} Singlet",TColor::GetColor(222,45,38),1001,kSolid);
+  styles["208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1"]=hist_aes("^{3}P^{(1)}_{J} Singlet",TColor::GetColor(165,15,21),1001,kSolid);  
 
   // non-prompt BKG Styles
   styles["108601.PythiaBc_Bc_JPsi_mu2p5mu2p5_Pi"]=hist_aes("B_{c}#rightarrow J/#psi #pi",TColor::GetColor(186,228,179),1001,kSolid);
@@ -124,9 +124,9 @@ void init_hist_styles(std::map<std::string,aesthetic>& styles){
 
   styles["non_prompt.mu24i_tight"]=hist_aes("MC Isolated",TColor::GetColor(240,59,32),1001,kSolid); 
   styles["non_prompt.mu36_tight"]=hist_aes("MC Non-isolated",TColor::GetColor(152,0,67),1001,kSolid); 
-  styles["non_prompt.tau_sb"]=hist_aes("MC (Trig OR)",TColor::GetColor(253,141,60),1001,kSolid);
+  styles["non_prompt.tau_sb"]=hist_aes("Non-Prompt SB",TColor::GetColor(253,141,60),1001,kSolid);
 
-  styles["non_prompt.signal_region"]=hist_aes("MC Signal Region",TColor::GetColor(120,198,121),1001,kSolid);
+  styles["non_prompt.signal_region"]=hist_aes("Non-prompt Signal",TColor::GetColor(120,198,121),1001,kSolid);
 
 
   styles["full2012.mass_sb_1"]=hist_aes("Data Low Mass SB",TColor::GetColor(215,181,216),1001,kSolid);

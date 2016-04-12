@@ -65,11 +65,12 @@ int main(const int argc, const char* argv[]){
     const std::string& plot = *p;
     MSG_DEBUG(plot);
     TH1D* tot_err=dynamic_cast<TH1D*>(HistBook[plot]->Clone((plot+"_tot_err").c_str()));
-    TCanvas canv("canv","canv",1200,600);
-    canv.Divide(2,1);
+    TCanvas canv("canv","canv",1800,600);
+    canv.Divide(3,1);
     // canv.SetLogy();
     double max(10);
-    TLegend *leg = init_legend();
+    TLegend *leg = init_legend(0.1,0.1,0.9,0.9);
+    leg->SetTextSize(0.05);
     for(std::map<std::string,TFile*>::iterator f=files.begin();
 	f!=files.end(); ++f){
       TVirtualPad* pad = canv.cd(1);
@@ -82,7 +83,6 @@ int main(const int argc, const char* argv[]){
       }
       add_err(tot_err,hist);
       style_hist(hist,styles[f->first]);
-      add_to_legend(leg,hist,styles[f->first]);
       TH1D* nom = dynamic_cast<TH1D*>(hist->Clone("tmp"));
       nom->SetFillStyle(0);
       nom->SetLineColor(kBlack);
@@ -102,6 +102,7 @@ int main(const int argc, const char* argv[]){
       rel_err->SetLineWidth(2);
       rel_err->GetYaxis()->SetTitle("Relative Systematic Error");
       rel_err->SetMaximum(max);
+      add_to_legend(leg,rel_err,styles[f->first]);
       rel_err->Draw("H same");
     }
     tot_err->Write();
@@ -119,6 +120,7 @@ int main(const int argc, const char* argv[]){
     canv.cd(1);
     tot_err->Draw("e2 same");
     canv.cd();
+    canv.cd(3);
     leg->Draw();
     canv.SaveAs((plot+"_syst.pdf").c_str());
   }

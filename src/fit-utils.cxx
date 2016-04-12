@@ -2,6 +2,8 @@
 #include "histo-utils.hh"
 #include "root-sugar.hh"
 
+#include "TColor.h"
+
 #include "RooFit.h"
 #include "RooDataSet.h"
 #include "RooRealVar.h"
@@ -136,7 +138,7 @@ static void add_leg_comp(TLegend* leg,RooPlot* frame, const char* comp_name){
   RooCurve * curve = frame->getCurve(comp_name);
   std::map<std::string,std::string> pretty_names;
   pretty_names["PromptTauSig"]="Prompt Signal";
-  pretty_names["NonPromptTauSig"]="Non-prompt Signal";
+  pretty_names["NonPromptTauSig"]="Non-prompt";
   pretty_names["PlotModel"]="Total";
   pretty_names["Signal"]="Signal";
   pretty_names["Background"]="Background";
@@ -165,10 +167,10 @@ void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model,
     frame->SetMaximum(1.2*frame->GetMaximum());
   }
   if(std::string(key)=="tau"){
-    add_component(frame,model,"Background",kBlue);
+    add_component(frame,model,"Background",TColor::GetColor(27,158,119));
     // add_component(frame,model,"NonPromptTauBkg",kRed-1);
-    add_component(frame,model,"PromptTauSig",kMagenta);
-    add_component(frame,model,"NonPromptTauSig",kAzure);
+    add_component(frame,model,"PromptTauSig",TColor::GetColor(216,95,2));
+    add_component(frame,model,"NonPromptTauSig",TColor::GetColor(117,112,179));
     add_leg_comp(leg,frame,"Background");
     // add_leg_comp(leg,frame,"NonPromptTauBkg");
     add_leg_comp(leg,frame,"PromptTauSig");
