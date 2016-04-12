@@ -8,7 +8,7 @@
 #include "TFile.h"
 #include "TROOT.h"
 void usage(const char* name){
-  MSG("Usage: "<<name<<" cross_sections.conf n_requested [MC Files]");
+  MSG("Usage: "<<name<<" -c cross_sections.conf -n n_requested [MC Files]");
   MSG("\t cross_sections.conf contains the cross sections for each 6 digit");
   MSG("\t DSID in fb, in the form DSID=xsec on each line. [MC Files] is a ");
   MSG("\t list of files that starts with the 6 digit DSID, ie DSID.foobar.root");
@@ -47,15 +47,30 @@ void copy_tree(sample_info& sample_meta_info,TTree* input_tree,const double xsec
   // MSG_DEBUG("Nentries: "<<sample_meta_info.nentries<<" Entries in tmp_tree: "<<tmp_tree->GetEntries()<<" Output Tree "<<sample_meta_info.tree->GetEntries());
 
 }
-int main(const int argc, const char* argv[]){
-  if(argc < 4){
+int main(const int argc, char* const argv[]){
+  int c;
+  double n_requested;
+  char* conf_name=NULL;
+  while((c = getopt(argc,argv,"n:c:"))!=-1){
+    switch(c){
+    case 'n':
+      n_requested=atof(argv[2]);
+      break;
+    case 'c':
+      conf_name=optarg;
+      break;
+    default:
+      abort();
+    }
+  }
+  int idx = optind;
+  if(conf_name==NULL || !std::isfinite(n_requested) || idx==argc){
     usage(argv[0]);
-    return 0;
+    exit(1);
   }
   std::map<std::string,double> xsecs;
-  parse_xsecs(xsecs,argv[1]);
-  double n_requested=atof(argv[2]);
-
+  parse_xsecs(xsecs,conf_name);
+  
   std::string comb_dsid = "periodA"; //periodA.CombMu.mini.root
   const char* sig_dsids[] = {"208024","208025","208026","208027","208028"};
   const char* np_dsids[]  = {"208400","108606","208202","208207"};
@@ -67,7 +82,7 @@ int main(const int argc, const char* argv[]){
   sample_meta_info["combinatoric"].fraction=0.197;
   sample_meta_info["nonprompt"].fraction=0.493;
   std::map<std::string,TTree*> samples;
-  for(int i=3; i < argc; i++ ){
+  for(int i=idx; i < argc; i++ ){
     std::string fname(argv[i]);
     std::vector<std::string> parts = split_string(fname,'.');
     std::string dsid=parts[parts.size()-4];
