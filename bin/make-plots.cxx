@@ -18,11 +18,12 @@
 #include "root-sugar.hh"
 
 void usage(const char* name){
-  MSG("Usage: "<< name << " target_lumi (fb) [mc_samples.root]");
+  MSG("Usage: "<< name << " -l target_lumi (fb) [mc_samples.root]");
 }
-void print_plots(const char* sample_names[], const size_t n_samp, const double target_lumi){
+void print_plots(const size_t idx, char* const sample_names[], 
+		 const size_t n_samp, const double target_lumi){
   std::map<std::string,TTree*> sample_trees;
-  for(size_t i=0; i < n_samp; i++){
+  for(size_t i=idx; i < n_samp; i++){
     // strip .mini.root off
     std::string name = std::string(sample_names[i]);
     size_t pos = name.find(".mini.root");
@@ -53,15 +54,25 @@ void print_plots(const char* sample_names[], const size_t n_samp, const double t
   */
 }
 
-int main(const int argc, const char* argv[]){
-  if(argc < 3){
+int main(const int argc, char* const argv[]){
+  double lumi;
+  int c;
+  while((c = getopt(argc,argv,"l:"))!= -1){
+    switch(c){
+    case 'l':
+      lumi=atof(optarg);
+      break;
+    default:
+      abort();
+    }
+  }
+  if(optind==argc || !std::isfinite(lumi)){
     usage(argv[0]);
-    return 0;
+    exit(1);
   }
   setup_global_style();
   double stops[]={0.0,0.25,0.5,0.75,1.0};
-  heat_gradient(gStyle,stops,sizeof(stops)/sizeof(*stops));
-
-  print_plots(&argv[2],argc-2,atof(argv[1]));
+  heat_gradient(gStyle,stops,LEN(stops));
+  print_plots(optind,argv,argc,lumi);
   return 0;
 }
