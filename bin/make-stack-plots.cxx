@@ -16,14 +16,15 @@
 #include "root-sugar.hh"
 
 void usage(const char* name){
-  std::cout <<"Usage: "<< name << " target_lumi (fb) reference_file.root [mc_samples.root]"<<std::endl;
+  std::cout <<"Usage: "<< name << " -l target_lumi (fb) -i reference_file.root [mc_samples.root]"<<std::endl;
 }
-void print_stack_plots(const char* master_fname, const char* sample_names[],
-		       const size_t n_samp, const double target_lumi){
+void print_stack_plots(const char* master_fname,  const size_t idx,
+		       char* const sample_names[], const size_t n_samp,
+		       const double target_lumi){
   std::map<std::string,TTree*> sample_trees;
   sample_trees["master"]=retrieve<TTree>(master_fname,"mini");
   std::string fname;
-  for(size_t i=0; i < n_samp; i++){
+  for(size_t i=idx; i < n_samp; i++){
     fname=std::string(sample_names[i]);
     sample_trees[fname.substr(0,fname.find(".mini.root"))]=retrieve<TTree>(fname.c_str(),"mini");
   }
@@ -61,12 +62,27 @@ void print_stack_plots(const char* master_fname, const char* sample_names[],
   // }    
 }
 
-int main(const int argc, const char* argv[]){
-  if(argc < 3){
+int main(const int argc, char* const argv[]){
+  char* reference_name;
+  double lumi;
+  int c;
+  while((c = getopt(argc,argv,"i:l:"))!= -1){
+    switch(c){
+    case 'l':
+      lumi=atof(optarg);
+      break;
+    case 'i':
+      reference_name=optarg;
+      break;
+    default:
+      abort();
+    }
+  }
+  if(reference_name==NULL || optind==argc || !std::isfinite(lumi)){
     usage(argv[0]);
-    return 0;
+    exit(1);
   }
   setup_global_style();
-  print_stack_plots(argv[2],&argv[3],argc-3,atof(argv[1]));
+  print_stack_plots(reference_name,optind,argv,argc,lumi);
   return 0;
 }
