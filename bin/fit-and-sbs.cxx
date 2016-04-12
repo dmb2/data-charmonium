@@ -17,7 +17,7 @@
 #include "RooDataSet.h"
 
 void usage(const char* name){
-  MSG("Usage: "<<name<<" input.root tree_name lumi");
+  MSG("Usage: "<<name<<" -i input.root -t tree_name -l lumi");
 }
 
 void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
@@ -64,16 +64,39 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
 
 
 }
-int main(const int argc, const char* argv[]){
-  if(argc !=4){
-    usage(argv[0]);
-    return 1;
+int main(const int argc, char* const argv[]){
+  char* inFName=NULL;
+  char* tree_name = NULL;
+  int c;
+  double lumi;
+  
+  while((c = getopt(argc,argv,"i:l:t:"))!= -1){
+    switch(c){
+    case 'i':
+      inFName=optarg;
+      break;
+    case 'l':
+      lumi=atof(optarg);
+      break;
+    case 't':
+      tree_name=optarg;
+      break;
+    default:
+      abort();
+    }
   }
+  if(inFName==NULL || tree_name==NULL || !std::isfinite(lumi) ){
+    usage(argv[0]);
+    exit(1);
+  }
+  
   setup_global_style();
-  TFile* file = TFile::Open(argv[1]);
-  TTree* tree = retrieve<TTree>(file,argv[2]);
-  const double lumi=atof(argv[3]);
 
+  TFile* file = TFile::Open(inFName);
+  TTree* tree = retrieve<TTree>(file,tree_name);
+
+
+  
   RooRealVar *mass = new RooRealVar("jpsi_m","jpsi_m",JPSIMASS, JPSIMASS-0.4, JPSIMASS+0.5); // stay away from the psi(2S)
   RooRealVar *tau = new RooRealVar("jpsi_tau","Lifetime",-2.,5);
   std::map<std::string,sb_info> sep_var_info;

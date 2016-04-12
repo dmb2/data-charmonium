@@ -13,8 +13,7 @@ void usage(const char* name){
   MSG("Adds up a list of root files containing systematic histograms to\n produce a file representing the total for that sample");
 }
 int main(const int argc, char* const argv[]){
-
-  char* outFName=NULL;//=argv[argc-1];
+  char* outFName=NULL;
   int c;
   while((c = getopt(argc,argv,"o:")) != -1){
     switch(c){
