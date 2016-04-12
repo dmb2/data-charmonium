@@ -1,4 +1,6 @@
 #include "root-sugar.hh"
+#include "getopt.h"
+
 #include "TClass.h"
 #include "TKey.h"
 #include "TObject.h"
@@ -7,18 +9,30 @@
 #include "histo-utils.hh"
 
 void usage(const char* name){
-  MSG("Usage: "<< name << " [input_files.root] output.root");
+  MSG("Usage: "<< name << " -o output.root [input_files.root]");
   MSG("Adds up a list of root files containing systematic histograms to\n produce a file representing the total for that sample");
 }
-int main(const int argc, const char* argv[]){
-  if(argc < 2){
+int main(const int argc, char* const argv[]){
+
+  char* outFName=NULL;//=argv[argc-1];
+  int c;
+  while((c = getopt(argc,argv,"o:")) != -1){
+    switch(c){
+    case 'o':
+      outFName=optarg;
+      break;
+    default:
+      abort();
+    }
+  }
+  int idx=optind;
+  if(outFName==NULL || idx==argc){
     usage(argv[0]);
     exit(1);
   }
-  const char* outFName=argv[argc-1];
   TFile outFile(outFName,"RECREATE");
   std::vector<TFile*> files;
-  for(int i=1; i < argc-1; i++){
+  for(int i=idx; i < argc; i++){
     MSG_DEBUG("Opening: "<<argv[i]);
     files.push_back(TFile::Open(argv[i]));
     MSG_DEBUG(files.back()->GetName());
