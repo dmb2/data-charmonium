@@ -16,7 +16,8 @@
 #include "TTree.h"
 using namespace Units;
 void usage(const char* prog_name){
-  MSG("Usage: "<<prog_name<< " config.conf [inFile] [outfile] [xsec]");
+  MSG("Usage: "<<prog_name<< "-c config.conf -i inFile -o outfile -x xsec");
+  MSG("\t -i, -o, and -x options are optional if specified in config.conf");
 }
 template<typename T>
 void reset_cut_cat(std::map<std::string, cut<T> >& CutCat){
@@ -41,10 +42,37 @@ void process(const char* outName, tree_collection& Forest,
     OutFile.Close();
 }
 
-int main(const int argc, const char* argv[]){
-  if(argc != 2 && argc != 5) {
+int main(const int argc, char* const argv[]){
+  // if(argc != 2 && argc != 5) {
+  //   usage(argv[0]);
+  //   return 1;
+  // }
+  char* cli_in_fname=NULL;
+  char* cli_out_fname=NULL;
+  char* cli_xsec=NULL;
+  char* conf_name=NULL;
+  int c;
+  while((c = getopt(argc,argv,"i:o:x:c:")) != -1){
+    switch(c){
+    case 'i':
+      cli_in_fname = optarg;
+      break;
+    case 'o':
+      cli_out_fname = optarg;
+      break;
+    case 'x':
+      cli_xsec = optarg;
+      break;
+    case 'c':
+      conf_name = optarg;
+      break;
+    default:
+      abort();
+    }
+  }
+  if(conf_name==NULL){
     usage(argv[0]);
-    return 1;
+    exit(1);
   }
   std::string inFName;
   std::string outFName;
@@ -53,7 +81,7 @@ int main(const int argc, const char* argv[]){
   category_cuts CutDefCats;
   double xsec(0.);
   std::map<std::string,std::string> value_opts;
-  get_opts(argv[1],value_opts, CutDefReals, CutDefCats);
+  get_opts(conf_name,value_opts, CutDefReals, CutDefCats);
   MSG("Parsed opts, checking for meta info");
   for(std::map<std::string,std::string>::const_iterator opt=value_opts.begin();
       opt!=value_opts.end(); ++opt){
@@ -71,15 +99,26 @@ int main(const int argc, const char* argv[]){
       runSystematics = (opt->second == "True" || opt->second == "true");
     }
   }
-  if(argc==5){
-    MSG("Overriding options in config file!");
-    inFName=argv[2];
-    outFName=argv[3];
-    xsec=atof(argv[4]);
+  if(cli_in_fname!=NULL){
+    MSG("Overriding input file name: "<<cli_in_fname);
+    inFName=cli_in_fname;
   }
-  MSG("Input Cross Section: " << xsec);
-  MSG("Input File: "<<inFName);
+  if(cli_out_fname!=NULL){
+    MSG("Overriding output file name: "<<cli_out_fname);
+    outFName=cli_out_fname;
+  }
+  if(cli_xsec!=NULL){
+    MSG("Overriding cross section: "<<cli_xsec);
+    xsec=atof(cli_xsec);
+  }
+  if(!std::isfinite(xsec) ||
+     outFName=="" ||
+     inFName==""){
+    MSG_ERR("Something went wrong parsing options.");
+    exit(1);
+  }
   
+  MSG("Input File: "<<inFName);
   TFile* file = TFile::Open(inFName.c_str());
   tree_collection Forest; 
   const char* jet_variations[] = {"TrackZFilteredJets","TrackZSmearedJets",
