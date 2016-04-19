@@ -13,6 +13,5 @@ class RooAbsCollection;
 RooAbsPdf* build_model(RooRealVar* mass, RooRealVar* tau);
 RooAbsPdf* build_psi_model(RooRealVar* mass);
 RooFitResult* Fit(RooAbsPdf* model,RooDataSet& data);
-double get_par_val(const RooAbsCollection* pars,const char* name);
 void print_plot(RooRealVar* var,RooDataSet* data, RooAbsPdf* model, 
 		const char* key,const char* title, const double lumi);

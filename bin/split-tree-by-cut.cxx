@@ -9,7 +9,7 @@ void usage(const char* name){
 }
 
 
-int main(const int argc, const char* argv[]){
+int main(const int argc, char* const argv[]){
   /*
   const double pt_bins[] = {40.,60.,110.};
   double rap_bins[9];
@@ -17,9 +17,24 @@ int main(const int argc, const char* argv[]){
     rap_bins[i]=i*0.25;
   }
   */
-  if(argc!=3){
+  char* inFName=NULL;
+  char* tree_name=NULL;
+  int c;
+  while((c = getopt(argc,argv,"i:t:"))!= -1){
+    switch(c){
+    case 'i':
+      inFName=optarg;
+      break;
+    case 't':
+      tree_name=optarg;
+      break;
+    default:
+      abort();
+    }
+  }
+  if(inFName==NULL || tree_name==NULL ){
     usage(argv[0]);
-    return 0;
+    exit(1);
   }
   //double loop over bins, build cut_string and filename using
   //input.root as a basename.
@@ -53,26 +68,5 @@ int main(const int argc, const char* argv[]){
     outFile->Close();
     delete outFile;
   }
-  /*
-  for(size_t i=1; i < LEN(pt_bins); i++){
-    for(size_t j=1; j < LEN(rap_bins); j++){
-      snprintf(outFName,LEN(outFName),"%s.%s_pt_%g_%g_rap_%g_%g.root",
-	       base_name.c_str(),argv[2],
-	       pt_bins[i-1],pt_bins[i],
-	       100*rap_bins[j-1],100*rap_bins[j]);
-      MSG_DEBUG("Writing to: "<<outFName);
-      MSG_DEBUG("Reading from tree: "<<tree);
-      snprintf(cutstring,LEN(cutstring),"(jpsi_pt > %g && jpsi_pt < %g) && (jpsi_rap > %g && jpsi_rap < %g)",pt_bins[i-1],pt_bins[i],rap_bins[j-1],rap_bins[j]);
-      MSG_DEBUG("Selection string: "<<cutstring);
-      TFile* outFile = new TFile(outFName,"RECREATE");
-      outFile->cd();
-      TTree* outTree = tree->CopyTree(cutstring);
-      outTree->Write();
-      outFile->Write();
-      outFile->Close();
-      delete outFile;
-    }
-  }
-  */
   return 0;
 }

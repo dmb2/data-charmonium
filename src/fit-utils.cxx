@@ -26,10 +26,6 @@
 
 #include "TCanvas.h"
 #include "TLegend.h"
-double get_par_val(const RooAbsCollection* pars,const char* name){
-  //this sucks
-  return dynamic_cast<RooRealVar*>(pars->find(name))->getVal();
-}
 RooAbsPdf* mass_signal_pdf(RooRealVar* mass){
   RooRealVar* mean_m = new RooRealVar("mean_m","Mean Mass",JPSIMASS,JPSIMASS-0.02,JPSIMASS+0.02);
   RooRealVar* sigma_m = new RooRealVar("sigma_m","Width of Mass",0.09543,0.0,0.5);
