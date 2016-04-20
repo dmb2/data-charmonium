@@ -35,7 +35,7 @@ src/analyze-cut-tree.o: src/analyze-tree.cxx
 	$(CC) $(CXXFLAGS) -D__ANALYZE_TREE_CUTFLOW__ -c $< -o $@ 
 bin/tree-bug: bin/tree-bug.o src/libDict.so
 	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -lDict
-bin/split-tree-by-cut: $(COMMON_DEPS)
+bin/split-tree: $(COMMON_DEPS)
 bin/make-closure-sample: $(COMMON_DEPS) bin/make-closure-sample.o src/simple-parser.o src/Cut.o
 bin/simple-parser-test: bin/simple-parser-test.o src/simple-parser.o src/Cut.o
 	$(CC) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)

@@ -5,7 +5,7 @@
 #include "root-sugar.hh"
 
 void usage(const char* name){
-  MSG("Usage: "<< name << " input.root tree_name");
+  MSG("Usage: "<< name << "-i input.root -t tree_name [cut_name:\"cut expr\"]");
 }
 
 
@@ -36,22 +36,31 @@ int main(const int argc, char* const argv[]){
     usage(argv[0]);
     exit(1);
   }
+  
+  std::map<std::string,std::string> cut_regions;
+  std::vector<std::string> parts;
+  for(int i=optind; i < argc; i++){
+    printf("%s\n",argv[i]);
+    parts=split_string(argv[i],':');
+    //MSG_DEBUG("Cut Name:"<< parts.at(0)<<" Cut Expr:"<<parts.at(1));
+    cut_regions[parts.at(0)]=parts.at(1);
+  }
   //double loop over bins, build cut_string and filename using
   //input.root as a basename.
-  TTree* tree = retrieve<TTree>(argv[1],argv[2]);
-  std::string base_name(split_string(argv[1],'.').at(0));
+  TTree* tree = retrieve<TTree>(inFName,tree_name);
+  std::string base_name(split_string(inFName,'.').at(0));
   MSG_DEBUG(base_name);
   char outFName[256];
   // char cutstring[256];
-  std::map<std::string,std::string> cut_regions;
   /*
   cut_regions["mass_sb_1"] = "(2.17 < jpsi_m && jpsi_m < 2.841) && (-1 < jpsi_tau && jpsi_tau < 0.25)";
   cut_regions["mass_sb_2"] = "(3.345 < jpsi_m && jpsi_m < 3.764) && (-1 < jpsi_tau && jpsi_tau < 0.25)";
   cut_regions["tau_sb"] = "(2.841 < jpsi_m && jpsi_m < 3.345) && (jpsi_tau > 0.25)";
   cut_regions["signal_region"] = "(2.841 < jpsi_m && jpsi_m < 3.345) && (-1 < jpsi_tau && jpsi_tau < 0.25)";
-  */
+
   cut_regions["mu36_tight"]="trigger_category == 1";
   cut_regions["mu24i_tight"]="trigger_category == 2";
+  */
   for(std::map<std::string,std::string>::const_iterator it=cut_regions.begin(); it!=cut_regions.end(); ++it){
     const std::string& name = it->first;
     const std::string& cut_expr = it->second;
