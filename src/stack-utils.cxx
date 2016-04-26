@@ -21,6 +21,7 @@
 #include "histo-utils.hh"
 #include "histo-meta-data.hh"
 #include "math.hh"
+#include "color.hh"
 
 using std::string;
 using std::map;
@@ -39,6 +40,7 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
   THStack* stack = new THStack(("stack_"+plot).c_str(),base_hist->GetTitle());
   double total=0.;
   size_t num_hists=sample_names.size();
+  std::vector<int> colors=qualitative(DYNAMIC,num_hists);
   TH1** hist_list = (TH1**)calloc(num_hists, sizeof(TH1*));
   string cut_expr;
   char cut_str[1024];
@@ -65,8 +67,17 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
     draw_histo(tree,plot.c_str(),hist->GetName(), cut_str);
     total+=hist->Integral();
     stack->Add(hist);
-    style_hist(hist,hist_styles[name]);
-    add_to_legend(&leg,hist,hist_styles[name]);
+    aesthetic style;
+    if(hist_styles.find(name)!=hist_styles.end()){
+      style=hist_styles[name];
+    }
+    else{
+      //MSG_DEBUG(name<<" is not found in style list, making new on on the fly.")
+      style=hist_aes(name.c_str(),colors[i],1001,kSolid);
+      MSG_DEBUG(style.leg_label)
+    }
+    style_hist(hist,style);
+    add_to_legend(&leg,hist,style);
   }
   //ROOT SUCKS
   // scale_stack(hist_list,num_hists-1,n_master > 0 ? n_master/total : 1);

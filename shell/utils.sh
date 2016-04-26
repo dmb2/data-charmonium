@@ -1,7 +1,4 @@
-# Set up path to have ./bin on top, could have unintended consquences
-# outside of this analysis if your working in a directory that has bin
-# with binaries in it
-export PATH=./bin:$PATH
+export PATH=${HOME}/data-charmonium/bin:$PATH
 export LD_LIBRARY_PATH=./src:$LD_LIBRARY_PATH
 # Helper functions for bookkeeping, should be sourced not executed 
 
@@ -122,4 +119,18 @@ get_ami_xsec(){
     local XS=$(awk "BEGIN {print ${xsec}*${filt_eff}*1e6}")
     local DSID=$(basename $1 | awk -F '.' '{print $2}')
     echo "${DSID}=${XS}"
+}
+split_by_pt(){
+    local FILES=$@
+    local BINS=4
+    local ARGS
+    for f in $FILES
+    do
+	for i in {1..${BINS}}
+	do
+	    ARGS+=$(printf "jpsi_pt_%d_%d:\"jpsi_pt > %d && jpsi_pt < %d\" " $(($i*50)) $(($(($i+1))*50)) $(($i*50)) $(($(($i+1))*50)))
+	done
+	echo $ARGS
+	echo $f
+    done
 }

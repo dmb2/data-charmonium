@@ -10,13 +10,6 @@ void usage(const char* name){
 
 
 int main(const int argc, char* const argv[]){
-  /*
-  const double pt_bins[] = {40.,60.,110.};
-  double rap_bins[9];
-  for(size_t i=0; i < LEN(rap_bins); i++ ){
-    rap_bins[i]=i*0.25;
-  }
-  */
   char* inFName=NULL;
   char* tree_name=NULL;
   int c;
@@ -65,7 +58,7 @@ int main(const int argc, char* const argv[]){
     const std::string& name = it->first;
     const std::string& cut_expr = it->second;
     MSG_DEBUG("Processing: "<<name<< " cut_expr: "<<cut_expr);
-    snprintf(outFName,LEN(outFName),"%s.%s.%s.root",base_name.c_str(),name.c_str(),argv[2]);
+    snprintf(outFName,LEN(outFName),"%s.%s.%s.root",base_name.c_str(),name.c_str(),tree_name);
     MSG_DEBUG("Writing to: "<<outFName);
     MSG_DEBUG("Reading from tree: "<<tree);
     MSG_DEBUG("Selection string: "<<cut_expr);
