@@ -47,6 +47,8 @@ bin/print-plot-panels: $(HISTO_DEPS) bin/print-plot-panels.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 bin/%-plots: $(HISTO_DEPS) bin/%-plots.o
 	$(CC) $^ -o $@ $(LDFLAGS)
+bin/fit-and-sbs: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) bin/fit-and-sbs.o 
+	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS)
 bin/fit: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) bin/fit.o 
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS)
 bin/sbs: src/sbs-utils.o src/sbs-utils.o $(HISTO_DEPS) bin/sbs.o 
