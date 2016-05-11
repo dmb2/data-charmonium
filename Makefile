@@ -51,7 +51,7 @@ bin/fit-and-sbs: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) bin/fit-and-sbs.o
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS)
 bin/fit: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) bin/fit.o 
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS)
-bin/sbs: src/sbs-utils.o src/sbs-utils.o $(HISTO_DEPS) bin/sbs.o 
+bin/sbs: src/sbs-utils.o src/fit-utils.o src/sbs-utils.o $(HISTO_DEPS) bin/sbs.o 
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS)
 bin/test-err-prop: bin/test-err-prop.o src/math.o
 	$(CC) $^ -o $@ $(LDFLAGS)

@@ -14,6 +14,7 @@
 #include "RooAbsPdf.h"
 #include "RooFitResult.h"
 #include "RooDataSet.h"
+#include "RooWorkspace.h"
 
 void usage(const char* name){
   MSG("Usage: "<<name<<" -i input.root -t tree_name -l lumi -r fitresult.root");
@@ -63,13 +64,17 @@ int main(const int argc, char* const argv[]){
   TFile* fit_file = TFile::Open(fit_fname);
   TTree* tree = retrieve<TTree>(file,tree_name);
   
-  RooRealVar *mass = new RooRealVar("jpsi_m","jpsi_m",JPSIMASS, JPSIMASS-0.4, JPSIMASS+0.5); // stay away from the psi(2S)
-  RooRealVar *tau = new RooRealVar("jpsi_tau","Lifetime",-2.,5);
-  std::map<std::string,sb_info> sep_var_info;
 
-  RooAbsPdf* model = static_cast<RooAbsPdf*>(fit_file->Get("model"));//retrieve<RooAbsPdf>(fit_file,"model");
-  RooFitResult* result = retrieve<RooFitResult>(fit_file,"result");
+  RooWorkspace* wkspc = retrieve<RooWorkspace>(fit_file,"workspace");
+  RooAbsPdf* model = wkspc->pdf("model");
+  RooFitResult* result = dynamic_cast<RooFitResult*>(wkspc->obj("result"));
   result->Print();
+  RooDataSet* data = dynamic_cast<RooDataSet*>(wkspc->data("data"));
+  RooRealVar *mass = wkspc->var("jpsi_m"); 
+  RooRealVar *tau = wkspc->var("jpsi_tau");
+  std::map<std::string,sb_info> sep_var_info;
+  print_plot(mass,data,model,"mass",";J/#psi Mass [GeV]",lumi);
+  print_plot(tau,data,model,"tau",";J/#psi Proper Decay Time [ps]",lumi);
   double mass_width = get_par_val(&result->floatParsFinal(),"sigma_m");
   double mass_mean = get_par_val(&result->floatParsFinal(),"mean_m");
   double tau_width = std::max(get_par_val(&result->floatParsFinal(),"sigma_t1"),
