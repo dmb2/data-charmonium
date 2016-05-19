@@ -13,7 +13,8 @@ typedef struct{
   std::list<std::string> regions;
   num_err sts_ratio;
 } sb_info;
-
+TH1* print_splot_stack(TTree* tree, TH1* base_hist, const char* suffix,
+		       const double lumi);
 TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
 		     std::map<std::string,sb_info> sep_var_info,
 		     const double lumi);

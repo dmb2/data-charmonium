@@ -4,25 +4,26 @@
 
 #include "TColor.h"
 
-#include "RooFit.h"
-#include "RooDataSet.h"
-#include "RooRealVar.h"
-#include "RooGaussian.h"
-#include "RooProduct.h"
-#include "RooCBShape.h"
-#include "RooGenericPdf.h"
-#include "RooChebychev.h"
-#include "RooPolynomial.h"
-#include "RooExponential.h"
-#include "RooGaussModel.h"
 #include "RooAddModel.h"
 #include "RooAddPdf.h"
-#include "RooPlot.h"
-#include "RooFitResult.h"
-#include "RooProdPdf.h"
+#include "RooCBShape.h"
+#include "RooChebychev.h"
+#include "RooDataSet.h"
 #include "RooDecay.h"
-#include "RooRealVar.h"
+#include "RooExponential.h"
+#include "RooExtendPdf.h"
+#include "RooFit.h"
 #include "RooFitResult.h"
+#include "RooFitResult.h"
+#include "RooGaussModel.h"
+#include "RooGaussian.h"
+#include "RooGenericPdf.h"
+#include "RooPlot.h"
+#include "RooPolynomial.h"
+#include "RooProdPdf.h"
+#include "RooProduct.h"
+#include "RooRealVar.h"
+#include "RooRealVar.h"
 
 #include "TCanvas.h"
 #include "TLegend.h"
@@ -93,10 +94,12 @@ RooAbsPdf* build_model(RooRealVar* mass, RooRealVar* tau, const double n_events)
   RooRealVar *sigFrac = new RooRealVar("sigFrac","Fraction of signal events",0.62,0.,1.);
   RooAbsPdf* Signal = signal_pdf(mass,tau,tau_uncert);
   RooAbsPdf* Background = background_pdf(mass,tau,tau_uncert);
-  RooRealVar* nsig=("nsig","Signal Yield", 0.8*n_events,0,n_events);
-  RooRealVar* nbkg=("nbkg","Bkgnal Yield", 0.2*n_events,0,n_events);
-  RooExtendPdf ext_sig = 
-  return new RooAddPdf("model","model",RooArgList(*Signal,*Background),*sigFrac);
+  RooRealVar* nsig=new RooRealVar("nsig","Signal Yield", 0.8*n_events,0,n_events);
+  RooRealVar* nbkg= new RooRealVar("nbkg","Background Yield", 0.2*n_events,0,n_events);
+  RooExtendPdf* ext_sig = new RooExtendPdf("ext_sig","Extended Signal PDF",*Signal,*nsig);
+  RooExtendPdf* ext_bkg = new RooExtendPdf("ext_bkg","Extended Background PDF",*Background,*nbkg);
+  
+  return new RooAddPdf("model","model",RooArgList(*ext_sig,*ext_bkg));
 }
 RooAbsPdf* build_psi_model(RooRealVar* mass){
   MSG("Constructing psi(2S) model");
@@ -120,7 +123,7 @@ RooAbsPdf* build_psi_model(RooRealVar* mass){
   return new RooAddPdf("model","model",RooArgList(*Signal,*Background),*sigFrac);
 }
 RooFitResult* Fit(RooAbsPdf* model,RooDataSet& data){
-  return model->fitTo(data,RooFit::NumCPU(sysconf(_SC_NPROCESSORS_ONLN),kTRUE),RooFit::Save());
+  return model->fitTo(data,RooFit::NumCPU(sysconf(_SC_NPROCESSORS_ONLN),kTRUE),RooFit::Save(),RooFit::Extended());
 }
 static void add_component(RooPlot* frame,RooAbsPdf* model,
 			  const char* comp_name, 

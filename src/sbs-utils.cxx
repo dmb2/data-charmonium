@@ -201,6 +201,17 @@ void style_bkg_hist(TH1* hist,Int_t color){
   hist->SetFillColor(color);
   hist->SetLineColor(color);
 }
+TH1* print_splot_stack(TTree* tree, TH1* base_hist, const char* suffix,
+		       const double lumi,RooWorkspace* wkspc){
+  RooAbsPdf* model = wkspc->pdf("model");
+  RooAbsPdf* Signal = wkspc->pdf("ext_sig");
+  RooAbsPdf* Background = wkspc->pdf("ext_bkg");
+  RooRealVar* mass = wkspc->Var("jpsi_m");
+  RooRealVar* tau  = wkspc->Var("jpsi_tau");
+  RooRealVar* nsig = wkspc->Var("nsig");
+  RooRealVar* nbkg = wkspc->Var("nbkg");
+  
+}
 TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
 		     std::map<std::string,sb_info> sep_var_info, 
 		     const double lumi){
@@ -305,8 +316,6 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   c1.SaveAs(outname);
   // snprintf(outname,256,"%s_sbs_stk%s",base_hist->GetName(),".root");
   // c1.SaveAs(outname);
-
-
   return sig_final;
 }
 THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aesthetic> styles, 

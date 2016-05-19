@@ -27,7 +27,6 @@ double get_par_val(const RooAbsCollection* pars,const char* name){
 
 int main(const int argc, char* const argv[]){
   char* inFName=NULL;
-  // char* outFName=NULL;
   char* tree_name = NULL;
   char* fit_fname = NULL;
   int c;
@@ -47,9 +46,6 @@ int main(const int argc, char* const argv[]){
     case 'r':
       fit_fname=optarg;
       break;
-    // case 'o':
-    //   outFName=optarg;
-    //   break;
     default:
       abort();
     }
@@ -86,8 +82,6 @@ int main(const int argc, char* const argv[]){
 	     mass_mean + 6*mass_width);
   add_region(tau,"Sig", -3*tau_width,3*tau_width);
   add_region(tau,"SB",3*tau_width,50);
-  //add_region(tau,"Sig", -1,0.25);
-  //add_region(tau,"SB",0.25,50);
   const double* covmat = result->covarianceMatrix().GetMatrixArray();
   RooAbsPdf* nc_mass_bkg = find_component(model,"NonCoherentMassBkg");
   RooAbsPdf* np_mass_bkg = find_component(model,"NonPromptMassBkg");
