@@ -137,30 +137,34 @@ rename_files(){
     done
 }
 setup_slices(){
-    local BRANCH_NAME=jpsi_pt
-    local INIT_VAL=45
+    local BRANCH_NAME="$1"
+    local BIN_VALS="$3"
+    local INIT_VAL="$2"
     # 20802{4..8} non_prompt.mini.root full2012.mini.root
-    for dsid in 20802{4..8} 20802{4..8}-systematics/ non_prompt full2012
+    for dsid in  20802{4..8}-systematics/ 20802{4..8} non_prompt full2012
     do
-	python/split_by_branch -a "[46.5272, 48.2457, 50.0677, 52.2748, 54.9911, 58.4120, 63.0573, 70.1230, 83.8357, 200.00]"\
+	python/split_by_branch -a "${BIN_VALS}"\
 			       ${dsid}*.mini.root\
-			       -i ${INIT_VAL} -b ${BRANCH_NAME}
+			       -i "${INIT_VAL}" -b "${BRANCH_NAME}"
 	for bin_label in $(ls ${dsid}*${BRANCH_NAME}*.root | awk -F '.' '{print $3}' | sort -u); do 
+	    mkdir -p "slices/${bin_label}"
 	    mv ${dsid}*${bin_label}.mini.root slices/${bin_label}/
 	done
     done
     cd slices;
-    for f in $(find . -name *.root); 
+    for f in $(find . -name *.root | grep ${BRANCH_NAME}); 
     do 
 	mv $f $(echo $f | sed s,${BRANCH_NAME}_[0-9]*_[0-9]*.,,2); 
     done
-    for dir in */; 
+    for dir in ${BRANCH_NAME}*/; 
     do 
 	for dsid in 20802{4..8}; 
 	do 
+	    mkdir -p $dir/$dsid-systematics/
 	    mv $dir/$dsid.{M,T}*.mini.root $dir/$dsid-systematics/;
 	done;
 	mv $dir/full2012.mini{.mini,}.root
 	mv $dir/non_prompt.mini{.mini,}.root
     done
+    cd ../;
 }

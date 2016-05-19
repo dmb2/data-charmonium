@@ -75,7 +75,7 @@ RooAbsPdf* background_pdf(RooRealVar* mass, RooRealVar* tau, RooAddModel* tau_re
 		       RooArgList(*prompt_bkg,*non_prompt_bkg,*non_coherent_bkg),
 		       RooArgList(*prompt_bkg_frac,*non_prompt_bkg_frac));
 }
-RooAbsPdf* build_model(RooRealVar* mass, RooRealVar* tau){
+RooAbsPdf* build_model(RooRealVar* mass, RooRealVar* tau, const double n_events){
   MSG("Constructing model");
   // Lifetime uncertainty function, shared among signal and
   // background, prompt and non-prompt components
@@ -93,6 +93,9 @@ RooAbsPdf* build_model(RooRealVar* mass, RooRealVar* tau){
   RooRealVar *sigFrac = new RooRealVar("sigFrac","Fraction of signal events",0.62,0.,1.);
   RooAbsPdf* Signal = signal_pdf(mass,tau,tau_uncert);
   RooAbsPdf* Background = background_pdf(mass,tau,tau_uncert);
+  RooRealVar* nsig=("nsig","Signal Yield", 0.8*n_events,0,n_events);
+  RooRealVar* nbkg=("nbkg","Bkgnal Yield", 0.2*n_events,0,n_events);
+  RooExtendPdf ext_sig = 
   return new RooAddPdf("model","model",RooArgList(*Signal,*Background),*sigFrac);
 }
 RooAbsPdf* build_psi_model(RooRealVar* mass){

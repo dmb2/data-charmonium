@@ -52,7 +52,8 @@ def main():
         if fname.split('.')[-1]!='root':
             print "ERROR: This script should only be run on root files"
             exit(1)
-        process=Popen("split-tree -i %s -t mini "%(fname) + sh_args,shell=True,stdout=stdout,stderr=stderr)
+        sh_str="split-tree -i %s -t mini "%(fname) + sh_args
+        process=Popen(sh_str,shell=True,stdout=stdout,stderr=stderr)
         process.wait()
 if __name__ == "__main__":
    sys.exit(main()) 

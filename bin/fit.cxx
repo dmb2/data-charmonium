@@ -20,7 +20,7 @@ void usage(const char* name){
 void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
 	      const double lumi, RooWorkspace& wkspc){
   RooDataSet data("data","data",RooArgSet(*mass,*tau),RooFit::Import(*tree));
-  RooAbsPdf* model = build_model(mass,tau);
+  RooAbsPdf* model = build_model(mass,tau,data.numEntries());
   RooFitResult* result = Fit(model,data);
   model->SetName("model");
   //model->Write();
