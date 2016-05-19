@@ -63,18 +63,14 @@ int main(const int argc, char* const argv[]){
   TFile* file = TFile::Open(inFName);
   TFile* fit_file = TFile::Open(fit_fname);
   TTree* tree = retrieve<TTree>(file,tree_name);
-  
 
   RooWorkspace* wkspc = retrieve<RooWorkspace>(fit_file,"workspace");
   RooAbsPdf* model = wkspc->pdf("model");
   RooFitResult* result = dynamic_cast<RooFitResult*>(wkspc->obj("result"));
   result->Print();
-  RooDataSet* data = dynamic_cast<RooDataSet*>(wkspc->data("data"));
   RooRealVar *mass = wkspc->var("jpsi_m"); 
   RooRealVar *tau = wkspc->var("jpsi_tau");
   std::map<std::string,sb_info> sep_var_info;
-  print_plot(mass,data,model,"mass",";J/#psi Mass [GeV]",lumi);
-  print_plot(tau,data,model,"tau",";J/#psi Proper Decay Time [ps]",lumi);
   double mass_width = get_par_val(&result->floatParsFinal(),"sigma_m");
   double mass_mean = get_par_val(&result->floatParsFinal(),"mean_m");
   double tau_width = std::max(get_par_val(&result->floatParsFinal(),"sigma_t1"),
@@ -88,10 +84,10 @@ int main(const int argc, char* const argv[]){
   add_region(mass,"SB",
 	     mass_mean + 3*mass_width,
 	     mass_mean + 6*mass_width);
-  //add_region(tau,"Sig", -3*tau_width,3*tau_width);
-  //add_region(tau,"SB",3*tau_width,50);
-  add_region(tau,"Sig", -1,0.25);
-  add_region(tau,"SB",0.25,50);
+  add_region(tau,"Sig", -3*tau_width,3*tau_width);
+  add_region(tau,"SB",3*tau_width,50);
+  //add_region(tau,"Sig", -1,0.25);
+  //add_region(tau,"SB",0.25,50);
   const double* covmat = result->covarianceMatrix().GetMatrixArray();
   RooAbsPdf* nc_mass_bkg = find_component(model,"NonCoherentMassBkg");
   RooAbsPdf* np_mass_bkg = find_component(model,"NonPromptMassBkg");
