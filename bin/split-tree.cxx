@@ -41,7 +41,7 @@ int main(const int argc, char* const argv[]){
   //double loop over bins, build cut_string and filename using
   //input.root as a basename.
   TTree* tree = retrieve<TTree>(inFName,tree_name);
-  std::string base_name(split_string(inFName,'.').at(0));
+  std::string base_name(split_string(inFName,'.').at(0)+"."+split_string(inFName,'.').at(1));
   MSG_DEBUG(base_name);
   char outFName[256];
   // char cutstring[256];
