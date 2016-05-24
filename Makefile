@@ -4,7 +4,7 @@ INCDIR=$(PWD)/include
 LIBDIR:=$(shell root-config --libdir)
 ROOTSYS:=$(shell root-config --prefix)
 ROOTINCDIR:=$(shell root-config --incdir)
-LDFLAGS:=$(shell root-config --libs)
+LDFLAGS:=$(shell root-config --libs) -lRooStats
 WFLAGS= -Wextra -Wall 
 DFLAGS=-O0 -g3 -fno-inline #-fprofile-arcs -ftest-coverage 
 CXXFLAGS:=$(shell root-config --cflags)\
@@ -51,7 +51,9 @@ bin/fit-and-sbs: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) bin/fit-and-sbs.o
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS)
 bin/fit: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) bin/fit.o 
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS)
-bin/sbs: src/sbs-utils.o src/fit-utils.o src/sbs-utils.o $(HISTO_DEPS) bin/sbs.o 
+bin/sbs: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) bin/sbs.o 
+	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS)
+bin/splot: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) bin/splot.o 
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS)
 bin/test-err-prop: bin/test-err-prop.o src/math.o
 	$(CC) $^ -o $@ $(LDFLAGS)

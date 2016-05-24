@@ -128,7 +128,7 @@ int main(const int argc, char* const argv[]){
 
   for(size_t i=0; i < LEN(variables); i++){
     TH1* sig_final = print_sbs_stack(tree,HistBook[variables[i]],".pdf",
-				     sep_var_info,lumi);
+    				     sep_var_info,lumi);
     print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
   }
 

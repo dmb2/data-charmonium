@@ -15,6 +15,11 @@
 #include "RooAbsReal.h"
 #include "RooAbsArg.h"
 #include "RooArgSet.h"
+#include "RooWorkspace.h"
+#include "RooPlot.h"
+#include "RooHist.h"
+#include "RooDataSet.h"
+#include "RooStats/SPlot.h"
 
 #include "sbs-utils.hh"
 #include "root-sugar.hh"
@@ -201,16 +206,56 @@ void style_bkg_hist(TH1* hist,Int_t color){
   hist->SetFillColor(color);
   hist->SetLineColor(color);
 }
+void rooplot_to_hist(const RooPlot* input,TH1* hist){
+  hist->Print();
+  input->Print();
+  RooHist* roo_hist = input->getHist();
+  double* y=roo_hist->GetY();
+  double* y_err=roo_hist->GetEYhigh();
+  if(input->GetNbinsX()!=hist->GetNbinsX()){
+    MSG_ERR("ERROR: Refusing to copy RooPlot to TH1 with mismatching bins");
+  }
+  for(int i =0; i < input->GetNbinsX(); i++){
+    // MSG_DEBUG("i: "<<i << " y: "<<y[i]<<" +/-"<< y_err[i]);
+    hist->SetBinContent(i+1,y[i]);
+    hist->SetBinError(i+1,y_err[i]);
+  }
+}
 TH1* print_splot_stack(TTree* tree, TH1* base_hist, const char* suffix,
 		       const double lumi,RooWorkspace* wkspc){
-  RooAbsPdf* model = wkspc->pdf("model");
-  RooAbsPdf* Signal = wkspc->pdf("ext_sig");
-  RooAbsPdf* Background = wkspc->pdf("ext_bkg");
-  RooRealVar* mass = wkspc->Var("jpsi_m");
-  RooRealVar* tau  = wkspc->Var("jpsi_tau");
-  RooRealVar* nsig = wkspc->Var("nsig");
-  RooRealVar* nbkg = wkspc->Var("nbkg");
-  
+  const std::string plot_name(base_hist->GetName());
+  RooAbsPdf& model = *wkspc->pdf("model");
+  RooAbsPdf& Signal = *wkspc->pdf("ext_sig");
+  RooAbsPdf& Background = *wkspc->pdf("ext_bkg");
+  RooRealVar& mass = *wkspc->var("jpsi_m");
+  RooRealVar& tau  = *wkspc->var("jpsi_tau");
+  RooRealVar& nsig = *wkspc->var("nsig");
+  RooRealVar& nbkg = *wkspc->var("nbkg");
+  RooRealVar interest_var(base_hist->GetName(),base_hist->GetName(),
+			  base_hist->GetXaxis()->GetXmin(),
+			  base_hist->GetXaxis()->GetXmax());
+  RooDataSet* data=new RooDataSet("data","data",RooArgSet(mass,tau,interest_var),RooFit::Import(*tree));//dynamic_cast<RooDataSet*>(wkspc->data("data"));
+  RooFIter iter = model.getVariables()->fwdIterator();
+  RooRealVar* var = NULL;
+  while((var=dynamic_cast<RooRealVar*>(iter.next()))){
+    var->setConstant();
+  }
+  RooStats::SPlot sData("sData","SPlot Dataset ", *data, &model,RooArgList(nsig,nbkg));
+  TCanvas canv("canv","SPlot diagnostic Canvas",600,600);
+  RooDataSet data_signal(data->GetName(),data->GetTitle(),data,*data->get(),0,"nsig_sw");
+  // RooDataSet data_background(data->GetName(),data->GetTitle(),data,*data->get(),0,"nbkg_sw");
+  RooPlot* sig_var_frame = new RooPlot(base_hist->GetName(),base_hist->GetTitle(),interest_var,
+				       base_hist->GetXaxis()->GetXmin(),base_hist->GetXaxis()->GetXmax(),
+				       base_hist->GetNbinsX());
+  data_signal.plotOn(sig_var_frame,RooFit::DataError(RooAbsData::SumW2));
+  sig_var_frame->Draw();
+  char outname[256];
+  snprintf(outname,256,"%s_splot%s",base_hist->GetName(),suffix);
+  add_atlas_badge(canv,0.2,0.9,lumi);
+  canv.SaveAs(outname);
+  TH1* sig_final = dynamic_cast<TH1*>(base_hist->Clone(("sf_"+plot_name).c_str()));
+  rooplot_to_hist(sig_var_frame,sig_final);
+  return sig_final;
 }
 TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
 		     std::map<std::string,sb_info> sep_var_info, 
