@@ -96,6 +96,7 @@ void init_hist_styles(std::map<std::string,aesthetic>& styles){
   styles["non_prompt"]=hist_aes("Non-Prompt",TColor::GetColor(152,0,67),1001,kSolid);
   styles["feed_down"]=hist_aes("Feed Down",TColor::GetColor(0,104,55),1001,kSolid);
 
+  styles["background"]=hist_aes("Background",TColor::GetColor(0,104,55),1001,kSolid);
   styles["psi_bkg"]=hist_aes("#psi(2S)",TColor::GetColor(0,104,55),1001,kSolid);
   styles["comb_bkg"]=hist_aes("Combinatoric",TColor::GetColor(240,59,32),1001,kSolid);
 

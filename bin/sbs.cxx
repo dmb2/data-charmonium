@@ -20,11 +20,6 @@ void usage(const char* name){
   MSG("Usage: "<<name<<" -i input.root -t tree_name -l lumi -r fitresult.root");
 }
 
-double get_par_val(const RooAbsCollection* pars,const char* name){
-  //this sucks
-  return dynamic_cast<RooRealVar*>(pars->find(name))->getVal();
-}
-
 int main(const int argc, char* const argv[]){
   char* inFName=NULL;
   char* tree_name = NULL;

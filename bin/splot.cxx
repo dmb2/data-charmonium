@@ -16,30 +16,10 @@
 #include "RooWorkspace.h"
 
 
-double get_par_val(const RooAbsCollection* pars,const char* name){
-  //this sucks
-  return dynamic_cast<RooRealVar*>(pars->find(name))->getVal();
-}
+
 void usage(const char* name){
   MSG("Usage: "<<name<<" -i input.root -t tree_name -l lumi");
 }
-
-void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
-	      const double lumi, RooWorkspace& wkspc){
-  RooDataSet data("data","data",RooArgSet(*mass,*tau),RooFit::Import(*tree));
-  RooAbsPdf* model = build_model(mass,tau,data.numEntries());
-  RooFitResult* result = Fit(model,data);
-  model->SetName("model");
-  //model->Write();
-  result->SetName("result");
-  result->Print();
-  //result->Write();
-  wkspc.import(data);
-  wkspc.import(*model);
-  wkspc.import(*result);
-  print_plot(mass,&data,model,"mass",";J/#psi Mass [GeV]",lumi);
-  print_plot(tau,&data,model,"tau",";J/#psi Proper Decay Time [ps]",lumi);
-} 
 
 int main(const int argc, char* const argv[]){
   char* inFName=NULL;
@@ -85,11 +65,17 @@ int main(const int argc, char* const argv[]){
   double mass_mean = get_par_val(&result->floatParsFinal(),"mean_m");
   double tau_width = std::max(get_par_val(&result->floatParsFinal(),"sigma_t1"),
 			      get_par_val(&result->floatParsFinal(),"sigma_t2"));
-  
+  add_region(mass, "SB", 
+	     mass_mean - 13*mass_width,
+	     mass_mean -  3*mass_width);
   add_region(mass,"Sig",
 	     mass_mean - 3*mass_width,
 	     mass_mean + 3*mass_width);
+  add_region(mass,"SB",
+	     mass_mean + 3*mass_width,
+	     mass_mean + 6*mass_width);
   add_region(tau,"Sig", -3*tau_width,3*tau_width);
+  add_region(tau,"SB",3*tau_width,50);
   const std::string jpsi_sig_region = make_cut_expr(mass->getBinningNames(),"Sig") 
     + " && " + make_cut_expr(tau->getBinningNames(),"Sig");
   char cut_expr[1024];
@@ -99,13 +85,18 @@ int main(const int argc, char* const argv[]){
 	   lumi);
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
-  const char* variables[] = {// "delta_r","jet_pt","jet_eta", "jet_e",
+  const char* variables[] = {"delta_r","jet_pt","jet_eta", "jet_e",
 			     "jet_z", 
-			     // "jpsi_pt","jpsi_eta",
-			     "tau1"// ,"tau2", "tau3","tau21","tau32"
+			     "jpsi_pt","jpsi_eta",
+			     "tau1","tau2", "tau3","tau21","tau32"
   };
   for(size_t i=0; i < LEN(variables); i++){
-    TH1* sig_final=print_splot_stack(tree,HistBook[variables[i]],".pdf",lumi,&wkspc);
+    std::pair<TH1*,TH1*> final_hists=print_splot_stack(tree,HistBook[variables[i]],".pdf",lumi,&wkspc);
+    TH1* sig_final = final_hists.first;
+    TH1* bkg_final = final_hists.second;
+    print_corr_plot(HistBook[variables[i]],"jpsi_tau",tree,".pdf",lumi);
+    print_corr_plot(HistBook[variables[i]],"jpsi_m",tree,".pdf",lumi);
+    print_bkg_splot(tree,bkg_final,".pdf",lumi,&wkspc);
     print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
   }
   return 0;

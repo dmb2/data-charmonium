@@ -27,12 +27,12 @@ TPad* split_canvas(TPad* canvas, float fraction){
   return rpad;
 }
 //TODO refactor
-void draw_ratios(TPad* pad,THStack* stack){
+void draw_ratios(TPad* pad,TList* hist_list){
   pad->cd();
-  //Clone each histo in the stack to a new ratio
+  //Clone each histo in the hist_list to a new ratio
   std::vector<TH1*> ratios;
-  ratios.reserve(stack->GetHists()->GetSize());
-  TIter next(stack->GetHists());
+  ratios.reserve(hist_list->GetSize());
+  TIter next(hist_list);
   TH1* hist = NULL;
   while((hist=dynamic_cast<TH1*>(next()))){
     ratios.push_back(dynamic_cast<TH1*>(hist->Clone((std::string(hist->GetName())+"_rat").c_str())));
@@ -92,6 +92,6 @@ void print_ratio_hist(std::map<std::string,TTree*>& samples, const std::string& 
   }
   // decorator.DrawLatexNDC(0.,0.05,base_hist->GetTitle());
   TPad* rpad = split_canvas(&canv,0.3);
-  draw_ratios(rpad,stack);
+  draw_ratios(rpad,stack->GetHists());
   canv.SaveAs((plot + suffix).c_str());
 }

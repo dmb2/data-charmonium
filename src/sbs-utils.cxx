@@ -9,12 +9,14 @@
 #include "THStack.h"
 #include "TH1D.h"
 #include "TColor.h"
+#include "TList.h"
 
 #include "RooAbsPdf.h"
 #include "RooRealVar.h"
 #include "RooAbsReal.h"
 #include "RooAbsArg.h"
 #include "RooArgSet.h"
+#include "RooAbsCollection.h"
 #include "RooWorkspace.h"
 #include "RooPlot.h"
 #include "RooHist.h"
@@ -28,6 +30,10 @@
 #include "plot-utils.hh"
 #include "fit-utils.hh"
 
+double get_par_val(const RooAbsCollection* pars,const char* name){
+  //this sucks
+  return dynamic_cast<RooRealVar*>(pars->find(name))->getVal();
+}
 void add_region(RooRealVar* var, const char* type, double min, double max){
   char name[400];
   snprintf(name,400,"%-3s %.4g < %s && %s < %.4g", type, min,
@@ -199,16 +205,7 @@ TH1* make_bkg_hist(TH1* base_hist, TTree* tree,
   scale_hist(result,sf);
   return result;
 }
-void style_bkg_hist(TH1* hist,Int_t color){
-  hist->SetMarkerSize(0);
-  hist->SetMarkerStyle(kDot);
-  hist->SetFillStyle(1001);
-  hist->SetFillColor(color);
-  hist->SetLineColor(color);
-}
 void rooplot_to_hist(const RooPlot* input,TH1* hist){
-  hist->Print();
-  input->Print();
   RooHist* roo_hist = input->getHist();
   double* y=roo_hist->GetY();
   double* y_err=roo_hist->GetEYhigh();
@@ -221,7 +218,71 @@ void rooplot_to_hist(const RooPlot* input,TH1* hist){
     hist->SetBinError(i+1,y_err[i]);
   }
 }
-TH1* print_splot_stack(TTree* tree, TH1* base_hist, const char* suffix,
+
+void print_bkg_splot(TTree* tree, TH1* hist,const char* suffix, const double lumi,RooWorkspace* wkspc){
+  std::string plot_name(hist->GetName());
+  plot_name=plot_name.substr(0,plot_name.size()-10);
+  RooRealVar& mass = *wkspc->var("jpsi_m");
+  RooRealVar& tau  = *wkspc->var("jpsi_tau");
+
+  TCanvas canv("canv","SPlot diagnostic Canvas",600,600);
+  TLegend* leg =  init_legend();
+  if(plot_name=="jet_z"){
+    delete leg;
+    leg = init_legend(0.2,0.4,0.6,0.75);
+  } 
+  std::map<std::string,aesthetic> styles;
+  init_hist_styles(styles);
+  std::string bkg_cut_expr=make_cut_expr(mass.getBinningNames(),"Sig") + " && "
+    + make_cut_expr(tau.getBinningNames(),"Sig");
+  std::replace(bkg_cut_expr.begin(),bkg_cut_expr.end(),'&','|');
+  std::replace(bkg_cut_expr.begin(),bkg_cut_expr.end(),'<','>');
+  // MSG_DEBUG(bkg_cut_expr);
+  TH1* base_hist = dynamic_cast<TH1D*>(hist->Clone());
+  base_hist->Clear();
+  TH1* bkg_hist = make_normal_hist(base_hist, tree, plot_name.c_str(),
+				   bkg_cut_expr.c_str(),"_stk_bkg");
+  hist->Scale(1.0/hist->Integral());
+  bkg_hist->Scale(1.0/bkg_hist->Integral());
+  style_hist(bkg_hist,styles["data"]);
+  leg->AddEntry(bkg_hist,"Data Sidebands","lf");
+  make_transparent(styles["background"],0.6);
+  style_hist(hist,styles["background"]);
+  add_to_legend(leg,hist,styles["background"]);
+  bkg_hist->Draw("e0");
+  hist->DrawCopy("e2 same");
+  hist->SetFillStyle(0);
+  hist->Draw("HIST same");
+  double sf = canv.GetLogy() ? 14 : 1.4;
+  if(plot_name.find("eta")!=std::string::npos){
+    sf = 1.6;
+  }
+  bkg_hist->SetMaximum(sf*std::max(bkg_hist->GetMaximum(),hist->GetMaximum()));
+  if(!canv.GetLogy()){
+    bkg_hist->SetMinimum(std::min(bkg_hist->GetMinimum(),hist->GetMinimum()));
+  }
+  remove_axis(bkg_hist->GetXaxis());
+  leg->Draw();
+  TList list(hist);
+  list.Add(hist);
+  list.Add(bkg_hist);
+  TPad* rpad = split_canvas(&canv,0.3);
+  draw_ratios(rpad,&list);
+  char outname[256];
+  snprintf(outname,256,"%s_splot_bkg%s",plot_name.c_str(),suffix);
+  add_atlas_badge(canv,0.2,0.9,lumi);
+  canv.SaveAs(outname);
+}
+
+void splot_to_hist(const RooRealVar& interest_var,const RooDataSet& data,TH1* hist){
+  RooPlot* frame = new RooPlot(hist->GetName(),hist->GetTitle(),interest_var,
+				       hist->GetXaxis()->GetXmin(),hist->GetXaxis()->GetXmax(),
+				       hist->GetNbinsX());
+  data.plotOn(frame,RooFit::DataError(RooAbsData::SumW2));
+  rooplot_to_hist(frame,hist);
+  delete frame;
+}
+std::pair<TH1*,TH1*> print_splot_stack(TTree* tree, TH1* base_hist, const char* suffix,
 		       const double lumi,RooWorkspace* wkspc){
   const std::string plot_name(base_hist->GetName());
   RooAbsPdf& model = *wkspc->pdf("model");
@@ -234,29 +295,61 @@ TH1* print_splot_stack(TTree* tree, TH1* base_hist, const char* suffix,
   RooRealVar interest_var(base_hist->GetName(),base_hist->GetName(),
 			  base_hist->GetXaxis()->GetXmin(),
 			  base_hist->GetXaxis()->GetXmax());
-  RooDataSet* data=new RooDataSet("data","data",RooArgSet(mass,tau,interest_var),RooFit::Import(*tree));//dynamic_cast<RooDataSet*>(wkspc->data("data"));
+  RooDataSet* data=new RooDataSet("data","data",RooArgSet(mass,tau,interest_var),RooFit::Import(*tree));
   RooFIter iter = model.getVariables()->fwdIterator();
   RooRealVar* var = NULL;
   while((var=dynamic_cast<RooRealVar*>(iter.next()))){
     var->setConstant();
   }
   RooStats::SPlot sData("sData","SPlot Dataset ", *data, &model,RooArgList(nsig,nbkg));
+  RooDataSet data_signal("sig_data",data->GetTitle(),data,*data->get(),0,"nsig_sw");
+  RooDataSet data_background("bkg_data",data->GetTitle(),data,*data->get(),0,"nbkg_sw");
+  TH1* sig_final = dynamic_cast<TH1*>(base_hist->Clone(("sp_sig_"+plot_name).c_str()));
+  TH1* bkg_final = dynamic_cast<TH1*>(base_hist->Clone((plot_name+"_splot_bkg").c_str()));
+  splot_to_hist(interest_var,data_signal,sig_final);
+  splot_to_hist(interest_var,data_background,bkg_final);
   TCanvas canv("canv","SPlot diagnostic Canvas",600,600);
-  RooDataSet data_signal(data->GetName(),data->GetTitle(),data,*data->get(),0,"nsig_sw");
-  // RooDataSet data_background(data->GetName(),data->GetTitle(),data,*data->get(),0,"nbkg_sw");
-  RooPlot* sig_var_frame = new RooPlot(base_hist->GetName(),base_hist->GetTitle(),interest_var,
-				       base_hist->GetXaxis()->GetXmin(),base_hist->GetXaxis()->GetXmax(),
-				       base_hist->GetNbinsX());
-  data_signal.plotOn(sig_var_frame,RooFit::DataError(RooAbsData::SumW2));
-  sig_var_frame->Draw();
+  TLegend* leg = NULL;
+  if(plot_name=="jet_z"){
+    leg = init_legend(0.2,0.4,0.6,0.75);
+  } 
+  else {
+    leg = init_legend();
+  }
+  std::map<std::string,aesthetic> styles;
+  init_hist_styles(styles);
+  // Signal Hist
+  const std::string signal_cut_expr = make_cut_expr(mass.getBinningNames(),"Sig")+ " && "
+    + make_cut_expr(tau.getBinningNames(),"Sig");
+  TH1* sig_hist = make_normal_hist(base_hist, tree, plot_name.c_str(),
+				   signal_cut_expr.c_str(),"_stk_sig");
+  make_transparent(styles["background"],0.6);
+  style_hist(sig_hist,styles["data"]);
+  add_to_legend(leg,sig_hist,styles["data"]);
+  style_hist(bkg_final,styles["background"]);
+  add_to_legend(leg,bkg_final,styles["background"]);
+  sig_hist->Draw("e0");
+  bkg_final->DrawCopy("e2 same");
+  bkg_final->SetFillStyle(0);
+  bkg_final->Draw("HIST same");
+  double sf = canv.GetLogy() ? 14 : 1.4;
+  if(plot_name.find("eta")!=std::string::npos){
+    sf = 1.6;
+  }
+  sig_hist->SetMaximum(sf*std::max(bkg_final->GetMaximum(),sig_hist->GetMaximum()));
+  if(!canv.GetLogy()){
+    sig_hist->SetMinimum(std::min(bkg_final->GetMinimum(),sig_hist->GetMinimum()));
+  }
+  sig_hist->Draw("e0 same");
+
+  leg->Draw();
   char outname[256];
-  snprintf(outname,256,"%s_splot%s",base_hist->GetName(),suffix);
+  snprintf(outname,256,"%s_splot%s",plot_name.c_str(),suffix);
   add_atlas_badge(canv,0.2,0.9,lumi);
   canv.SaveAs(outname);
-  TH1* sig_final = dynamic_cast<TH1*>(base_hist->Clone(("sf_"+plot_name).c_str()));
-  rooplot_to_hist(sig_var_frame,sig_final);
-  return sig_final;
+  return std::pair<TH1*,TH1*>(sig_final,bkg_final);
 }
+
 TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
 		     std::map<std::string,sb_info> sep_var_info, 
 		     const double lumi){
