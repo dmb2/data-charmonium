@@ -92,3 +92,7 @@ void print_cut_hist(TTree* tree, const std::vector<std::string>& cut_branches,
 		    TH1* (*make_hist)(TH1* ,TTree* , 
 				      const std::vector<std::string>&, size_t,
 				      const std::string&));
+void print_corr_plot(TH1* base_hist, const std::string disc_name,
+		     const int n_bins, const double min, const double max,
+		     TTree* tree, const char* suffix,
+		     const double lumi, const char* weight_expr);

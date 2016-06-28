@@ -432,3 +432,26 @@ void print_cut_hist(TTree* tree, const std::vector<std::string>& cut_branches,
   decorator.DrawLatex(0.0,0.05,base_hist->GetTitle());
   canv.SaveAs((plot+file_suffix).c_str());
 }
+void print_corr_plot(TH1* base_hist, const std::string disc_name,
+		     const int n_bins, const double min, const double max,
+		     TTree* tree, const char* suffix,
+		     const double lumi, const char* weight_expr){
+  const std::string plot_name(base_hist->GetName());
+  TH2D* hist = new TH2D((plot_name+disc_name+"_corr").c_str(),base_hist->GetTitle(),
+			base_hist->GetNbinsX(), base_hist->GetXaxis()->GetXmin(),
+			base_hist->GetXaxis()->GetXmax(),
+			n_bins,min,max);
+  std::string draw_expr = disc_name+ std::string(":") + plot_name;
+  draw_histo(tree,draw_expr.c_str(), hist->GetName(), weight_expr);
+  TCanvas canv("canv","Correlation canvas",600,600);
+  hist->Draw("COLZ");
+  TLatex decorator;
+  decorator.SetTextSize(0.04);
+  char corr_str[256];
+  snprintf(corr_str,256,"Global Correlation: %.5g",hist->GetCorrelationFactor());
+  MSG_DEBUG(corr_str);
+  add_atlas_badge(canv,0.2,0.9,lumi);
+  decorator.DrawLatexNDC(0.0,0.05,corr_str);
+  decorator.DrawLatexNDC(0.5,0.0,base_hist->GetTitle());
+  canv.SaveAs((plot_name+suffix).c_str());
+}

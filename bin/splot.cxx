@@ -4,10 +4,12 @@
 #include "fit-utils.hh"
 #include "sbs-utils.hh"
 #include "histo-utils.hh"
+#include "color.hh"
 
 #include "TH1D.h"
 #include "TFile.h"
 #include "TTree.h"
+#include "TStyle.h"
 
 #include "RooRealVar.h"
 #include "RooAbsPdf.h"
@@ -52,6 +54,9 @@ int main(const int argc, char* const argv[]){
   }
   setup_global_style();
 
+  double stops[]={0.0,0.25,0.5,0.75,1.0};
+  heat_gradient(gStyle,stops,LEN(stops));
+  
   TFile* file = TFile::Open(inFName);
   TFile* fit_file = TFile::Open(fit_fname);
   TTree* tree = retrieve<TTree>(file,tree_name);
@@ -94,8 +99,14 @@ int main(const int argc, char* const argv[]){
     std::pair<TH1*,TH1*> final_hists=print_splot_stack(tree,HistBook[variables[i]],".pdf",lumi,&wkspc);
     TH1* sig_final = final_hists.first;
     TH1* bkg_final = final_hists.second;
-    print_corr_plot(HistBook[variables[i]],"jpsi_tau",tree,".pdf",lumi);
-    print_corr_plot(HistBook[variables[i]],"jpsi_m",tree,".pdf",lumi);
+    print_corr_plot(HistBook[variables[i]],"jpsi_tau",
+		    HistBook["jpsi_tau"]->GetNbinsX(),
+		    -3*tau_width,3*tau_width,
+		    tree,"_tau_corr.pdf",lumi,cut_expr);
+    print_corr_plot(HistBook[variables[i]],"jpsi_m",HistBook["jpsi_m"]->GetNbinsX(),
+		    mass_mean-3*mass_width,
+		    mass_mean+3*mass_width,
+		    tree,"_m_corr.pdf",lumi,cut_expr);
     print_bkg_splot(tree,bkg_final,".pdf",lumi,&wkspc);
     print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
   }

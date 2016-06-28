@@ -233,11 +233,11 @@ void print_bkg_splot(TTree* tree, TH1* hist,const char* suffix, const double lum
   } 
   std::map<std::string,aesthetic> styles;
   init_hist_styles(styles);
-  std::string bkg_cut_expr=make_cut_expr(mass.getBinningNames(),"Sig") + " && "
-    + make_cut_expr(tau.getBinningNames(),"Sig");
-  std::replace(bkg_cut_expr.begin(),bkg_cut_expr.end(),'&','|');
-  std::replace(bkg_cut_expr.begin(),bkg_cut_expr.end(),'<','>');
-  // MSG_DEBUG(bkg_cut_expr);
+  std::string bkg_cut_expr = "(("+make_cut_expr(mass.getBinningNames(),"SB")
+    + ") && " + make_cut_expr(tau.getBinningNames(),"Sig")+") || ("+
+    make_cut_expr(mass.getBinningNames(),"Sig")
+    + " && " + make_cut_expr(tau.getBinningNames(),"SB")+")";
+  MSG_DEBUG(bkg_cut_expr);
   TH1* base_hist = dynamic_cast<TH1D*>(hist->Clone());
   base_hist->Clear();
   TH1* bkg_hist = make_normal_hist(base_hist, tree, plot_name.c_str(),
@@ -309,13 +309,11 @@ std::pair<TH1*,TH1*> print_splot_stack(TTree* tree, TH1* base_hist, const char* 
   splot_to_hist(interest_var,data_signal,sig_final);
   splot_to_hist(interest_var,data_background,bkg_final);
   TCanvas canv("canv","SPlot diagnostic Canvas",600,600);
-  TLegend* leg = NULL;
+  TLegend* leg = init_legend();
   if(plot_name=="jet_z"){
+    delete leg;
     leg = init_legend(0.2,0.4,0.6,0.75);
   } 
-  else {
-    leg = init_legend();
-  }
   std::map<std::string,aesthetic> styles;
   init_hist_styles(styles);
   // Signal Hist
@@ -331,7 +329,7 @@ std::pair<TH1*,TH1*> print_splot_stack(TTree* tree, TH1* base_hist, const char* 
   sig_hist->Draw("e0");
   bkg_final->DrawCopy("e2 same");
   bkg_final->SetFillStyle(0);
-  bkg_final->Draw("HIST same");
+  bkg_final->DrawCopy("HIST same");
   double sf = canv.GetLogy() ? 14 : 1.4;
   if(plot_name.find("eta")!=std::string::npos){
     sf = 1.6;
@@ -341,8 +339,19 @@ std::pair<TH1*,TH1*> print_splot_stack(TTree* tree, TH1* base_hist, const char* 
     sig_hist->SetMinimum(std::min(bkg_final->GetMinimum(),sig_hist->GetMinimum()));
   }
   sig_hist->Draw("e0 same");
-
   leg->Draw();
+  TPad* ratio_pad = split_canvas(&canv,0.3);
+  // draw_ratios(ratio_pad,&list);
+  bkg_final->Add(sig_final);
+  bkg_final->Draw("HIST same");
+  // TList list;
+  // list.Add(sig_hist);
+  // list.Add(bkg_final);
+  TH1* ratio = dynamic_cast<TH1*>(sig_hist->Clone("ratio"));
+  ratio_pad->cd();
+  ratio->Divide(bkg_final);
+  ratio->Draw();
+  canv.cd();
   char outname[256];
   snprintf(outname,256,"%s_splot%s",plot_name.c_str(),suffix);
   add_atlas_badge(canv,0.2,0.9,lumi);
