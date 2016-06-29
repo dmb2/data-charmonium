@@ -121,12 +121,11 @@ int main(const int argc, char* const argv[]){
   MSG("Input File: "<<inFName);
   TFile* file = TFile::Open(inFName.c_str());
   tree_collection Forest; 
-  const char* jet_variations[] = {"TrackZFilteredJets","TrackZSmearedJets",
-				  "TrackZScaledUpJets", "TrackZScaledDownJets",
-				  "TrackZRadialScaledUpJets", "TrackZRadialScaledDownJets"};
-  const char* treeNames[] = {"AUX","LCTopoJets",/*"TopoEMJets","MuTracks","MuonLCTopoJets",*/
-			     "TrackZJets",
-			     "Mu", "JPsi", "FakeJPsi", "JPsi2Trk","TRIG"};
+  const char* jet_variations[] = {"TrackZFilteredJPsiJets","TrackZSmearedJPsiJets",
+				  "TrackZScaledUpJPsiJets", "TrackZScaledDownJPsiJets",
+				  "TrackZRadialScaledUpJPsiJets", "TrackZRadialScaledDownJPsiJets"};
+  const char* treeNames[] = {"AUX","LCTopoJets", "TrackZJPsiJets",
+			     "Mu", "JPsi", "FakeJPsi", "TRIG"};
   for(size_t i=0; i < LEN(treeNames); i++){
     Forest[std::string(treeNames[i])]=retrieve<TTree>(file,treeNames[i]);
   }
@@ -150,20 +149,20 @@ int main(const int argc, char* const argv[]){
   std::string dsid = parts.size()!=0 ? parts.back() : "";
   if (runSystematics){
     // nominal
-    process(outFName.c_str(),Forest,CutDefReals, CutDefCats, "","TrackZJets",weight);
+    // process(outFName.c_str(),Forest,CutDefReals, CutDefCats, "","TrackZJPsiJets",weight);
+    // muon variations
+    for(size_t i=0; i < LEN(muon_variations); i++){
+      snprintf(outName,100,("%s.Muon%s.mini.root"), dsid.c_str(), muon_variations[i]);
+      process(outName,Forest,CutDefReals, CutDefCats, muon_variations[i],"TrackZJPsiJets",weight);
+    }
     // jet variations
     for(size_t j=0; j < LEN(jet_variations); j++){
       snprintf(outName,100,("%s.%s.mini.root"), dsid.c_str(), jet_variations[j]);
       process(outName,Forest,CutDefReals, CutDefCats, "",jet_variations[j],weight);
     }
-    // muon variations
-    for(size_t i=0; i < LEN(muon_variations); i++){
-      snprintf(outName,100,("%s.Muon%s.mini.root"), dsid.c_str(), muon_variations[i]);
-      process(outName,Forest,CutDefReals, CutDefCats, muon_variations[i],"TrackZJets",weight);
-    }
   }
   else{
-    process(outFName.c_str(),Forest,CutDefReals, CutDefCats, "","TrackZJets",weight);
+    process(outFName.c_str(),Forest,CutDefReals, CutDefCats, "","TrackZJPsiJets",weight);
   }
   
   for(tree_collection::iterator it=Forest.begin(); it != Forest.end(); ++it){
