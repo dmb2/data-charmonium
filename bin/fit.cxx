@@ -16,46 +16,39 @@
 void usage(const char* name){
   MSG("Usage: "<<name<<" -i input.root -t tree_name -l lumi -o fitresult.root");
 }
-
+void fit_pdf(RooAbsPdf* pdf,RooDataSet& data,RooRealVar* mass, RooRealVar* tau,
+	     const double lumi,const std::string& name, RooWorkspace& wkspc){
+  RooFitResult* result = Fit(pdf,data);
+  pdf->SetName(name!="" ? (std::string("model_")+name).c_str(): "model");
+  result->SetName(name!="" ? (std::string("result_")+name).c_str(): "result");
+  result->Print();
+  wkspc.import(*pdf);
+  wkspc.import(*result);
+  print_plot(mass,&data,pdf,"mass",";J/#psi Mass [GeV]",lumi,name!=""? name.c_str(): NULL);
+  print_plot(tau,&data,pdf,"tau",";J/#psi Proper Decay Time [ps]",lumi,name!=""? name.c_str(): NULL);
+}
 void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
 	      const double lumi, RooWorkspace& wkspc,bool do_syst){
   RooDataSet data("data","data",RooArgSet(*mass,*tau),RooFit::Import(*tree));
-  RooAbsPdf* model = build_model(mass,tau,data.numEntries());
   std::map<std::string,RooAbsPdf*> syst_pdfs;
   if(do_syst){
     syst_pdfs["resolution"]=build_model(mass,tau,data.numEntries(),1,true);
+    syst_pdfs["lifetime"]=build_model(mass,tau,data.numEntries(),1,false,false,true);
     syst_pdfs["mass0"]=build_model(mass,tau,data.numEntries(),0);
     syst_pdfs["mass2"]=build_model(mass,tau,data.numEntries(),2);
     syst_pdfs["mass3"]=build_model(mass,tau,data.numEntries(),3);
     syst_pdfs["mass_exp"]=build_model(mass,tau,data.numEntries(),1,false,true);
-    syst_pdfs["lifetime"]=build_model(mass,tau,data.numEntries(),1,false,false,true);
-    syst_pdfs["crystal_ball_alpha10_n2"]=build_model(mass,tau,data.numEntries(),1,false,false,false,10,2);
-    syst_pdfs["crystal_ball_alpha10_n3"]=build_model(mass,tau,data.numEntries(),1,false,false,false,10,3);
+    syst_pdfs["crystal_ball_alpha10_n1"]=build_model(mass,tau,data.numEntries(),1,false,false,false,10,1);
+    syst_pdfs["crystal_ball_alpha10_n5"]=build_model(mass,tau,data.numEntries(),1,false,false,false,10,5);
     syst_pdfs["crystal_ball_alpha1_n1"]=build_model(mass,tau,data.numEntries(),1,false,false,false,1,1);
-    syst_pdfs["crystal_ball_alpha5_n1"]=build_model(mass,tau,data.numEntries(),1,false,false,false,5,1);
     for(std::map<std::string,RooAbsPdf*>::iterator it=syst_pdfs.begin(); it !=syst_pdfs.end(); ++it){
       const std::string& syst_name = it->first;
       RooAbsPdf* syst_pdf = it->second;
-      RooFitResult* syst_res = Fit(syst_pdf,data);
-      syst_pdf->SetName((std::string("model_")+syst_name).c_str());
-      syst_res->SetName((std::string("result_")+syst_name).c_str());
-      syst_res->Print();
-      wkspc.import(*syst_pdf);
-      wkspc.import(*syst_res);
-      print_plot(mass,&data,model,"mass",";J/#psi Mass [GeV]",lumi,syst_name.c_str());
-      print_plot(tau,&data,model,"tau",";J/#psi Proper Decay Time [ps]",lumi,syst_name.c_str());
+      fit_pdf(syst_pdf,data,mass,tau,lumi,syst_name,wkspc);
     }
   }
-  RooFitResult* result = Fit(model,data);
-  model->SetName("model");
-  result->SetName("result");
-  result->Print();
-  wkspc.import(data);
-  wkspc.import(*model);
-  wkspc.import(*result);
-  print_plot(mass,&data,model,"mass",";J/#psi Mass [GeV]",lumi);
-  print_plot(tau,&data,model,"tau",";J/#psi Proper Decay Time [ps]",lumi);
-  
+  RooAbsPdf* model = build_model(mass,tau,data.numEntries());
+  fit_pdf(model,data,mass,tau,lumi,"",wkspc);
 }
 int main(const int argc, char* const argv[]){
   char* inFName=NULL;
