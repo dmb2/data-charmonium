@@ -9,7 +9,6 @@
 #include "TTree.h"
 #include "TROOT.h"
 
-#include "AtlasStyle.hh"
 #include "histo-utils.hh"
 #include "stack-utils.hh"
 #include "histo-meta-data.hh"
@@ -25,9 +24,7 @@ int main(const int argc, const char* argv[]){
     usage(argv[0]);
     return 0;
   }
-  AtlasStyle style;
-  style.SetAtlasStyle();
-  gStyle->SetFrameLineWidth(0.0);
+  setup_global_style();
 
   map<string,TTree*> sample_trees;
   sample_trees["master"]=retrieve<TTree>(argv[1],"mini");

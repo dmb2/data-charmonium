@@ -1,49 +1,82 @@
 #include <iostream>
 #include "root-sugar.hh"
 #include "histo-meta-data.hh"
-#include "fit-utils.hh"
 #include "histo-utils.hh"
 #include "sbs-utils.hh"
+#include "fit-utils.hh"
 
-#include "TFile.h"
-#include "TLegend.h"
-#include "TCanvas.h"
 #include "TH1D.h"
+#include "TFile.h"
 #include "TTree.h"
 
 #include "RooRealVar.h"
+#include "RooAbsCollection.h"
 #include "RooAbsPdf.h"
 #include "RooFitResult.h"
 #include "RooDataSet.h"
-
-#include "AtlasStyle.hh"
+#include "RooWorkspace.h"
 
 void usage(const char* name){
-  MSG("Usage: "<<name<<" input.root tree_name lumi");
+  MSG("Usage: "<<name<<" -i input.root -t tree_name -l lumi -r fitresult.root");
 }
 
-void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
-	      std::map<std::string,sb_info>& sep_var_info, const double lumi){
-  RooDataSet data("data","data",RooArgSet(*mass,*tau),RooFit::Import(*tree));
-  RooAbsPdf* model = build_model(mass,tau);
-  RooFitResult* result = Fit(model,data);
-  result->Print();
-  print_plot(mass,&data,model,"mass",";J/#psi Mass [GeV]",lumi);
-  print_plot(tau,&data,model,"tau",";J/#psi Proper Decay Time [ps]",lumi);
+int main(const int argc, char* const argv[]){
+  char* inFName=NULL;
+  char* tree_name = NULL;
+  char* fit_fname = NULL;
+  int c;
+  double lumi;
+  
+  while((c = getopt(argc,argv,"i:l:t:r:"))!= -1){
+    switch(c){
+    case 'i':
+      inFName=optarg;
+      break;
+    case 'l':
+      lumi=atof(optarg);
+      break;
+    case 't':
+      tree_name=optarg;
+      break;
+    case 'r':
+      fit_fname=optarg;
+      break;
+    default:
+      abort();
+    }
+  }
+  if(fit_fname==NULL || inFName==NULL || tree_name==NULL || !std::isfinite(lumi) ){
+    usage(argv[0]);
+    exit(1);
+  }
+  setup_global_style();
 
+  TFile* file = TFile::Open(inFName);
+  TFile* fit_file = TFile::Open(fit_fname);
+  TTree* tree = retrieve<TTree>(file,tree_name);
+
+  RooWorkspace* wkspc = retrieve<RooWorkspace>(fit_file,"workspace");
+  RooAbsPdf* model = wkspc->pdf("model");
+  RooFitResult* result = dynamic_cast<RooFitResult*>(wkspc->obj("result"));
+  result->Print();
+  RooRealVar *mass = wkspc->var("jpsi_m"); 
+  RooRealVar *tau = wkspc->var("jpsi_tau");
+  std::map<std::string,sb_info> sep_var_info;
   double mass_width = get_par_val(&result->floatParsFinal(),"sigma_m");
   double mass_mean = get_par_val(&result->floatParsFinal(),"mean_m");
+  double tau_width = std::max(get_par_val(&result->floatParsFinal(),"sigma_t1"),
+			      get_par_val(&result->floatParsFinal(),"sigma_t2"));
   add_region(mass, "SB", 
-	     mass_mean - 11*mass_width,
+	     mass_mean - 13*mass_width,
 	     mass_mean -  3*mass_width);
   add_region(mass,"Sig",
 	     mass_mean - 3*mass_width,
 	     mass_mean + 3*mass_width);
   add_region(mass,"SB",
 	     mass_mean + 3*mass_width,
-	     mass_mean + 8*mass_width);
-  add_region(tau,"Sig", -1,0.25);
-  add_region(tau,"SB",0.25,50);
+	     mass_mean + 6*mass_width);
+  add_region(tau,"Sig", -3*tau_width,3*tau_width);
+  add_region(tau,"SB",3*tau_width,50);
   const double* covmat = result->covarianceMatrix().GetMatrixArray();
   RooAbsPdf* nc_mass_bkg = find_component(model,"NonCoherentMassBkg");
   RooAbsPdf* np_mass_bkg = find_component(model,"NonPromptMassBkg");
@@ -63,24 +96,7 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
   sep_var_info["tau"].regions=tau->getBinningNames();
   sep_var_info["tau"].sts_ratio=div(get_yield(tau_sig,tau,"Sig",covmat),
 				    get_yield(tau_sig,tau,"SB",covmat));
-
-
-}
-int main(const int argc, const char* argv[]){
-  if(argc !=4){
-    usage(argv[0]);
-    return 1;
-  }
-  AtlasStyle style;
-  style.SetAtlasStyle();
-  TFile* file = TFile::Open(argv[1]);
-  TTree* tree = retrieve<TTree>(file,argv[2]);
-  const double lumi=atof(argv[3]);
-
-  RooRealVar *mass = new RooRealVar("jpsi_m","jpsi_m",JPSIMASS, JPSIMASS-0.4, JPSIMASS+0.5);
-  RooRealVar *tau = new RooRealVar("jpsi_tau","Lifetime",-2.,5);
-  std::map<std::string,sb_info> sep_var_info;
-  jpsi_fit(tree,mass,tau,sep_var_info,lumi);
+  
   MSG_DEBUG(make_cut_expr(mass->getBinningNames(),"Sig") + " && "
 	    + make_cut_expr(tau->getBinningNames(),"Sig"));
   for(std::map<std::string,sb_info>::const_iterator it=sep_var_info.begin(); it !=sep_var_info.end(); ++it){
@@ -94,9 +110,9 @@ int main(const int argc, const char* argv[]){
 
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
-  const char* variables[] = {/*"jet_pt","jet_eta", "jet_z", "jet_e", */
-			     "jpsi_pt"/*,"jpsi_eta",
-					"tau1","tau2", "tau3","tau21","tau32"*/};
+  const char* variables[] = {"delta_r","jet_pt","jet_eta", "jet_e","jet_z", 
+			     "jpsi_pt","jpsi_eta",
+			     "tau1","tau2", "tau3","tau21","tau32"};
   const std::string jpsi_sig_region = make_cut_expr(mass->getBinningNames(),"Sig") 
     + " && " + make_cut_expr(tau->getBinningNames(),"Sig");
   char cut_expr[1024];
@@ -104,9 +120,10 @@ int main(const int argc, const char* argv[]){
 	   "(%s)*weight*%.4g*SF",
 	   jpsi_sig_region.c_str(),
 	   lumi);
+
   for(size_t i=0; i < LEN(variables); i++){
     TH1* sig_final = print_sbs_stack(tree,HistBook[variables[i]],".pdf",
-				     sep_var_info,lumi);
+    				     sep_var_info,lumi);
     print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
   }
 

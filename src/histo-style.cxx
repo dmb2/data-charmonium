@@ -1,4 +1,5 @@
 #include "histo-style.hh"
+#include "TColor.h"
 #include "TH1.h"
 #include "TLegend.h"
 
@@ -17,6 +18,11 @@ void style_hist(TH1* hist,aesthetic style){
 void add_to_legend(TLegend* leg, const TH1* hist, const aesthetic style){
   leg->AddEntry(hist,style.leg_label,style.leg_style);
 }
+void make_transparent(aesthetic& style, const double alpha){
+  Color_t color = style.color;
+  style.color = TColor::GetColorTransparent(color,alpha);
+}
+
 aesthetic make_style(const char* leg_label, const char* leg_style,
 		     const Color_t color, const Style_t fill_style,
 		     const Style_t marker, const Size_t marker_size,

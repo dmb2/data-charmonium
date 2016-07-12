@@ -21,6 +21,7 @@
 #include "histo-utils.hh"
 #include "histo-meta-data.hh"
 #include "math.hh"
+#include "color.hh"
 
 using std::string;
 using std::map;
@@ -39,6 +40,7 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
   THStack* stack = new THStack(("stack_"+plot).c_str(),base_hist->GetTitle());
   double total=0.;
   size_t num_hists=sample_names.size();
+  std::vector<int> colors=qualitative(DYNAMIC,num_hists);
   TH1** hist_list = (TH1**)calloc(num_hists, sizeof(TH1*));
   string cut_expr;
   char cut_str[1024];
@@ -65,8 +67,17 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
     draw_histo(tree,plot.c_str(),hist->GetName(), cut_str);
     total+=hist->Integral();
     stack->Add(hist);
-    style_hist(hist,hist_styles[name]);
-    add_to_legend(&leg,hist,hist_styles[name]);
+    aesthetic style;
+    if(hist_styles.find(name)!=hist_styles.end()){
+      style=hist_styles[name];
+    }
+    else{
+      //MSG_DEBUG(name<<" is not found in style list, making new on on the fly.")
+      style=hist_aes(name.c_str(),colors[i],1001,kSolid);
+      MSG_DEBUG(style.leg_label)
+    }
+    style_hist(hist,style);
+    add_to_legend(&leg,hist,style);
   }
   //ROOT SUCKS
   // scale_stack(hist_list,num_hists-1,n_master > 0 ? n_master/total : 1);
@@ -110,19 +121,24 @@ void print_2D_stack(std::map<std::string,TTree*> samples,const std::string& plot
     decorator.DrawLatexNDC(0.25,0.25,hist_styles[name].leg_label);
   }
   canv.cd(0);
-  add_atlas_badge(canv,0.66,0.25,target_lumi,INTERNAL);
+  add_atlas_badge(canv,0.66,0.25,target_lumi);
   decorator.SetTextSize(0.04);
   decorator.DrawLatex(0.01,0.02,base_hist->GetTitle());
   std::string outname=plot+suffix;
   replace(outname.begin(),outname.end(),':','_');
   canv.SaveAs(outname.c_str());
 }
-void norm_stack(THStack& stack){
+double norm_stack(THStack& stack){
   TIter next(stack.GetHists());
   TH1* h = NULL;
+  double max(0);
   while((h = dynamic_cast<TH1*>(next()))){
     h->Scale(1/h->Integral());
+    if(h->GetMaximum() > max){
+      max=h->GetMaximum();
+    }
   }
+  return max;
 }
 num_err integral_error(TH1D* hist){
   num_err result;
@@ -260,7 +276,7 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
 
   canv.cd(0);
   // this damn thing is too big
-  add_atlas_badge(canv,0.4,0.1,target_lumi,INTERNAL);
+  add_atlas_badge(canv,0.4,0.1,target_lumi);
   leg->Draw();
   decorator.SetTextSize(0.04);
   decorator.DrawLatex(0.38,0.01,base_hist->GetTitle());
@@ -296,7 +312,7 @@ void print_stack(std::map<std::string,TTree*> samples,const std::string& plot,
   leg.AddEntry(master,"MC12");
   leg.Draw();
   decorator.DrawLatexNDC(0.,0.05,master->GetTitle());
-  add_atlas_badge(canv,0.2,0.9,target_lumi,INTERNAL);
+  add_atlas_badge(canv,0.2,0.9,target_lumi);
   canv.SaveAs((plot+suffix).c_str());
 }
 void print_cut_stack(std::map<std::string,TTree*>& samples, 
@@ -347,6 +363,6 @@ void print_cut_stack(std::map<std::string,TTree*>& samples,
   leg.Draw();
   decorator.SetTextSize(0.04);
   decorator.DrawLatex(0.0,0.05,base_hist->GetTitle());
-  // add_atlas_badge(canv,0.2,0.9,target_lumi,INTERNAL);
+  // add_atlas_badge(canv,0.2,0.9,target_lumi);
   canv.SaveAs((plot+file_suffix).c_str());
 }

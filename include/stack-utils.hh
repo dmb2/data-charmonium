@@ -8,7 +8,7 @@ class TTree;
 class THStack;
 
 void scale_stack(TH1** hist_list, const size_t n, double sf);
-void norm_stack(THStack& stack);
+double norm_stack(THStack& stack);
 THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
 		    const std::vector<std::string>& cut_branches, const int cut_index, 
 		    const std::string& plot, TLegend& leg, 

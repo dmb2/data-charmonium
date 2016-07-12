@@ -5,9 +5,9 @@
 #include "TH1.h"
 #include "TFile.h"
 #include "TLatex.h"
-#include "AtlasStyle.hh"
 #include "color.hh"
 #include "histo-utils.hh"
+#include "TStyle.h"
 
 #include <string>
 #include <math.hh>
@@ -64,8 +64,8 @@ void print_summary(const char* var){
 }
 
 int main(/*const int argc, const char** argv*/){
-  AtlasStyle style;
-  style.SetAtlasStyle();
+  setup_global_style();
+  
   heat_gradient(gStyle);
   const char* variables[] = {"jet_pt","jet_eta","jet_e","jet_z",
 			      "jpsi_pt","jpsi_eta","jpsi_e"};

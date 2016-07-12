@@ -11,10 +11,23 @@
 #include "TStyle.h"
 #include "TLatex.h"
 #include "TColor.h"
+#include "TGaxis.h"
 
 #include "histo-utils.hh"
 #include "root-sugar.hh"
 #include "math.hh"
+#include "AtlasStyle.hh"
+
+void setup_global_style(){
+  AtlasStyle style;
+  style.SetAtlasStyle();
+  gStyle->SetFrameLineWidth(0.0);
+  gStyle->SetPalette(1);
+  gStyle->SetTitleYOffset(1.6);
+  gStyle->SetLegendTextSize(0.03);
+  TGaxis::SetMaxDigits(4);
+}
+
 void setup_hist(TH1* hist){
   hist->Sumw2();
   hist->SetMarkerStyle(1);
@@ -198,12 +211,22 @@ void add_atlas_badge(TVirtualPad& canv,const double x, const double y,
 		     const double lumi_fb, const status_t status){
   canv.cd();
   std::string status_label="";
-  if (status==PRELIMINARY){
+
+  if(status==PRELIMINARY){
     status_label="Preliminary";
-  }
-  else if (status==INTERNAL){
+  } 
+  else if(status==INTERNAL){
     status_label="Internal";
+  } 
+  else if(status==APPROVED){
+    status_label="Approved";
+  } 
+  else if(status==WIP){
+    status_label="Work In Progress";
+  } else {
+    status_label="";
   }
+  
   // canv.cd();
   Double_t tsize(0.04);
   TLatex l; 
@@ -314,14 +337,11 @@ TH1* build_syst_err_hist(TH1* base_hist, const std::string& samp_name,
   TH1* tot_err = dynamic_cast<TH1*>(base_hist->Clone((base_hist->GetName()+samp_name+"_tot_err").c_str()));
   std::string dsid=split_string(samp_name,'.').at(0);
   std::string syst_cut_expr(cut_expr);
-  MSG_DEBUG(syst_cut_expr);
-  tot_err->Clear();
-  /*
-  for(int i=0; i < tot_err->GetNbinsX(); i++){
+  for(int i =0; i < tot_err->GetNbinsX(); i++){
     tot_err->SetBinContent(i,0);
     tot_err->SetBinError(i,0);
   }
-  */
+
   for(std::map<std::string,std::string>::const_iterator it = syst_map.begin();
       it!=syst_map.end(); ++it){
     const std::string& var_up = it->first;
@@ -411,4 +431,27 @@ void print_cut_hist(TTree* tree, const std::vector<std::string>& cut_branches,
   decorator.SetTextSize(0.04);
   decorator.DrawLatex(0.0,0.05,base_hist->GetTitle());
   canv.SaveAs((plot+file_suffix).c_str());
+}
+void print_corr_plot(TH1* base_hist, const std::string disc_name,
+		     const int n_bins, const double min, const double max,
+		     TTree* tree, const char* suffix,
+		     const double lumi, const char* weight_expr){
+  const std::string plot_name(base_hist->GetName());
+  TH2D* hist = new TH2D((plot_name+disc_name+"_corr").c_str(),base_hist->GetTitle(),
+			base_hist->GetNbinsX(), base_hist->GetXaxis()->GetXmin(),
+			base_hist->GetXaxis()->GetXmax(),
+			n_bins,min,max);
+  std::string draw_expr = disc_name+ std::string(":") + plot_name;
+  draw_histo(tree,draw_expr.c_str(), hist->GetName(), weight_expr);
+  TCanvas canv("canv","Correlation canvas",600,600);
+  hist->Draw("COLZ");
+  TLatex decorator;
+  decorator.SetTextSize(0.04);
+  char corr_str[256];
+  snprintf(corr_str,256,"Global Correlation: %.5g",hist->GetCorrelationFactor());
+  MSG_DEBUG(corr_str);
+  add_atlas_badge(canv,0.2,0.9,lumi);
+  decorator.DrawLatexNDC(0.0,0.05,corr_str);
+  decorator.DrawLatexNDC(0.5,0.0,base_hist->GetTitle());
+  canv.SaveAs((plot_name+suffix).c_str());
 }

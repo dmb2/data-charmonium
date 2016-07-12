@@ -1,7 +1,4 @@
-# Set up path to have ./bin on top, could have unintended consquences
-# outside of this analysis if your working in a directory that has bin
-# with binaries in it
-export PATH=./bin:$PATH
+export PATH=${HOME}/data-charmonium/bin:$PATH
 export LD_LIBRARY_PATH=./src:$LD_LIBRARY_PATH
 # Helper functions for bookkeeping, should be sourced not executed 
 
@@ -122,4 +119,52 @@ get_ami_xsec(){
     local XS=$(awk "BEGIN {print ${xsec}*${filt_eff}*1e6}")
     local DSID=$(basename $1 | awk -F '.' '{print $2}')
     echo "${DSID}=${XS}"
+}
+rename_files(){
+    local name_map
+    declare -A name_map
+    
+    name_map["208025"]="208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1"
+    name_map["208027"]="208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1"
+    name_map["208028"]="208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"
+    name_map["208026"]="208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8"
+    name_map["208024"]="208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8"
+    name_map["non_prompt"]="non_prompt"
+    name_map["full2012"]="full2012"
+    for key in "${!name_map[@]}"
+    do
+	mv ${key}*.mini.root "${name_map[$key]}.mini.root"
+    done
+}
+setup_slices(){
+    local BRANCH_NAME="$1"
+    local BIN_VALS="$3"
+    local INIT_VAL="$2"
+    # 20802{4..8} non_prompt.mini.root full2012.mini.root
+    for dsid in  20802{4..8}-systematics/ 20802{4..8} non_prompt full2012
+    do
+	python/split_by_branch -a "${BIN_VALS}"\
+			       ${dsid}*.mini.root\
+			       -i "${INIT_VAL}" -b "${BRANCH_NAME}"
+	for bin_label in $(ls ${dsid}*${BRANCH_NAME}*.root | awk -F '.' '{print $3}' | sort -u); do 
+	    mkdir -p "slices/${bin_label}"
+	    mv ${dsid}*${bin_label}.mini.root slices/${bin_label}/
+	done
+    done
+    cd slices;
+    for f in $(find . -name *.root | grep ${BRANCH_NAME}); 
+    do 
+	mv $f $(echo $f | sed s,${BRANCH_NAME}_[0-9]*_[0-9]*.,,2); 
+    done
+    for dir in ${BRANCH_NAME}*/; 
+    do 
+	for dsid in 20802{4..8}; 
+	do 
+	    mkdir -p $dir/$dsid-systematics/
+	    mv $dir/$dsid.{M,T}*.mini.root $dir/$dsid-systematics/;
+	done;
+	mv $dir/full2012.mini{.mini,}.root
+	mv $dir/non_prompt.mini{.mini,}.root
+    done
+    cd ../;
 }

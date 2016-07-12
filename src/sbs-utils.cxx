@@ -9,12 +9,19 @@
 #include "THStack.h"
 #include "TH1D.h"
 #include "TColor.h"
+#include "TList.h"
 
 #include "RooAbsPdf.h"
 #include "RooRealVar.h"
 #include "RooAbsReal.h"
 #include "RooAbsArg.h"
 #include "RooArgSet.h"
+#include "RooAbsCollection.h"
+#include "RooWorkspace.h"
+#include "RooPlot.h"
+#include "RooHist.h"
+#include "RooDataSet.h"
+#include "RooStats/SPlot.h"
 
 #include "sbs-utils.hh"
 #include "root-sugar.hh"
@@ -23,6 +30,10 @@
 #include "plot-utils.hh"
 #include "fit-utils.hh"
 
+double get_par_val(const RooAbsCollection* pars,const char* name){
+  //this sucks
+  return dynamic_cast<RooRealVar*>(pars->find(name))->getVal();
+}
 void add_region(RooRealVar* var, const char* type, double min, double max){
   char name[400];
   snprintf(name,400,"%-3s %.4g < %s && %s < %.4g", type, min,
@@ -124,6 +135,50 @@ void scale_hist(TH1* hist, num_err scale_factor){
     return;
   }
 }
+static TH1* make_np_syst_hist(TH1* base_hist, const TH1* tau_template, 
+			      const std::list<std::string>& mass_regions, 
+			      const std::list<std::string>& tau_regions){
+  const std::string sig_expr = make_cut_expr(mass_regions,"Sig") + " && "+make_cut_expr(tau_regions,"Sig");
+  const std::string tau_sb_expr = make_cut_expr(mass_regions,"Sig")+ " && "+make_cut_expr(tau_regions,"SB");
+  TTree* np_tree = retrieve<TTree>("non_prompt.mini.root","mini");
+  TH1* sig_hist = make_normal_hist(base_hist,np_tree,base_hist->GetName(),sig_expr.c_str(),"_np_sig_syst");
+  TH1* sb_hist = make_normal_hist(base_hist,np_tree,base_hist->GetName(),tau_sb_expr.c_str(),"_np_sb_syst");
+  sig_hist->Add(sb_hist,-1.0);
+  sig_hist->Divide(sb_hist);
+  double rel_err(0);
+  for(int i=0; i < sb_hist->GetNbinsX(); i++){
+    rel_err=sig_hist->GetBinContent(i);
+    sig_hist->SetBinError(i,rel_err*tau_template->GetBinContent(i));
+    sig_hist->SetBinContent(i,0);
+  }
+  return sig_hist;
+}
+static TH1* make_comb_syst_hist(TH1* base_hist, TTree* tree, 
+				const std::list<std::string>& mass_regions, 
+				const std::list<std::string>& tau_regions,
+				const num_err sf){
+  std::list<std::string> sb1;
+  std::list<std::string> sb2;
+  for(std::list<std::string>::const_iterator it = mass_regions.begin();
+      it != mass_regions.end(); ++it){
+    if(it->find("SB")!=std::string::npos){
+      sb1.size() == 0 ? sb1.push_back(*it) : sb2.push_back(*it);
+    }
+  }
+  const std::string sb1_expr = make_cut_expr(sb1,"SB") + " && "+make_cut_expr(tau_regions,"Sig");
+  const std::string sb2_expr = make_cut_expr(sb2,"SB") + " && "+make_cut_expr(tau_regions,"Sig");
+
+  TH1* sb1_hist = make_normal_hist(base_hist,tree,base_hist->GetName(),sb1_expr.c_str(),"cmb_syst_sb1");
+  TH1* sb2_hist = make_normal_hist(base_hist,tree,base_hist->GetName(),sb2_expr.c_str(),"cmb_syst_sb2");
+  double sb1_bc(0),sb2_bc(0);
+  for(int i=0; i < sb1_hist->GetNbinsX(); i++){
+    sb1_bc=sb1_hist->GetBinContent(i);
+    sb2_bc=sb2_hist->GetBinContent(i);
+    sb1_hist->SetBinError(i,0.5*fabs(sb1_bc-sb2_bc)*sf.val);
+    sb1_hist->SetBinContent(i,0);
+  }
+  return sb1_hist;
+}
 TH1* make_bkg_hist(TH1* base_hist, TTree* tree, 
 		   const std::list<std::string>& sb_regions, 
 		   const std::list<std::string>&  sig_regions,
@@ -150,19 +205,166 @@ TH1* make_bkg_hist(TH1* base_hist, TTree* tree,
   scale_hist(result,sf);
   return result;
 }
-void style_bkg_hist(TH1* hist,Int_t color){
-  hist->SetMarkerSize(0);
-  hist->SetMarkerStyle(kDot);
-  hist->SetFillStyle(1001);
-  hist->SetFillColor(color);
-  hist->SetLineColor(color);
+void rooplot_to_hist(const RooPlot* input,TH1* hist){
+  RooHist* roo_hist = input->getHist();
+  double* y=roo_hist->GetY();
+  double* y_err=roo_hist->GetEYhigh();
+  if(input->GetNbinsX()!=hist->GetNbinsX()){
+    MSG_ERR("ERROR: Refusing to copy RooPlot to TH1 with mismatching bins");
+  }
+  for(int i =0; i < input->GetNbinsX(); i++){
+    // MSG_DEBUG("i: "<<i << " y: "<<y[i]<<" +/-"<< y_err[i]);
+    hist->SetBinContent(i+1,y[i]);
+    hist->SetBinError(i+1,y_err[i]);
+  }
 }
+
+void print_bkg_splot(TTree* tree, TH1* hist,const char* suffix, const double lumi,RooWorkspace* wkspc){
+  std::string plot_name(hist->GetName());
+  plot_name=plot_name.substr(0,plot_name.size()-10);
+  RooRealVar& mass = *wkspc->var("jpsi_m");
+  RooRealVar& tau  = *wkspc->var("jpsi_tau");
+
+  TCanvas canv("canv","SPlot diagnostic Canvas",600,600);
+  TLegend* leg =  init_legend();
+  if(plot_name=="jet_z"){
+    delete leg;
+    leg = init_legend(0.2,0.4,0.6,0.75);
+  } 
+  std::map<std::string,aesthetic> styles;
+  init_hist_styles(styles);
+  std::string bkg_cut_expr = "(("+make_cut_expr(mass.getBinningNames(),"SB")
+    + ") && " + make_cut_expr(tau.getBinningNames(),"Sig")+") || ("+
+    make_cut_expr(mass.getBinningNames(),"Sig")
+    + " && " + make_cut_expr(tau.getBinningNames(),"SB")+")";
+  MSG_DEBUG(bkg_cut_expr);
+  TH1* base_hist = dynamic_cast<TH1D*>(hist->Clone());
+  base_hist->Clear();
+  TH1* bkg_hist = make_normal_hist(base_hist, tree, plot_name.c_str(),
+				   bkg_cut_expr.c_str(),"_stk_bkg");
+  hist->Scale(1.0/hist->Integral());
+  bkg_hist->Scale(1.0/bkg_hist->Integral());
+  style_hist(bkg_hist,styles["data"]);
+  leg->AddEntry(bkg_hist,"Data Sidebands","lf");
+  make_transparent(styles["background"],0.6);
+  style_hist(hist,styles["background"]);
+  add_to_legend(leg,hist,styles["background"]);
+  bkg_hist->Draw("e0");
+  hist->DrawCopy("e2 same");
+  hist->SetFillStyle(0);
+  hist->Draw("HIST same");
+  double sf = canv.GetLogy() ? 14 : 1.4;
+  if(plot_name.find("eta")!=std::string::npos){
+    sf = 1.6;
+  }
+  bkg_hist->SetMaximum(sf*std::max(bkg_hist->GetMaximum(),hist->GetMaximum()));
+  if(!canv.GetLogy()){
+    bkg_hist->SetMinimum(std::min(bkg_hist->GetMinimum(),hist->GetMinimum()));
+  }
+  remove_axis(bkg_hist->GetXaxis());
+  leg->Draw();
+  TList list(hist);
+  list.Add(hist);
+  list.Add(bkg_hist);
+  TPad* rpad = split_canvas(&canv,0.3);
+  draw_ratios(rpad,&list);
+  char outname[256];
+  snprintf(outname,256,"%s_splot_bkg%s",plot_name.c_str(),suffix);
+  add_atlas_badge(canv,0.2,0.9,lumi);
+  canv.SaveAs(outname);
+}
+
+void splot_to_hist(const RooRealVar& interest_var,const RooDataSet& data,TH1* hist){
+  RooPlot* frame = new RooPlot(hist->GetName(),hist->GetTitle(),interest_var,
+				       hist->GetXaxis()->GetXmin(),hist->GetXaxis()->GetXmax(),
+				       hist->GetNbinsX());
+  data.plotOn(frame,RooFit::DataError(RooAbsData::SumW2));
+  rooplot_to_hist(frame,hist);
+  delete frame;
+}
+std::pair<TH1*,TH1*> print_splot_stack(TTree* tree, TH1* base_hist, const char* suffix,
+		       const double lumi,RooWorkspace* wkspc){
+  const std::string plot_name(base_hist->GetName());
+  RooAbsPdf& model = *wkspc->pdf("model");
+  RooAbsPdf& Signal = *wkspc->pdf("ext_sig");
+  RooAbsPdf& Background = *wkspc->pdf("ext_bkg");
+  RooRealVar& mass = *wkspc->var("jpsi_m");
+  RooRealVar& tau  = *wkspc->var("jpsi_tau");
+  RooRealVar& nsig = *wkspc->var("nsig");
+  RooRealVar& nbkg = *wkspc->var("nbkg");
+  RooRealVar interest_var(base_hist->GetName(),base_hist->GetName(),
+			  base_hist->GetXaxis()->GetXmin(),
+			  base_hist->GetXaxis()->GetXmax());
+  RooDataSet* data=new RooDataSet("data","data",RooArgSet(mass,tau,interest_var),RooFit::Import(*tree));
+  RooFIter iter = model.getVariables()->fwdIterator();
+  RooRealVar* var = NULL;
+  while((var=dynamic_cast<RooRealVar*>(iter.next()))){
+    var->setConstant();
+  }
+  RooStats::SPlot sData("sData","SPlot Dataset ", *data, &model,RooArgList(nsig,nbkg));
+  RooDataSet data_signal("sig_data",data->GetTitle(),data,*data->get(),0,"nsig_sw");
+  RooDataSet data_background("bkg_data",data->GetTitle(),data,*data->get(),0,"nbkg_sw");
+  TH1* sig_final = dynamic_cast<TH1*>(base_hist->Clone(("sp_sig_"+plot_name).c_str()));
+  TH1* bkg_final = dynamic_cast<TH1*>(base_hist->Clone((plot_name+"_splot_bkg").c_str()));
+  splot_to_hist(interest_var,data_signal,sig_final);
+  splot_to_hist(interest_var,data_background,bkg_final);
+  TCanvas canv("canv","SPlot diagnostic Canvas",600,600);
+  TLegend* leg = init_legend();
+  if(plot_name=="jet_z"){
+    delete leg;
+    leg = init_legend(0.2,0.4,0.6,0.75);
+  } 
+  std::map<std::string,aesthetic> styles;
+  init_hist_styles(styles);
+  // Signal Hist
+  const std::string signal_cut_expr = make_cut_expr(mass.getBinningNames(),"Sig")+ " && "
+    + make_cut_expr(tau.getBinningNames(),"Sig");
+  TH1* sig_hist = make_normal_hist(base_hist, tree, plot_name.c_str(),
+				   signal_cut_expr.c_str(),"_stk_sig");
+  make_transparent(styles["background"],0.6);
+  style_hist(sig_hist,styles["data"]);
+  add_to_legend(leg,sig_hist,styles["data"]);
+  style_hist(bkg_final,styles["background"]);
+  add_to_legend(leg,bkg_final,styles["background"]);
+  sig_hist->Draw("e0");
+  bkg_final->DrawCopy("e2 same");
+  bkg_final->SetFillStyle(0);
+  bkg_final->DrawCopy("HIST same");
+  double sf = canv.GetLogy() ? 14 : 1.4;
+  if(plot_name.find("eta")!=std::string::npos){
+    sf = 1.6;
+  }
+  sig_hist->SetMaximum(sf*std::max(bkg_final->GetMaximum(),sig_hist->GetMaximum()));
+  if(!canv.GetLogy()){
+    sig_hist->SetMinimum(std::min(bkg_final->GetMinimum(),sig_hist->GetMinimum()));
+  }
+  sig_hist->Draw("e0 same");
+  leg->Draw();
+  TPad* ratio_pad = split_canvas(&canv,0.3);
+  // draw_ratios(ratio_pad,&list);
+  bkg_final->Add(sig_final);
+  bkg_final->Draw("HIST same");
+  // TList list;
+  // list.Add(sig_hist);
+  // list.Add(bkg_final);
+  TH1* ratio = dynamic_cast<TH1*>(sig_hist->Clone("ratio"));
+  ratio_pad->cd();
+  ratio->Divide(bkg_final);
+  ratio->Draw();
+  canv.cd();
+  char outname[256];
+  snprintf(outname,256,"%s_splot%s",plot_name.c_str(),suffix);
+  add_atlas_badge(canv,0.2,0.9,lumi);
+  canv.SaveAs(outname);
+  return std::pair<TH1*,TH1*>(sig_final,bkg_final);
+}
+
 TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
 		     std::map<std::string,sb_info> sep_var_info, 
 		     const double lumi){
   const std::list<std::string>& mass_regions=sep_var_info["mass"].regions; 
   const std::list<std::string>& tau_regions=sep_var_info["tau"].regions;
-  const std::list<std::string>& psi_regions=sep_var_info["psi_m"].regions;
+  // const std::list<std::string>& psi_regions=sep_var_info["psi_m"].regions;
   const num_err& mass_stsR=sep_var_info["mass"].sts_ratio;
   const num_err& np_frac=sep_var_info["tau"].sts_ratio;
 
@@ -175,66 +377,110 @@ TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
   // F  == non-prompt fraction from fit
   // SB(tau) == Tau sideband hist
 
-  TLegend leg = *init_legend();
+  TLegend* leg = NULL;
+  const std::string plot_name(base_hist->GetName());
+  if(plot_name=="jet_z"){
+    leg = init_legend(0.2,0.4,0.6,0.75);
+  } 
+  else {
+    leg = init_legend();
+  }
+  
   std::map<std::string,aesthetic> styles;
   init_hist_styles(styles);
   // Signal Hist
   const std::string signal_cut_expr = make_cut_expr(mass_regions,"Sig")+ " && "
     + make_cut_expr(tau_regions,"Sig");
-  TH1* sig_hist = make_normal_hist(base_hist, tree, base_hist->GetName(),
+  TH1* sig_hist = make_normal_hist(base_hist, tree, plot_name.c_str(),
 				   signal_cut_expr.c_str(),"_stk_sig");
 
-  // Mass SB Hist
+  // Mass SB Hist 
+  
+  // There is not a bug here, mass_regions should be first for
+  // make_bkg_hist for comb_hist and flipped for nonprompt_hist, see
+  // further discussion in make_bkg_hist
   TH1* comb_hist =  make_bkg_hist(base_hist,tree,mass_regions,tau_regions,"mass_stk_sb",mass_stsR);
+  TH1* comb_syst_hist = make_comb_syst_hist(base_hist,tree,mass_regions,tau_regions,mass_stsR);
+  TH1* comb_stat_hist = dynamic_cast<TH1*>(comb_hist->Clone("comb_stat_hist"));
+  add_err(comb_hist,comb_syst_hist);
   // Tau SB Hist
   TH1* nonprompt_hist = make_bkg_hist(base_hist,tree,tau_regions,mass_regions,"tau_stk_sb",np_frac);
+  TH1* np_syst_hist = make_np_syst_hist(base_hist,nonprompt_hist,mass_regions,tau_regions);
+  TH1* np_stat_hist = dynamic_cast<TH1*>(nonprompt_hist->Clone("np_stat_hist"));
+  add_err(nonprompt_hist,np_syst_hist);
 
-  THStack stack("sbs_stack",base_hist->GetTitle());
-  stack.SetHistogram((TH1*)base_hist->Clone((std::string("stack_sbs")+base_hist->GetName()).c_str()));
-  sig_hist->SetLineColor(kBlack);
-  sig_hist->SetFillStyle(0);
-  
-  style_hist(comb_hist,styles["comb_bkg"]);
-  style_hist(nonprompt_hist,styles["non_prompt"]);
-  
-  add_to_legend(&leg,sig_hist,styles["data"]);
-  add_to_legend(&leg,comb_hist,styles["comb_bkg"]);
-  add_to_legend(&leg,nonprompt_hist,styles["non_prompt"]);
-
-  stack.Add(nonprompt_hist);
-  stack.Add(comb_hist); 
-
-  TCanvas c1("Canvas","Canvas",600,600);
-  stack.Draw("H e1");
-  sig_hist->Draw("e0 same");
-  stack.SetMaximum(1.2*std::max(stack.GetMaximum(),sig_hist->GetMaximum()));
-  leg.Draw();
-  char outname[256];
-  snprintf(outname,256,"%s_sbs_stk%s",base_hist->GetName(),suffix);
-  add_atlas_badge(c1,0.2,0.9,lumi,INTERNAL);
-  c1.SaveAs(outname);
-  // snprintf(outname,256,"%s_sbs_stk%s",base_hist->GetName(),".root");
-  // c1.SaveAs(outname);
-
-  TH1* sig_final = dynamic_cast<TH1*>(sig_hist->Clone((std::string("sf_")+base_hist->GetName()).c_str()));
-
+  TH1* sig_final = dynamic_cast<TH1*>(sig_hist->Clone(("sf_"+plot_name).c_str()));
   sig_final->Add(comb_hist,-1);
   sig_final->Add(nonprompt_hist,-1);
 
+  // The rest of this function is printing the plot 
+  style_hist(sig_hist,styles["data"]);
+
+  make_transparent(styles["comb_bkg"],0.4);
+  make_transparent(styles["non_prompt"],0.4);
+
+  style_hist(comb_hist,styles["comb_bkg"]);
+  style_hist(nonprompt_hist,styles["non_prompt"]);
+  style_hist(comb_stat_hist,styles["comb_bkg"]);
+  style_hist(np_stat_hist,styles["non_prompt"]);
+
+  add_to_legend(leg,sig_hist,styles["data"]);
+  add_to_legend(leg,comb_hist,styles["comb_bkg"]);
+  add_to_legend(leg,nonprompt_hist,styles["non_prompt"]);
+  
+  TCanvas c1("Canvas","Canvas",600,600);
+  if(plot_name.find("pt")!=std::string::npos){
+    c1.SetLogy(true);
+  }
+  sig_hist->Draw("e0");
+  leg->Draw();
+  nonprompt_hist->DrawCopy("e2 same");
+  np_stat_hist->Draw("e2 same");
+  nonprompt_hist->SetFillStyle(0);
+  nonprompt_hist->Draw("HIST same");
+  TH1* comb_stack = dynamic_cast<TH1*>(comb_hist->Clone("comb_stack"));
+  comb_stack->Add(nonprompt_hist);
+  for(int i =0; i < comb_stack->GetNbinsX(); i++){
+    comb_stack->SetBinError(i,comb_hist->GetBinError(i));
+    comb_stat_hist->SetBinContent(i,comb_stack->GetBinContent(i));
+  }
+  comb_stack->DrawCopy("e2 same");
+  comb_stat_hist->Draw("e2 same");
+  comb_stack->SetFillStyle(0);
+  comb_stack->Draw("HIST same");
+  double sf = c1.GetLogy() ? 14 : 1.4;
+  if(plot_name.find("eta")!=std::string::npos){
+    sf = 1.6;
+  }
+  sig_hist->SetMaximum(sf*std::max(comb_stack->GetMaximum(),sig_hist->GetMaximum()));
+  if(!c1.GetLogy()){
+    sig_hist->SetMinimum(std::min(comb_stack->GetMinimum(),sig_hist->GetMinimum()));
+  }
+  sig_hist->Draw("e0 same");
+  char outname[256];
+  snprintf(outname,256,"%s_sbs_stk%s",base_hist->GetName(),suffix);
+  add_atlas_badge(c1,0.2,0.9,lumi);
+  c1.SaveAs(outname);
+  // snprintf(outname,256,"%s_sbs_stk%s",base_hist->GetName(),".root");
+  // c1.SaveAs(outname);
   return sig_final;
 }
 THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aesthetic> styles, 
 		     const char* cut_expr){
   THStack* stack = new THStack(("pythia_stk_"+std::string(base_hist->GetName())).c_str(),"Stack");
   const char* samp_names[]={
-    "208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8",
     "208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1",
-    "208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8",
     "208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1",
-    "208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"
+    "208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8",
+    "208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8",
+    "208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8"
   };
   TH1* tot_syst_err = dynamic_cast<TH1*>(base_hist->Clone((std::string(base_hist->GetName())+"_global_syst_err").c_str()));
-  tot_syst_err->Clear();
+  // tot_syst_err->Reset("ICES");
+  for(int i =0; i < tot_syst_err->GetNbinsX(); i++){
+    tot_syst_err->SetBinContent(i,0);
+    tot_syst_err->SetBinError(i,0);
+  }
   style_hist(tot_syst_err,styles["global_syst_err"]);
   add_to_legend(leg,tot_syst_err,styles["global_syst_err"]);
   for(size_t i=0; i < LEN(samp_names); i++){
@@ -247,7 +493,6 @@ THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aestheti
     add_to_legend(leg, hist, styles[name]);
     add_err(tot_syst_err,syst_err);
   }
-  MSG_DEBUG("built syst err hist named: "<<tot_syst_err->GetName());
   stack->Add(tot_syst_err);
   return stack;
 }
@@ -259,41 +504,68 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
   if(std::string(base_hist->GetName()).find("pt")!=std::string::npos){
     canv.SetLogy(true);
   }
-  TLegend leg = *init_legend();
+  TLegend* leg=NULL;
+  if(std::string(base_hist->GetName())=="jet_z"){
+    leg = init_legend(0.2,0.4,0.6,0.75);
+  } 
+  else {
+    leg = init_legend();
+  }
   std::map<std::string,aesthetic> styles;
   init_hist_styles(styles);
-  // signal->SetMaximum(1.2*signal->GetMaximum());
   
-  THStack* stack = build_stack(base_hist,&leg,styles,cut_expr);
-  TIter next(stack->GetHists());
+  THStack* stack = build_stack(base_hist,leg,styles,cut_expr);
+
+  double N_sig = signal->Integral();
+  TH1* tot_syst_err=(TH1*)stack->GetStack()->Last()->Clone("tot_syst_err");
+  double N_MC = tot_syst_err->Integral();
+  for(int i =0; i < tot_syst_err->GetNbinsX(); i++){
+    tot_syst_err->SetBinError(i,0);
+  }
+
   TH1* hist = NULL;
+  for(int i = 0; i < stack->GetStack()->GetEntries(); i++){
+    hist = dynamic_cast<TH1*>(stack->GetStack()->At(i));
+    hist->Scale(N_sig/N_MC);
+  }
+  TIter next(stack->GetHists());
   while((hist=dynamic_cast<TH1*>(next()))){
-    MSG_DEBUG(hist->GetName());
-    /*
     if(std::string(hist->GetName()).find("global_syst_err")!=std::string::npos){
+      MSG("Removing: "<<hist->GetName());
       stack->RecursiveRemove(hist);
       break;
     }
-    */
   }
-  stack->Draw("H e1");
-  signal->Draw("e0 same");
-  double s_max=stack->GetStack()!=NULL ? ((TH1*)stack->GetStack()->Last())->GetMaximum() : 0.;
-  double m_max=signal->GetMaximum();
-  // MSG_DEBUG("Stack: "<<s_max<<" Master: "<<m_max);
-  signal->SetMaximum((s_max > m_max ? s_max : m_max)*1.2);
-  stack->SetMaximum((s_max > m_max ? s_max : m_max)*1.2);
+  tot_syst_err->Add(hist);
+  tot_syst_err->Scale(N_sig/N_MC);
 
-  leg.Draw();
-  add_atlas_badge(canv,0.2,0.9,lumi,INTERNAL);
-  add_to_legend(&leg,signal,styles["data"]);
+  stack->Draw("HIST");
+  stack->GetXaxis()->SetTitle(signal->GetXaxis()->GetTitle());
+  stack->GetYaxis()->SetTitle(signal->GetYaxis()->GetTitle());
+  
+  signal->Draw("e0 same");
+  tot_syst_err->SetFillColor(TColor::GetColorTransparent(kBlack,0.4));
+  tot_syst_err->SetLineColor(TColor::GetColorTransparent(kBlack,0.4));
+  tot_syst_err->SetMarkerColor(TColor::GetColorTransparent(kBlack,0.4));
+  tot_syst_err->Draw("e2 same");
+  double s_max=stack->GetMaximum();
+  double m_max=signal->GetMaximum();
+
+  double sf = canv.GetLogy() ? 5 : 1.4;
+  if(std::string(base_hist->GetName()).find("eta")!=std::string::npos){
+    sf = 1.6;
+  }
+  stack->SetMaximum((std::max(s_max,m_max))*sf);
+  if(!canv.GetLogy()){
+    stack->SetMinimum(std::min(signal->GetMinimum(),stack->GetMinimum()));
+  }
+  leg->Draw();
+  add_atlas_badge(canv,0.2,0.9,lumi);
+  add_to_legend(leg,signal,styles["data"]);
   char outname[256];
   snprintf(outname,sizeof(outname)/sizeof(*outname),
 	   "%s_sbs_p8%s",base_hist->GetName(),suffix);
   canv.SaveAs(outname);
-  // snprintf(outname,sizeof(outname)/sizeof(*outname),
-  // 	   "%s_sbs_p8%s",base_hist->GetName(),".root");
-  // canv.SaveAs(outname);
 }
 
 RooAbsPdf* find_component(RooAbsPdf* PDF,const char* name){
