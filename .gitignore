@@ -18,6 +18,8 @@
 # images
 *.pdf
 *.png
+# archives
+*.tar*
 
 # ROOT
 *.root*
@@ -46,4 +48,9 @@ truth-study-plots
 /bin/print-plot-panels
 /bin/skim-tree-response
 /bin/test-err-prop
+/bin/fit
+/bin/sbs
+/bin/splot
 /bin/tree-bug
+/bin/split-tree
+/bin/print-syst-plots
