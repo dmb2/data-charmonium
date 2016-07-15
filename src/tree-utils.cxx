@@ -105,7 +105,6 @@ std::vector<TLorentzVector> buildMuons(const std::vector<double>* pt,
   }
   return muons;
 }
-
 std::pair<TLorentzVector,TLorentzVector> buildJPsiCand(const std::vector<TLorentzVector>& muons, const std::vector<int>& charge){
   std::pair<TLorentzVector,TLorentzVector> cand;
   TLorentzVector cand4vec;
