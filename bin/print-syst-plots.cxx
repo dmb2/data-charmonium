@@ -50,10 +50,10 @@ int main(const int argc, const char* argv[]){
   syst_leg["MuonSmearedIDUp"]="Muon ID Resolution";
   syst_leg["MuonSmearedMSUp"]="Muon MS Resolution";
   syst_leg["MuonSmearedUp"]="Muon Scale";
-  syst_leg["TrackZFilteredJets"]="Track Efficiency";
-  syst_leg["TrackZRadialScaledUpJets"]="Track Radial Scale";
-  syst_leg["TrackZScaledUpJets"]="Track Sagitta Scale";
-  syst_leg["TrackZSmearedJets"]="Track Resolution";
+  syst_leg["TrackZFilteredJPsiJets"]="Track Efficiency";
+  syst_leg["TrackZRadialScaledUpJPsiJets"]="Track Radial Scale";
+  syst_leg["TrackZScaledUpJPsiJets"]="Track Sagitta Scale";
+  syst_leg["TrackZSmearedJPsiJets"]="Track Resolution";
   
   for(std::map<std::string,TFile*>::const_iterator f=files.begin(); f!=files.end();++f){
     MSG_DEBUG(f->first<<" => "<<colors.at(idx));
