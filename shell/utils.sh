@@ -21,7 +21,7 @@ get_and_manage(){
     local DSET; local TAG; local LABEL;
     DSET=$(echo $1 | sed 's,/$,_EXT0,g')
     TAG=$(echo $DSET | awk -F '.' '{print $5}' | awk -F '-' '{print $1}')
-    LABEL=$(echo $DSET | awk -F '.' '{print $5}' | awk -F '-' '{print $2 "-" $3}' | sed 's,_EXT0,,g')
+    LABEL=$(echo $DSET | awk -F '.' '{print $5}' | awk -F '-' '{for(i=2;i<NF;i++) printf "%s",$i "-"; if(NF) printf "%s",$NF; printf ORS}' | sed 's,_EXT0,,g')
     rucio download user.davidb:$DSET
     dset-manage -r root://eosatlas.cern.ch//eos/atlas/user/d/davidb/charm/NTUP -t $TAG -l $LABEL $DSET
     rm -rf $DSET
