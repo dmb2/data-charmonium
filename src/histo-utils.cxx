@@ -324,13 +324,13 @@ TH1* build_syst_err_hist(TH1* base_hist, const std::string& samp_name,
   std::map<std::string,std::string> syst_map;
   syst_map["MuonEfficiency"]="";
   syst_map["MuonSmearedUp"]="MuonSmearedLow";
-  syst_map["TrackZRadialScaledUpJets"]="TrackZRadialScaledDownJets";
-  syst_map["TrackZScaledUpJets"]="TrackZScaledDownJets";
+  syst_map["TrackZRadialScaledUpJPsiJets"]="TrackZRadialScaledDownJPsiJets";
+  syst_map["TrackZScaledUpJPsiJets"]="TrackZScaledDownJPsiJets";
   syst_map["MuonSmearedIDUp"]="";
   syst_map["MuonSmeared"]="";
   syst_map["MuonSmearedMSUp"]="";
-  syst_map["TrackZFilteredJets"]="";
-  syst_map["TrackZSmearedJets"]="";
+  syst_map["TrackZFilteredJPsiJets"]="";
+  syst_map["TrackZSmearedJPsiJets"]="";
   char fname[256];
   snprintf(fname,LEN(fname),"%s.mini.root",samp_name.c_str());
   TTree* tree = retrieve<TTree>(fname,"mini");

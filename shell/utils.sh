@@ -104,7 +104,7 @@ process_systematics(){
     local FILE=$1
     local DSID=$(echo $(basename $FILE) | awk -F '.' '{print $1}')
     local XS=$(grep "$DSID" cross_sections.conf | awk -F '=' '{print $2}')
-    skim-tree Systematics.conf $FILE $(echo $(basename $FILE .root)).mini.root $XS
+    skim-tree -c Systematics.conf -i $FILE -o $(echo $(basename $FILE .root)).mini.root -x $XS
     mkdir -p "$DSID-systematics"
     mv $DSID.{M,T}*.mini.root "$DSID-systematics/"
     summarize_systematics $(echo $(basename $FILE .root)).mini.root
