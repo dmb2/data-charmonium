@@ -136,10 +136,30 @@ rename_files(){
 	mv ${key}*.mini.root "${name_map[$key]}.mini.root"
     done
 }
+strip_slice_name(){
+    local BRANCH_NAME="$1"
+    for f in $(find . -name *.root | grep "${BRANCH_NAME}"); 
+    do 
+    	mv "$f" $(echo "$f" | sed s,"${BRANCH_NAME}_[0-9]*_[0-9]*.",,2); 
+    done
+}
+organize_slice_files(){
+    local BRANCH_NAME="$1"
+    for dir in "${BRANCH_NAME}"*/; 
+    do 
+    	for dsid in 20802{4..8}; 
+    	do 
+    	    mkdir -p "$dir/$dsid-systematics/"
+    	    mv "$dir/${dsid}."{M,T}*.mini.root "$dir/$dsid-systematics/";
+    	done;
+    	mv "$dir/full2012.mini"{.mini,}.root
+    	mv "$dir/non_prompt.mini"{.mini,}.root
+    done
+}
 setup_slices(){
     local BRANCH_NAME="$1"
-    local BIN_VALS="$3"
     local INIT_VAL="$2"
+    local BIN_VALS="$3"
     # 20802{4..8} non_prompt.mini.root full2012.mini.root
     for dsid in  20802{4..8}-systematics/ 20802{4..8} non_prompt full2012
     do
@@ -152,19 +172,18 @@ setup_slices(){
 	done
     done
     cd slices;
-    for f in $(find . -name *.root | grep ${BRANCH_NAME}); 
-    do 
-	mv $f $(echo $f | sed s,${BRANCH_NAME}_[0-9]*_[0-9]*.,,2); 
-    done
-    for dir in ${BRANCH_NAME}*/; 
-    do 
-	for dsid in 20802{4..8}; 
-	do 
-	    mkdir -p $dir/$dsid-systematics/
-	    mv $dir/$dsid.{M,T}*.mini.root $dir/$dsid-systematics/;
-	done;
-	mv $dir/full2012.mini{.mini,}.root
-	mv $dir/non_prompt.mini{.mini,}.root
-    done
+    strip_slice_name "${BRANCH_NAME}"
+    organize_slice_files "${BRANCH_NAME}"
     cd ../;
+}
+analyze_slices(){
+    local BRANCH_NAME="$1"
+    local OLDPWD="$PWD"
+    for dir in "slices/${BRANCH_NAME}"*/
+    do
+	cd "$dir"
+	fit -i full2012.mini.root -t mini -l 19.5 -o fitresult.root -s 
+	# splot -i full2012.mini.root -t mini -l 19.5 -r fitresult.root
+	cd "$OLDPWD"
+    done
 }

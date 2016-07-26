@@ -360,11 +360,13 @@ TH1* build_syst_err_hist(TH1* base_hist, const std::string& samp_name,
     TH1* syst_down_hist = make_normal_hist(base_hist,down_tree,base_hist->GetName(),
 					   mu_eff ? (std::string(cut_expr)+"*(1-SFTotalErr)").c_str():cut_expr,
 					   samp_name+"_syst_down");
-    syst_up_hist->Add(syst_down_hist,-sf);
+    syst_up_hist->Add(syst_down_hist,-1.0);
+    syst_up_hist->Scale(sf);
     add_err(tot_err,syst_up_hist);
   }
   return tot_err;
 }
+
 void scale_errors(TH1* hist){
   double err(0);
   double content(0);
@@ -441,17 +443,20 @@ void print_corr_plot(TH1* base_hist, const std::string disc_name,
 			base_hist->GetNbinsX(), base_hist->GetXaxis()->GetXmin(),
 			base_hist->GetXaxis()->GetXmax(),
 			n_bins,min,max);
+  hist->GetXaxis()->SetTitle(base_hist->GetXaxis()->GetTitle());
+  hist->GetYaxis()->SetTitle(disc_name=="jpsi_tau" ? "Lifetime [ps]" : "Mass [GeV]");
   std::string draw_expr = disc_name+ std::string(":") + plot_name;
   draw_histo(tree,draw_expr.c_str(), hist->GetName(), weight_expr);
   TCanvas canv("canv","Correlation canvas",600,600);
   hist->Draw("COLZ");
+  canv.SetRightMargin(0.16);
   TLatex decorator;
   decorator.SetTextSize(0.04);
   char corr_str[256];
   snprintf(corr_str,256,"Global Correlation: %.5g",hist->GetCorrelationFactor());
   MSG_DEBUG(corr_str);
   add_atlas_badge(canv,0.2,0.9,lumi);
-  decorator.DrawLatexNDC(0.0,0.05,corr_str);
-  decorator.DrawLatexNDC(0.5,0.0,base_hist->GetTitle());
+  decorator.DrawLatexNDC(0.02,0.05,corr_str);
+  // decorator.DrawLatexNDC(0.5,0.0,base_hist->GetTitle());
   canv.SaveAs((plot_name+suffix).c_str());
 }

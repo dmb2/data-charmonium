@@ -75,8 +75,8 @@ RooAbsPdf* background_pdf(RooRealVar* mass,
   RooDecay* non_prompt_tau_bkg = new RooDecay("NonPromptTauBkg","Non Prompt Tau Decay",*tau,*nplt,*tau_resolution,RooDecay::SingleSided);
   
   RooRealVar* Pc1 = new RooRealVar("Pc1","Slope", -0.26, -0.5,0.5);
-  RooRealVar* Pc2 = new RooRealVar("Pc2","Slope", -0.26, -0.5,0.5);
-  RooRealVar* Pc3 = new RooRealVar("Pc3","Slope", -0.26, -0.5,0.5);
+  RooRealVar* Pc2 = new RooRealVar("Pc2","Slope", 0, -0.5,0.5);
+  RooRealVar* Pc3 = new RooRealVar("Pc3","Slope", 0, -0.5,0.5);
   RooPolynomial* non_prompt_mass_bkg = NULL;
   switch(n){
   case 1:

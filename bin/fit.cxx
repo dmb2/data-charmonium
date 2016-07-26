@@ -31,11 +31,13 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
 	      const double lumi, const char* outFName,bool do_syst){
   RooDataSet data("data","data",RooArgSet(*mass,*tau),RooFit::Import(*tree));
   std::map<std::string,RooAbsPdf*> syst_pdfs;
+  TFile* file = TFile::Open(outFName,"UPDATE");
+  
   if(do_syst){
     RooWorkspace* syst_ws = NULL;
     syst_pdfs["resolution"]=build_model(mass,tau,data.numEntries(),1,true);
     syst_pdfs["lifetime"]=build_model(mass,tau,data.numEntries(),1,false,false,true);
-    syst_pdfs["mass0"]=build_model(mass,tau,data.numEntries(),0);
+    // syst_pdfs["mass0"]=build_model(mass,tau,data.numEntries(),0);
     syst_pdfs["mass2"]=build_model(mass,tau,data.numEntries(),2);
     syst_pdfs["mass3"]=build_model(mass,tau,data.numEntries(),3);
     syst_pdfs["mass_exp"]=build_model(mass,tau,data.numEntries(),1,false,true);
@@ -45,10 +47,11 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
     for(std::map<std::string,RooAbsPdf*>::iterator it=syst_pdfs.begin(); it !=syst_pdfs.end(); ++it){
       const std::string& syst_name = it->first;
       RooAbsPdf* syst_pdf = it->second;
-      syst_ws = new RooWorkspace("workspace",("Workspace for syst variation "+syst_name).c_str());
+      syst_ws = new RooWorkspace(("workspace_"+syst_name).c_str(),("Workspace for syst variation "+syst_name).c_str());
       fit_pdf(syst_pdf,data,mass,tau,lumi,syst_name,*syst_ws);
       syst_ws->Print();
-      syst_ws->writeToFile((syst_name+"_"+outFName).c_str());
+      // syst_ws->writeToFile(outFName,false);
+      syst_ws->Write();
     }
   }
   
@@ -56,7 +59,10 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
   RooAbsPdf* model = build_model(mass,tau,data.numEntries());
   fit_pdf(model,data,mass,tau,lumi,"",w);
   w.Print();
-  w.writeToFile(outFName);
+  // w.writeToFile(outFName);
+  w.Write();
+  file->Write();
+  file->Close();
 }
 int main(const int argc, char* const argv[]){
   char* inFName=NULL;

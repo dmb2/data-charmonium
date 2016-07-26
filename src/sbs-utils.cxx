@@ -282,8 +282,7 @@ void splot_to_hist(const RooRealVar& interest_var,const RooDataSet& data,TH1* hi
   rooplot_to_hist(frame,hist);
   delete frame;
 }
-std::pair<TH1*,TH1*> print_splot_stack(TTree* tree, TH1* base_hist, const char* suffix,
-		       const double lumi,RooWorkspace* wkspc){
+std::pair<TH1*,TH1*> make_splot(TTree* tree, TH1* base_hist, RooWorkspace* wkspc){
   const std::string plot_name(base_hist->GetName());
   RooAbsPdf& model = *wkspc->pdf("model");
   RooAbsPdf& Signal = *wkspc->pdf("ext_sig");
@@ -308,6 +307,10 @@ std::pair<TH1*,TH1*> print_splot_stack(TTree* tree, TH1* base_hist, const char* 
   TH1* bkg_final = dynamic_cast<TH1*>(base_hist->Clone((plot_name+"_splot_bkg").c_str()));
   splot_to_hist(interest_var,data_signal,sig_final);
   splot_to_hist(interest_var,data_background,bkg_final);
+  return std::pair<TH1*,TH1*>(sig_final,bkg_final);
+}
+void print_splot_stack(TTree* tree,TH1* base_hist,TH1* sig_final,TH1* bkg_final,const char* signal_cut_expr, const double lumi, const char* suffix){
+  const std::string plot_name(base_hist->GetName());
   TCanvas canv("canv","SPlot diagnostic Canvas",600,600);
   TLegend* leg = init_legend();
   if(plot_name=="jet_z"){
@@ -317,10 +320,8 @@ std::pair<TH1*,TH1*> print_splot_stack(TTree* tree, TH1* base_hist, const char* 
   std::map<std::string,aesthetic> styles;
   init_hist_styles(styles);
   // Signal Hist
-  const std::string signal_cut_expr = make_cut_expr(mass.getBinningNames(),"Sig")+ " && "
-    + make_cut_expr(tau.getBinningNames(),"Sig");
   TH1* sig_hist = make_normal_hist(base_hist, tree, plot_name.c_str(),
-				   signal_cut_expr.c_str(),"_stk_sig");
+				   signal_cut_expr,"_stk_sig");
   make_transparent(styles["background"],0.6);
   style_hist(sig_hist,styles["data"]);
   add_to_legend(leg,sig_hist,styles["data"]);
@@ -344,9 +345,6 @@ std::pair<TH1*,TH1*> print_splot_stack(TTree* tree, TH1* base_hist, const char* 
   // draw_ratios(ratio_pad,&list);
   bkg_final->Add(sig_final);
   bkg_final->Draw("HIST same");
-  // TList list;
-  // list.Add(sig_hist);
-  // list.Add(bkg_final);
   TH1* ratio = dynamic_cast<TH1*>(sig_hist->Clone("ratio"));
   ratio_pad->cd();
   ratio->Divide(bkg_final);
@@ -356,9 +354,7 @@ std::pair<TH1*,TH1*> print_splot_stack(TTree* tree, TH1* base_hist, const char* 
   snprintf(outname,256,"%s_splot%s",plot_name.c_str(),suffix);
   add_atlas_badge(canv,0.2,0.9,lumi);
   canv.SaveAs(outname);
-  return std::pair<TH1*,TH1*>(sig_final,bkg_final);
 }
-
 TH1* print_sbs_stack(TTree* tree, TH1* base_hist, const char* suffix,
 		     std::map<std::string,sb_info> sep_var_info, 
 		     const double lumi){
