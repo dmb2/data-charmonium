@@ -103,17 +103,17 @@ int main(const int argc, char* const argv[]){
 	   lumi);
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
-  const char* variables[] = {"delta_r","jet_pt","jet_eta", "jet_e",
-			     "jet_z" ,
-			     "jpsi_pt","jpsi_eta",
-			     "tau1","tau2", "tau3","tau21","tau32"
+  const char* variables[] = {//"delta_r","jet_pt","jet_eta", "jet_e",
+			     // "jet_z" ,
+    "jpsi_pt"//,"jpsi_eta",
+			     //"tau1","tau2", "tau3","tau21","tau32"
   };
   for(size_t i=0; i < LEN(variables); i++){
     TH1* base_hist = HistBook[variables[i]];
     std::pair<TH1*,TH1*> final_hists=make_splot(tree,base_hist,&wkspc);
     TH1* sig_final = final_hists.first;
     TH1* bkg_final = final_hists.second;
-    
+    /* 
     TH1* bkg_tot_err = dynamic_cast<TH1*>(base_hist->Clone((base_hist->GetName()+std::string("_bkg_tot_err")).c_str()));
     TH1* sig_tot_err = dynamic_cast<TH1*>(base_hist->Clone((base_hist->GetName()+std::string("_sig_tot_err")).c_str()));
     // loop over workspaces, splot them, add in quadrature
@@ -125,21 +125,12 @@ int main(const int argc, char* const argv[]){
       TH1* sig_syst_hist = syst_var_hists.first;
       TH1* bkg_syst_hist = syst_var_hists.second;
       sig_syst_hist->Add(sig_final,-1);
-      sig_syst_hist->Scale(0.5);
       bkg_syst_hist->Add(bkg_final,-1);
-      bkg_syst_hist->Scale(0.5);
       add_err(bkg_tot_err,bkg_syst_hist);
       add_err(sig_tot_err,sig_syst_hist);
     }
     add_err(sig_final,sig_tot_err);
     add_err(bkg_final,bkg_tot_err);
-    // printf("Hist: %s",sig_tot_err->GetName());
-    // for(int i =0 ; i < sig_tot_err->GetNbinsX(); i++){
-    //   printf("%g %g %g %g\n",sig_final->GetBinContent(i),
-    // 	     sig_final->GetBinError(i),
-    // 	     sig_tot_err->GetBinContent(i),
-    // 	     sig_tot_err->GetBinError(i));
-    // }
     if(print_validation_plots){
       print_corr_plot(HistBook[variables[i]],"jpsi_tau",
 		      HistBook["jpsi_tau"]->GetNbinsX(),
@@ -151,8 +142,9 @@ int main(const int argc, char* const argv[]){
 		      tree,"_m_corr.pdf",lumi,cut_expr);
       print_bkg_splot(tree,bkg_final,".pdf",lumi,&wkspc);
     }
+    */
     print_splot_stack(tree,HistBook[variables[i]],sig_final,bkg_final,jpsi_sig_region.c_str(),lumi,".pdf");
-    print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
+    // print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
   }
   return 0;
 }
