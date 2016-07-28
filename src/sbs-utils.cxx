@@ -332,7 +332,9 @@ void print_splot_stack(TTree* tree,TH1* base_hist,TH1* sig_final,TH1* bkg_final,
   init_hist_styles(styles);
   // Signal Hist
   TH1* sig_hist = make_normal_hist(base_hist, tree, plot_name.c_str(),
-				   signal_cut_expr,"_stk_sig");
+				   ""/*signal_cut_expr*/,"_stk_sig");
+  TH1* draw_sig_final = (TH1*)sig_final->Clone("sig_final_canv");
+  draw_sig_final->Add(bkg_final);
   make_transparent(styles["background"],0.6);
   style_hist(sig_hist,styles["data"]);
   add_to_legend(leg,sig_hist,styles["data"]);
@@ -341,15 +343,16 @@ void print_splot_stack(TTree* tree,TH1* base_hist,TH1* sig_final,TH1* bkg_final,
   add_to_legend(leg,bkg_final,styles["background"]);
 
   make_transparent(styles["octet"],0.6);
-  style_hist(sig_final,styles["octet"]);
-  add_to_legend(leg,sig_final,styles["octet"]);
+  
+  style_hist(draw_sig_final,styles["octet"]);
+  add_to_legend(leg,draw_sig_final,styles["octet"]);
   dump_hist(sig_hist);
-  dump_hist(sig_final);
+  dump_hist(draw_sig_final);
   dump_hist(bkg_final);
   sig_hist->Draw("e0");
-  sig_final->DrawCopy("e2 same");
-  sig_final->SetFillStyle(0);
-  sig_final->DrawCopy("HIST same");
+  draw_sig_final->DrawCopy("e2 same");
+  draw_sig_final->SetFillStyle(0);
+  draw_sig_final->DrawCopy("HIST same");
   bkg_final->DrawCopy("e2 same");
   bkg_final->SetFillStyle(0);
   bkg_final->DrawCopy("HIST same");

@@ -135,16 +135,16 @@ int main(const int argc, char* const argv[]){
       print_corr_plot(HistBook[variables[i]],"jpsi_tau",
 		      HistBook["jpsi_tau"]->GetNbinsX(),
 		      -3*tau_width,3*tau_width,
-		      tree,"_tau_corr.pdf",lumi,cut_expr);
+		      tree,"_tau_corr.pdf",lumi,"");
       print_corr_plot(HistBook[variables[i]],"jpsi_m",HistBook["jpsi_m"]->GetNbinsX(),
 		      mass_mean-3*mass_width,
 		      mass_mean+3*mass_width,
-		      tree,"_m_corr.pdf",lumi,cut_expr);
+		      tree,"_m_corr.pdf",lumi,"");
       print_bkg_splot(tree,bkg_final,".pdf",lumi,&wkspc);
     }
     */
     print_splot_stack(tree,HistBook[variables[i]],sig_final,bkg_final,jpsi_sig_region.c_str(),lumi,".pdf");
-    // print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
+    // print_pythia_stack(HistBook[variables[i]],sig_final,lumi,"",".pdf");
   }
   return 0;
 }
