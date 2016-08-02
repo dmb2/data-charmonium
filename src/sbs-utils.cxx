@@ -227,6 +227,9 @@ void print_bkg_splot(TTree* tree, TH1* hist,const char* suffix, const double lum
 
   TCanvas canv("canv","SPlot diagnostic Canvas",600,600);
   TLegend* leg =  init_legend();
+  if(plot_name.find("pt")!=std::string::npos){
+    canv.SetLogy(true);
+  }
   if(plot_name=="jet_z"){
     delete leg;
     leg = init_legend(0.2,0.4,0.6,0.75);
@@ -245,14 +248,15 @@ void print_bkg_splot(TTree* tree, TH1* hist,const char* suffix, const double lum
   hist->Scale(1.0/hist->Integral());
   bkg_hist->Scale(1.0/bkg_hist->Integral());
   style_hist(bkg_hist,styles["data"]);
-  leg->AddEntry(bkg_hist,"Data Sidebands","lf");
+  leg->AddEntry(bkg_hist,"Data Sidebands","lp");
   make_transparent(styles["background"],0.6);
   style_hist(hist,styles["background"]);
   add_to_legend(leg,hist,styles["background"]);
   bkg_hist->Draw("e0");
   hist->DrawCopy("e2 same");
   hist->SetFillStyle(0);
-  hist->Draw("HIST same");
+  hist->DrawCopy("HIST same");
+  hist->SetFillStyle(styles["background"].fill_style);
   double sf = canv.GetLogy() ? 14 : 1.4;
   if(plot_name.find("eta")!=std::string::npos){
     sf = 1.6;
@@ -263,7 +267,7 @@ void print_bkg_splot(TTree* tree, TH1* hist,const char* suffix, const double lum
   }
   remove_axis(bkg_hist->GetXaxis());
   leg->Draw();
-  TList list(hist);
+  TList list;
   list.Add(hist);
   list.Add(bkg_hist);
   TPad* rpad = split_canvas(&canv,0.3);
@@ -332,9 +336,9 @@ void print_splot_stack(TTree* tree,TH1* base_hist,TH1* sig_final,TH1* bkg_final,
   init_hist_styles(styles);
   // Signal Hist
   TH1* sig_hist = make_normal_hist(base_hist, tree, plot_name.c_str(),
-				   ""/*signal_cut_expr*/,"_stk_sig");
+				   signal_cut_expr,"_stk_sig");
   TH1* draw_sig_final = (TH1*)sig_final->Clone("sig_final_canv");
-  draw_sig_final->Add(bkg_final);
+  add_bc(draw_sig_final,bkg_final);
   make_transparent(styles["background"],0.6);
   style_hist(sig_hist,styles["data"]);
   add_to_legend(leg,sig_hist,styles["data"]);
@@ -342,20 +346,23 @@ void print_splot_stack(TTree* tree,TH1* base_hist,TH1* sig_final,TH1* bkg_final,
   style_hist(bkg_final,styles["background"]);
   add_to_legend(leg,bkg_final,styles["background"]);
 
-  make_transparent(styles["octet"],0.6);
+  make_transparent(styles["signal"],0.6);
   
-  style_hist(draw_sig_final,styles["octet"]);
-  add_to_legend(leg,draw_sig_final,styles["octet"]);
-  dump_hist(sig_hist);
-  dump_hist(draw_sig_final);
+  style_hist(draw_sig_final,styles["signal"]);
+  add_to_legend(leg,draw_sig_final,styles["signal"]);
+  // dump_hist(sig_hist);
+  // dump_hist(draw_sig_final);
   dump_hist(bkg_final);
   sig_hist->Draw("e0");
   draw_sig_final->DrawCopy("e2 same");
+  
   draw_sig_final->SetFillStyle(0);
   draw_sig_final->DrawCopy("HIST same");
+  draw_sig_final->SetFillStyle(styles["signal"].fill_style);
   bkg_final->DrawCopy("e2 same");
   bkg_final->SetFillStyle(0);
   bkg_final->DrawCopy("HIST same");
+  bkg_final->SetFillStyle(styles["background"].fill_style);
   double sf = canv.GetLogy() ? 14 : 1.4;
   if(plot_name.find("eta")!=std::string::npos){
     sf = 1.6;
@@ -579,6 +586,8 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
   char outname[256];
   snprintf(outname,sizeof(outname)/sizeof(*outname),
 	   "%s_sbs_p8%s",base_hist->GetName(),suffix);
+  canv.SaveAs(outname);
+  snprintf(outname,256,"root_files/%s_sbs_p8.root",base_hist->GetName());
   canv.SaveAs(outname);
 }
 

@@ -378,6 +378,18 @@ void scale_errors(TH1* hist){
     hist->SetBinContent(i,content > 0 ? err/content : 0);
   }
 }
+void add_bc(TH1* hista, TH1* histb){
+  if(hista->GetNbinsX()!=histb->GetNbinsX()){
+    MSG_ERR("Bin size mismatch: "<<hista->GetNbinsX()<<" vs "<<histb->GetNbinsX());
+    return;
+  }
+  double val;
+  for(int i=0; i < hista->GetNbinsX(); i++){
+    // MSG_DEBUG("a: "<<str_rep(a)<< " b: "<<str_rep(b)<<" a+b: "<<str_rep(add(a,b)));
+    val = hista->GetBinContent(i)+histb->GetBinContent(i);
+    hista->SetBinContent(i,val);
+  }
+}
 void add_err(TH1* hista, TH1* histb){
   if(hista->GetNbinsX()!=histb->GetNbinsX()){
     MSG_ERR("Bin size mismatch: "<<hista->GetNbinsX()<<" vs "<<histb->GetNbinsX());

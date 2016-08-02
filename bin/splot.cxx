@@ -94,26 +94,29 @@ int main(const int argc, char* const argv[]){
 	     mass_mean + 6*mass_width);
   add_region(tau,"Sig", -3*tau_width,3*tau_width);
   add_region(tau,"SB",3*tau_width,50);
-  const std::string jpsi_sig_region = make_cut_expr(mass->getBinningNames(),"Sig") 
-    + " && " + make_cut_expr(tau->getBinningNames(),"Sig");
   char cut_expr[1024];
+  char data_cut_expr[1024];
   snprintf(cut_expr,sizeof(cut_expr)/sizeof(*cut_expr),
-	   "(%s)*weight*%.4g*SF",
-	   jpsi_sig_region.c_str(),
+	   "((jpsi_m > %g && jpsi_m < %g) && (jpsi_tau > %g && jpsi_tau < %g))*weight*%.4g*SF",
+	   mass->getMin(),mass->getMax(),
+	   tau->getMin(),tau->getMax(),
 	   lumi);
+  snprintf(data_cut_expr,sizeof(data_cut_expr)/sizeof(*data_cut_expr),
+	   "(jpsi_m > %g && jpsi_m < %g) && (jpsi_tau > %g && jpsi_tau < %g)",
+	   mass->getMin(),mass->getMax(),
+	   tau->getMin(),tau->getMax());
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
-  const char* variables[] = {//"delta_r","jet_pt","jet_eta", "jet_e",
-			     // "jet_z" ,
-    "jpsi_pt"//,"jpsi_eta",
-			     //"tau1","tau2", "tau3","tau21","tau32"
+  const char* variables[] = {"delta_r","jet_pt","jet_eta", "jet_e",
+			     "jet_z" ,
+			     "jpsi_pt","jpsi_eta",
+			     "tau1","tau2", "tau3","tau21","tau32"
   };
   for(size_t i=0; i < LEN(variables); i++){
     TH1* base_hist = HistBook[variables[i]];
     std::pair<TH1*,TH1*> final_hists=make_splot(tree,base_hist,&wkspc);
     TH1* sig_final = final_hists.first;
     TH1* bkg_final = final_hists.second;
-    /* 
     TH1* bkg_tot_err = dynamic_cast<TH1*>(base_hist->Clone((base_hist->GetName()+std::string("_bkg_tot_err")).c_str()));
     TH1* sig_tot_err = dynamic_cast<TH1*>(base_hist->Clone((base_hist->GetName()+std::string("_sig_tot_err")).c_str()));
     // loop over workspaces, splot them, add in quadrature
@@ -133,18 +136,16 @@ int main(const int argc, char* const argv[]){
     add_err(bkg_final,bkg_tot_err);
     if(print_validation_plots){
       print_corr_plot(HistBook[variables[i]],"jpsi_tau",
-		      HistBook["jpsi_tau"]->GetNbinsX(),
-		      -3*tau_width,3*tau_width,
-		      tree,"_tau_corr.pdf",lumi,"");
+      		      HistBook["jpsi_tau"]->GetNbinsX(),
+      		      tau->getMin(),tau->getMax(),
+      		      tree,"_tau_corr.pdf",lumi,cut_expr);
       print_corr_plot(HistBook[variables[i]],"jpsi_m",HistBook["jpsi_m"]->GetNbinsX(),
-		      mass_mean-3*mass_width,
-		      mass_mean+3*mass_width,
-		      tree,"_m_corr.pdf",lumi,"");
-      print_bkg_splot(tree,bkg_final,".pdf",lumi,&wkspc);
+      		      mass->getMin(),mass->getMax(),
+      		      tree,"_m_corr.pdf",lumi,cut_expr);
+      print_bkg_splot(tree,(TH1*)bkg_final->Clone(),".pdf",lumi,&wkspc);
     }
-    */
-    print_splot_stack(tree,HistBook[variables[i]],sig_final,bkg_final,jpsi_sig_region.c_str(),lumi,".pdf");
-    // print_pythia_stack(HistBook[variables[i]],sig_final,lumi,"",".pdf");
+    print_splot_stack(tree,HistBook[variables[i]],sig_final,bkg_final,data_cut_expr,lumi,".pdf");
+    print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
   }
   return 0;
 }

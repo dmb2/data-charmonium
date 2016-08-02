@@ -38,21 +38,54 @@ void draw_ratios(TPad* pad,TList* hist_list){
     ratios.push_back(dynamic_cast<TH1*>(hist->Clone((std::string(hist->GetName())+"_rat").c_str())));
   }
   TH1* base = dynamic_cast<TH1*>(ratios.at(0)->Clone("base"));
+  double draw_max(-999),draw_min(999);
+  int max_bin(-1),min_bin(-1);
   for(std::vector<TH1*>::iterator hist = ratios.begin(); hist!=ratios.end(); ++hist){
+    (*hist)->SetFillStyle(0);
     (*hist)->Divide(base);
+
+    max_bin=(*hist)->GetMaximumBin();
+    min_bin=(*hist)->GetMinimumBin();
+    if((*hist)->GetBinContent(max_bin)+
+       (*hist)->GetBinError(max_bin) > draw_max){
+      draw_max = (*hist)->GetBinContent(max_bin)+
+	(*hist)->GetBinError(max_bin);
+      MSG_DEBUG("Draw max: "<<draw_max);
+    }
+    if((*hist)->GetBinContent(min_bin)-
+       (*hist)->GetBinError(min_bin) < draw_min){
+      draw_min = (*hist)->GetBinContent(min_bin)-
+	(*hist)->GetBinError(min_bin);
+      MSG_DEBUG("Draw min: "<<draw_min);
+    }
+  }
+  if(draw_max > 2){
+    draw_max = 2;
+  }
+  if(draw_min < 0.0){
+    draw_min = 0.0;
+  }
+  MSG_DEBUG("Final draw max: "<<draw_max);
+  MSG_DEBUG("Final draw min: "<<draw_min);
+  TAxis* y_axis = ratios.front()->GetYaxis();
+  TAxis* x_axis = ratios.front()->GetXaxis();
+  y_axis->SetTitle("Ratio");
+  y_axis->SetTitleSize(0.15);
+  y_axis->SetTitleOffset(0.5);
+  y_axis->SetLabelSize(0.15);
+  y_axis->SetNdivisions(5);
+  x_axis->SetTitleSize(0.15);
+  x_axis->SetLabelSize(0.15);
+  x_axis->SetTickLength(0.07);
+  x_axis->SetTitleOffset(0.9);
+  ratios.front()->SetMinimum(draw_min);
+  ratios.front()->SetMaximum(draw_max);
+  ratios.front()->Draw("");
+  for(std::vector<TH1*>::iterator hist = ratios.begin()+1;
+      hist!=ratios.end(); ++hist){
     (*hist)->Draw("H same");
-    
-    TAxis* y_axis = (*hist)->GetYaxis();
-    TAxis* x_axis = (*hist)->GetXaxis();
-    y_axis->SetTitle("Ratio");
-    y_axis->SetTitleSize(0.15);
-    y_axis->SetTitleOffset(0.5);
-    y_axis->SetLabelSize(0.15);
-    y_axis->SetNdivisions(5);
-    x_axis->SetTitleSize(0.15);
-    x_axis->SetLabelSize(0.15);
-    x_axis->SetTickLength(0.07);
-    x_axis->SetTitleOffset(0.9);
+    // (*hist)->SetMinimum(-0.5);
+    // (*hist)->SetMaximum(3.0);
   }
 }
 void print_ratio_hist(std::map<std::string,TTree*>& samples, const std::string& plot,
