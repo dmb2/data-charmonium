@@ -117,6 +117,7 @@ int main(const int argc, char* const argv[]){
     std::pair<TH1*,TH1*> final_hists=make_splot(tree,base_hist,&wkspc);
     TH1* sig_final = final_hists.first;
     TH1* bkg_final = final_hists.second;
+    /*
     TH1* bkg_tot_err = dynamic_cast<TH1*>(base_hist->Clone((base_hist->GetName()+std::string("_bkg_tot_err")).c_str()));
     TH1* sig_tot_err = dynamic_cast<TH1*>(base_hist->Clone((base_hist->GetName()+std::string("_sig_tot_err")).c_str()));
     // loop over workspaces, splot them, add in quadrature
@@ -144,8 +145,9 @@ int main(const int argc, char* const argv[]){
       		      tree,"_m_corr.pdf",lumi,cut_expr);
       print_bkg_splot(tree,(TH1*)bkg_final->Clone(),".pdf",lumi,&wkspc);
     }
+    */
     print_splot_stack(tree,HistBook[variables[i]],sig_final,bkg_final,data_cut_expr,lumi,".pdf");
-    print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
+    // print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
   }
   return 0;
 }

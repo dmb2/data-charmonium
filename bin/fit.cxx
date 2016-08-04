@@ -32,7 +32,18 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
   RooDataSet data("data","data",RooArgSet(*mass,*tau),RooFit::Import(*tree));
   std::map<std::string,RooAbsPdf*> syst_pdfs;
   TFile* file = TFile::Open(outFName,"UPDATE");
-  
+  std::map<std::string,TH1D*> HistBook;
+  init_hist_book(HistBook);
+  const char* variables[] = {"delta_r","jet_pt","jet_eta", "jet_e",
+			     "jet_z" ,
+			     "jpsi_pt","jpsi_eta",
+			     "tau1","tau2", "tau3","tau21","tau32"
+  };
+  for(size_t i=0; i < LEN(variables); i++){
+    TH1* hist = HistBook[variables[i]];
+    
+      
+  }
   if(do_syst){
     RooWorkspace* syst_ws = NULL;
     syst_pdfs["resolution"]=build_model(mass,tau,data.numEntries(),1,true);
