@@ -3,6 +3,8 @@
 #include "root-sugar.hh"
 #include "tree-utils.hh"
 #include "Units.hh"
+#include "TH1.h"
+
 
 using namespace Units;
 
@@ -94,8 +96,7 @@ int passed_trigger(std::vector<std::string>& trigger_names){
 }
 std::vector<TLorentzVector> buildMuons(const std::vector<double>* pt, 
 				       const std::vector<double>* eta,
-				       const std::vector<double>* phi, 
-				       const std::vector<double>* e){
+				       const std::vector<double>* phi){
   std::vector<TLorentzVector> muons;
   muons.reserve(pt->size());
   TLorentzVector tmp;
@@ -139,4 +140,21 @@ double total_scale_factor(const std::vector<double>* scale_factors){
     total*=(*sf);
   }
   return total;
+}
+TTree* skim_tree(TTree* tree, std::map<std::string,TH1D*> HistBook,const char* variables[],size_t n_var){
+  std::string selection_expr;
+  char buff[1024];
+  for(size_t i=0; i < n_var; i++){
+    TH1* hist = HistBook[variables[i]];
+    double min = hist->GetBinLowEdge(0)+hist->GetBinWidth(0);
+    double max = hist->GetBinLowEdge(hist->GetNbinsX())+hist->GetBinWidth(hist->GetNbinsX());
+    snprintf(buff,LEN(buff),"(%g < %s && %s < %g)",min,hist->GetName(),hist->GetName(),max);
+    if(selection_expr!=""){
+      selection_expr+=" && ";
+    }
+    selection_expr += std::string(buff);
+  }
+  MSG_DEBUG(selection_expr);
+  return tree->CopyTree(selection_expr.c_str());
+
 }

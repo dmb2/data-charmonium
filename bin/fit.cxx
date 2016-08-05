@@ -2,10 +2,13 @@
 #include "root-sugar.hh"
 #include "histo-meta-data.hh"
 #include "fit-utils.hh"
+#include "tree-utils.hh"
 #include "histo-utils.hh"
 
 #include "TFile.h"
 #include "TTree.h"
+#include "TH1.h"
+#include "TAxis.h"
 
 #include "RooRealVar.h"
 #include "RooAbsPdf.h"
@@ -29,9 +32,7 @@ void fit_pdf(RooAbsPdf* pdf,RooDataSet& data,RooRealVar* mass, RooRealVar* tau,
 }
 void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
 	      const double lumi, const char* outFName,bool do_syst){
-  RooDataSet data("data","data",RooArgSet(*mass,*tau),RooFit::Import(*tree));
-  std::map<std::string,RooAbsPdf*> syst_pdfs;
-  TFile* file = TFile::Open(outFName,"UPDATE");
+  TFile* file = TFile::Open(outFName,"RECREATE");
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
   const char* variables[] = {"delta_r","jet_pt","jet_eta", "jet_e",
@@ -39,11 +40,9 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
 			     "jpsi_pt","jpsi_eta",
 			     "tau1","tau2", "tau3","tau21","tau32"
   };
-  for(size_t i=0; i < LEN(variables); i++){
-    TH1* hist = HistBook[variables[i]];
-    
-      
-  }
+  TTree* skimmed_tree = skim_tree(tree,HistBook,variables,LEN(variables));
+  RooDataSet data("data","data",RooArgSet(*mass,*tau),RooFit::Import(*skimmed_tree));
+  std::map<std::string,RooAbsPdf*> syst_pdfs;
   if(do_syst){
     RooWorkspace* syst_ws = NULL;
     syst_pdfs["resolution"]=build_model(mass,tau,data.numEntries(),1,true);
@@ -61,7 +60,6 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
       syst_ws = new RooWorkspace(("workspace_"+syst_name).c_str(),("Workspace for syst variation "+syst_name).c_str());
       fit_pdf(syst_pdf,data,mass,tau,lumi,syst_name,*syst_ws);
       syst_ws->Print();
-      // syst_ws->writeToFile(outFName,false);
       syst_ws->Write();
     }
   }

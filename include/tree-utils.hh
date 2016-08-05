@@ -10,6 +10,7 @@
 #include "TTree.h"
 
 typedef std::map<std::string,TTree*> tree_collection;
+class TH1D;
 
 struct sample {
   double xsec;
@@ -83,3 +84,5 @@ double get_impact_sig(const std::vector<double>& d0,
 		      const std::vector<double>& d0_err,
 		      const std::vector<int>& idx);
 double total_scale_factor(const std::vector<double>* scale_factors);
+
+TTree* skim_tree(TTree* tree, std::map<std::string,TH1D*> HistBook,const char* variables[],size_t n_var);
