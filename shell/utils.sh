@@ -178,12 +178,13 @@ setup_slices(){
 }
 analyze_slices(){
     local BRANCH_NAME="$1"
+    local CMD="$2"
     local OLDPWD="$PWD"
+    shift 2
     for dir in "slices/${BRANCH_NAME}"*/
     do
 	cd "$dir"
-	fit -i full2012.mini.root -t mini -l 19.5 -o fitresult.root -s 
-	# splot -i full2012.mini.root -t mini -l 19.5 -r fitresult.root
+	${CMD} $@
 	cd "$OLDPWD"
     done
 }
