@@ -19,6 +19,7 @@
 void usage(const char* name){
   MSG("Usage: "<<name<<" -i input.root -t tree_name -l lumi -o fitresult.root -s");
 }
+
 void fit_pdf(RooAbsPdf* pdf,RooDataSet& data,RooRealVar* mass, RooRealVar* tau,
 	     const double lumi,const std::string& name, RooWorkspace& wkspc){
   RooFitResult* result = Fit(pdf,data);
@@ -30,18 +31,11 @@ void fit_pdf(RooAbsPdf* pdf,RooDataSet& data,RooRealVar* mass, RooRealVar* tau,
   print_plot(mass,&data,pdf,"mass",";J/#psi Mass [GeV]",lumi,name!=""? name.c_str(): NULL);
   print_plot(tau,&data,pdf,"tau",";J/#psi Proper Decay Time [ps]",lumi,name!=""? name.c_str(): NULL);
 }
+
 void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
 	      const double lumi, const char* outFName,bool do_syst){
   TFile* file = TFile::Open(outFName,"RECREATE");
-  std::map<std::string,TH1D*> HistBook;
-  init_hist_book(HistBook);
-  const char* variables[] = {"delta_r","jet_pt","jet_eta", "jet_e",
-			     "jet_z" ,
-			     "jpsi_pt","jpsi_eta",
-			     "tau1","tau2", "tau3","tau21","tau32"
-  };
-  TTree* skimmed_tree = skim_tree(tree,HistBook,variables,LEN(variables));
-  RooDataSet data("data","data",RooArgSet(*mass,*tau),RooFit::Import(*skimmed_tree));
+  RooDataSet data("data","data",RooArgSet(*mass,*tau),RooFit::Import(*tree));
   std::map<std::string,RooAbsPdf*> syst_pdfs;
   if(do_syst){
     RooWorkspace* syst_ws = NULL;
@@ -63,16 +57,17 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
       syst_ws->Write();
     }
   }
-  
   RooWorkspace w("workspace","Workspace for Fit");
   RooAbsPdf* model = build_model(mass,tau,data.numEntries());
   fit_pdf(model,data,mass,tau,lumi,"",w);
   w.Print();
   // w.writeToFile(outFName);
   w.Write();
+
   file->Write();
   file->Close();
 }
+
 int main(const int argc, char* const argv[]){
   char* inFName=NULL;
   char* outFName=NULL;
@@ -110,16 +105,12 @@ int main(const int argc, char* const argv[]){
     outFName=(char*)calloc(16,sizeof(char));
     strncpy(outFName,"fitresult.root",16);
   }
-  
   setup_global_style();
-
   TFile* file = TFile::Open(inFName);
   TTree* tree = retrieve<TTree>(file,tree_name);
   MSG_DEBUG("Fit result is stored in: "<<outFName);
-  
   RooRealVar *mass = new RooRealVar("jpsi_m","jpsi_m",JPSIMASS, JPSIMASS-0.4, JPSIMASS+0.5); // stay away from the psi(2S)
   RooRealVar *tau = new RooRealVar("jpsi_tau","Lifetime",-2.,5);
   jpsi_fit(tree,mass,tau,lumi,outFName,do_syst);
-  
   return 0;
 }

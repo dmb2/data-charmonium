@@ -113,13 +113,11 @@ int main(const int argc, char* const argv[]){
 			     "jpsi_pt","jpsi_eta",
 			     "tau1","tau2", "tau3","tau21","tau32"
   };
-  TTree* skimmed_tree = skim_tree(tree,HistBook,variables,LEN(variables));
   for(size_t i=0; i < LEN(variables); i++){
     TH1* base_hist = HistBook[variables[i]];
-    std::pair<TH1*,TH1*> final_hists=make_splot(skimmed_tree,base_hist,&wkspc);
+    std::pair<TH1*,TH1*> final_hists=make_splot(tree,base_hist,&wkspc);
     TH1* sig_final = final_hists.first;
     TH1* bkg_final = final_hists.second;
-    /*
     TH1* bkg_tot_err = dynamic_cast<TH1*>(base_hist->Clone((base_hist->GetName()+std::string("_bkg_tot_err")).c_str()));
     TH1* sig_tot_err = dynamic_cast<TH1*>(base_hist->Clone((base_hist->GetName()+std::string("_sig_tot_err")).c_str()));
     // loop over workspaces, splot them, add in quadrature
@@ -127,7 +125,7 @@ int main(const int argc, char* const argv[]){
 	it!=syst_wkspaces.end(); ++it){
       const std::string& syst_name = it->first;
       RooWorkspace* syst_w = it->second;
-      std::pair<TH1*,TH1*> syst_var_hists = make_splot(skimmed_tree,HistBook[variables[i]],syst_w);
+      std::pair<TH1*,TH1*> syst_var_hists = make_splot(tree,HistBook[variables[i]],syst_w);
       TH1* sig_syst_hist = syst_var_hists.first;
       TH1* bkg_syst_hist = syst_var_hists.second;
       sig_syst_hist->Add(sig_final,-1);
@@ -141,15 +139,14 @@ int main(const int argc, char* const argv[]){
       print_corr_plot(HistBook[variables[i]],"jpsi_tau",
       		      HistBook["jpsi_tau"]->GetNbinsX(),
       		      tau->getMin(),tau->getMax(),
-      		      skimmed_tree,"_tau_corr.pdf",lumi,cut_expr);
+      		      tree,"_tau_corr.pdf",lumi,cut_expr);
       print_corr_plot(HistBook[variables[i]],"jpsi_m",HistBook["jpsi_m"]->GetNbinsX(),
       		      mass->getMin(),mass->getMax(),
-      		      skimmed_tree,"_m_corr.pdf",lumi,cut_expr);
-      print_bkg_splot(skimmed_tree,(TH1*)bkg_final->Clone(),".pdf",lumi,&wkspc);
+      		      tree,"_m_corr.pdf",lumi,cut_expr);
+      print_bkg_splot(tree,(TH1*)bkg_final->Clone(),".pdf",lumi,&wkspc);
     }
-    */
-    print_splot_stack(skimmed_tree,HistBook[variables[i]],sig_final,bkg_final,data_cut_expr,lumi,".pdf");
-    // print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
+    print_splot_stack(tree,HistBook[variables[i]],sig_final,bkg_final,data_cut_expr,lumi,".pdf");
+    print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
   }
   return 0;
 }

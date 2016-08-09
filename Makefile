@@ -22,11 +22,14 @@ HISTO_DEPS:=$(COMMON_DEPS) src/stack-utils.o src/AtlasStyle.o\
 	src/histo-meta-data.o src/histo-utils.o\
 	src/plot-utils.o src/color.o src/math.o\
 	src/histo-style.o 
-.PHONY: all clean 
+.PHONY: all clean install-plots
 all: $(BINS)
 
-# KISS
-# this is why root sucks
+install-plots: 
+	mv *corr.pdf ~/Documents/JPsiJetSubstructure/plots/correlation/
+	mv *_sbs_p8.pdf ~/Documents/JPsiJetSubstructure/plots/
+	mv *_splot.pdf ~/Documents/JPsiJetSubstructure/plots/
+	mv *_bkg.pdf ~/Documents/JPsiJetSubstructure/plots/splot-bkg/
 src/dict.cxx: $(INCDIR)/LinkDef.h
 	rootcint -f $@ -c -I$(INCDIR) -p $^
 src/libDict.so: src/dict.cxx

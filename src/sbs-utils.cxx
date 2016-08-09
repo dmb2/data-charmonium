@@ -295,9 +295,7 @@ std::pair<TH1*,TH1*> make_splot(TTree* tree, TH1* base_hist, RooWorkspace* wkspc
   RooRealVar& tau  = *wkspc->var("jpsi_tau");
   RooRealVar& nsig = *wkspc->var("nsig");
   RooRealVar& nbkg = *wkspc->var("nbkg");
-  RooRealVar interest_var(base_hist->GetName(),base_hist->GetName(),
-			  base_hist->GetXaxis()->GetXmin(),
-			  base_hist->GetXaxis()->GetXmax());
+  RooRealVar interest_var(base_hist->GetName(),base_hist->GetName(), -1e10, 1e10);
   RooDataSet* data=new RooDataSet("data","data",RooArgSet(mass,tau,interest_var),RooFit::Import(*tree));
   RooFIter iter = model.getVariables()->fwdIterator();
   RooRealVar* var = NULL;
@@ -352,7 +350,7 @@ void print_splot_stack(TTree* tree,TH1* base_hist,TH1* sig_final,TH1* bkg_final,
   add_to_legend(leg,draw_sig_final,styles["signal"]);
   // dump_hist(sig_hist);
   // dump_hist(draw_sig_final);
-  dump_hist(bkg_final);
+  // dump_hist(bkg_final);
   sig_hist->Draw("e0");
   draw_sig_final->DrawCopy("e2 same");
   
