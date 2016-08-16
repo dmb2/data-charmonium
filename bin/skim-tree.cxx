@@ -16,7 +16,7 @@
 #include "TTree.h"
 using namespace Units;
 void usage(const char* prog_name){
-  MSG("Usage: "<<prog_name<< "-c config.conf -i inFile -o outfile -x xsec");
+  MSG("Usage: "<<prog_name<< " -c config.conf -i inFile -o outfile -x xsec");
   MSG("\t -i, -o, and -x options are optional if specified in config.conf");
 }
 template<typename T>

@@ -176,6 +176,28 @@ setup_slices(){
     organize_slice_files "${BRANCH_NAME}"
     cd ../;
 }
+publish_plots(){
+    local BRANCH_NAME="$1"
+    local NOTE_DIR="$2"
+    local OLDPWD="$PWD"
+    for dir in "slices/${BRANCH_NAME}"*/
+    do
+	cd "$dir"
+	 mkdir -p "${NOTE_DIR}/plots/${dir}"{correlation,splot-bkg,syst-plots-20802{4..8}}/
+	 mv *_corr.pdf "${NOTE_DIR}/plots/${dir}correlation/"
+	 mv *_bkg.pdf "${NOTE_DIR}/plots/${dir}splot-bkg/"
+	 mv *_splot.pdf "${NOTE_DIR}/plots/${dir}"
+	 mv *_sbs_p8.pdf "${NOTE_DIR}/plots/${dir}"
+	for dsid in 20802{4..8}
+	do
+	     summarize_systematics $dsid.*.mini.root
+	     print-syst-plots $dsid-systematics/$dsid.{M,T}*.hist.root
+	     mv *_syst.pdf "${NOTE_DIR}/plots/${dir}syst-plots-${dsid}/"
+	done
+	
+	cd "$OLDPWD"
+    done
+}
 analyze_slices(){
     local BRANCH_NAME="$1"
     local CMD="$2"
@@ -187,4 +209,13 @@ analyze_slices(){
 	${CMD} $@
 	cd "$OLDPWD"
     done
+}
+slice_to_tex(){
+    local slice="$1"
+    echo $slice | sed 's/n/-/g'|\
+	awk -F '_' '{print $(NF-1)/100 " GeV < " $2 " " $1 " < " $(NF)/100 " GeV"}' |\
+	sed 's/pt/$p_{T}(/g' |\
+	sed 's/eta/$\\eta(/g'|\
+	sed 's/rap/$y(/g'|\
+	sed 's/jpsi/J\/\\\\psi)$/g'
 }

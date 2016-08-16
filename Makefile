@@ -4,7 +4,7 @@ INCDIR=$(PWD)/include
 LIBDIR:=$(shell root-config --libdir)
 ROOTSYS:=$(shell root-config --prefix)
 ROOTINCDIR:=$(shell root-config --incdir)
-LDFLAGS:=$(shell root-config --libs) -lRooStats
+LDFLAGS:=$(shell root-config --libs)
 WFLAGS= -Wextra -Wall 
 DFLAGS=-O0 -g3 -fno-inline #-fprofile-arcs -ftest-coverage 
 CXXFLAGS:=$(shell root-config --cflags)\
@@ -46,18 +46,20 @@ bin/skim-tree:  $(SKIM_DEPS) bin/skim-tree.o src/analyze-tree.o src/libDict.so
 	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -l Dict
 bin/skim-tree-response: $(SKIM_DEPS) bin/skim-tree.o src/analyze-cut-tree.o src/libDict.so
 	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -l Dict
+bin/plot-slices: $(HISTO_DEPS) bin/plot-slices.o
+	$(CC) $^ -o $@ $(LDFLAGS)
 bin/print-plot-panels: $(HISTO_DEPS) bin/print-plot-panels.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 bin/%-plots: $(HISTO_DEPS) bin/%-plots.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 bin/fit-and-sbs: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS)  bin/fit-and-sbs.o 
-	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS)
+	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats
 bin/fit: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) src/tree-utils.o bin/fit.o 
-	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS)
+	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats
 bin/sbs: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) bin/sbs.o 
-	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS)
+	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats
 bin/splot: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) src/tree-utils.o bin/splot.o 
-	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS)
+	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats
 bin/test-err-prop: bin/test-err-prop.o src/math.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 bin/cut-flow-plots: $(HISTO_DEPS) bin/cut-flow-plots.o
