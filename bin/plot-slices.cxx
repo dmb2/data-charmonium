@@ -167,16 +167,21 @@ int main(const int argc, char* const argv[]){
     if(std::string(draw_obj.front()->ClassName())=="TH1D"){
       hist = dynamic_cast<TH1D*>(draw_obj.front());
       if(idx%n_cols!=1){
+	hist->GetYaxis()->SetNdivisions(0);
 	hist->GetYaxis()->SetAxisColor(kWhite);
+	remove_axis(hist->GetYaxis());
       }
-      if(std::string(hist->GetName()).find("sig")!=std::string::npos){
+      if(N_sig == 0 && std::string(hist->GetName()).find("sig")!=std::string::npos){
 	N_sig = hist->Integral();
-	MSG_DEBUG("Signal "<<hist->GetName()<<" hist integral: "<<N_sig);
       }
       hist->SetMaximum(draw_max);
-      hist->Draw("HIST");
+      hist->SetFillStyle(0);
+      hist->SetLineWidth(0);
+      hist->SetMarkerColor(kBlack);
+      hist->Draw("E");
     }
     std::string draw_opt("same ");
+    bool draw_copy=true;
     for(std::vector<TObject*>::iterator d_itr = draw_obj.begin()+1;
     	d_itr!=draw_obj.end(); ++d_itr){
       const std::string class_name((*d_itr)->ClassName());
@@ -185,7 +190,6 @@ int main(const int argc, char* const argv[]){
 	hist->SetMaximum(draw_max);
 	if(std::string(hist->GetName()).find("sig")!=std::string::npos){
 	  N_sig = hist->Integral();
-	  MSG_DEBUG("Signal "<<hist->GetName()<<" hist integral: "<<N_sig);
 	}
 	if(std::string(hist->GetName())=="tot_syst_err"){
 	  err_hist=hist;
@@ -193,17 +197,41 @@ int main(const int argc, char* const argv[]){
 	  hist->SetFillColor(TColor::GetColorTransparent(kBlack,0.4));
 	  hist->SetLineColor(TColor::GetColorTransparent(kBlack,0.4));
 	  hist->SetMarkerColor(TColor::GetColorTransparent(kBlack,0.4));
-	  draw_opt+=("e2");
+	  draw_opt=("e2 same");
 	}
+	if(std::string(hist->GetName()).find("copy")!=std::string::npos){
+	  if(!draw_copy ){
+	    draw_copy=true;
+	    continue;
+	  }
+	  if(leg){
+	    TIter iter(leg->GetListOfPrimitives());
+	    TLegendEntry* entry;
+	    while((entry=dynamic_cast<TLegendEntry*>(iter()))){
+	      MSG_DEBUG(entry->GetFillColor()<<" "<<entry->GetLabel()<<" "<<entry->GetObject());
+	      if(std::string(entry->GetLabel())=="Background" &&
+		 std::string(hist->GetName()).find("bkg")!=std::string::npos){
+		hist->SetFillColor(TColor::GetColorTransparent(entry->GetFillColor(),0.6));
+		hist->SetLineColor(TColor::GetColorTransparent(entry->GetFillColor(),0.6));
+		hist->SetMarkerColor(TColor::GetColorTransparent(entry->GetFillColor(),0.6));
+	      }
+	      if(std::string(entry->GetLabel())=="Signal" &&
+		 std::string(hist->GetName()).find("sig")!=std::string::npos){
+		hist->SetFillColor(TColor::GetColorTransparent(entry->GetFillColor(),0.6));
+		hist->SetLineColor(TColor::GetColorTransparent(entry->GetFillColor(),0.6));
+		hist->SetMarkerColor(TColor::GetColorTransparent(entry->GetFillColor(),0.6));
+	      }
+	    }
+	  }
+	  hist->SetMarkerStyle(kDot);
+	  draw_opt=("e2 same");
+	  TH1D* hl = dynamic_cast<TH1D*>(hist->Clone("H"));
+	  hl->SetFillStyle(0);
+	  hl->Draw("HIST same");
+	}
+	MSG_DEBUG("Drawing "<<hist<<" name: "<<hist->GetName()<<" "<<draw_opt);
 	hist->Draw(draw_opt.c_str());
-      }
-      if(class_name=="THStack"){
-	THStack* hstack = dynamic_cast<THStack*>(*d_itr);
-	hstack->SetMaximum(draw_max);
-	TH1* hs = dynamic_cast<TH1*>(hstack->GetStack()->Last());
-	N_MC=hs->Integral();
-	MSG_DEBUG("Total stack integral: "<<N_MC);
-	hstack->Draw("same");
+	draw_copy=false;
       }
     }
     if(hstack){
