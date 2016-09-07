@@ -85,9 +85,9 @@ int main(const int argc, char* const argv[]){
       }
     }
     parts = split_string(slice_dir,'_');
-    int hi_edge = atoi(parts.at(parts.size()-2).c_str());
-    int lo_edge = atoi(parts.at(parts.size()-1).c_str());
-    snprintf(pretty_name,256,"%.2g < p_T(J/#psi) < %.2g",lo_edge/100.0,hi_edge/100.0);
+    int lo_edge = atoi(parts.at(parts.size()-2).c_str());
+    int hi_edge = atoi(parts.at(parts.size()-1).c_str());
+    snprintf(pretty_name,256,"%.3g GeV < p_{T}(J/#psi) < %.3g GeV",lo_edge/100.0,hi_edge/100.0);
     TFile* file = TFile::Open(fname.c_str());
     TKey* key = dynamic_cast<TKey*>(file->GetListOfKeys()->First());
     TCanvas *c1 = dynamic_cast<TCanvas*>(key->ReadObj());
@@ -128,8 +128,13 @@ int main(const int argc, char* const argv[]){
   size_t idx=0;
   TH1D* err_hist;
   TVirtualPad* pad;
+  TLatex decorator;
+  decorator.SetTextSize(0.06);
   for(std::map<std::string,std::vector<TObject*> >::iterator itr=draw_map.begin();
       itr!=draw_map.end(); ++itr){
+    const std::string& name = itr->first;
+    std::vector<TObject*>& draw_obj = itr->second;
+    MSG_DEBUG(name);
     idx++;
     pad = canv.cd(idx);
     pad->SetTickx(0);
@@ -144,8 +149,6 @@ int main(const int argc, char* const argv[]){
     
     double N_sig;
     double N_MC;
-    const std::string& name = itr->first;
-    std::vector<TObject*>& draw_obj = itr->second;
     TH1D* hist = nullptr;
     THStack* hstack = nullptr;
     if(std::string(draw_obj.front()->ClassName())=="THStack"){
@@ -166,6 +169,12 @@ int main(const int argc, char* const argv[]){
     }
     if(std::string(draw_obj.front()->ClassName())=="TH1D"){
       hist = dynamic_cast<TH1D*>(draw_obj.front());
+      std::string hname(hist->GetName());
+      if(hname.find("tau1")!=std::string::npos  ||
+	 (hname.find("tau2")!=std::string::npos && hname.find("tau21")==std::string::npos) ||
+	 (hname.find("tau3")!=std::string::npos && hname.find("tau32")==std::string::npos)){
+	pad->SetLogy(true);
+      }
       if(idx%n_cols!=1){
 	hist->GetYaxis()->SetNdivisions(0);
 	hist->GetYaxis()->SetAxisColor(kWhite);
@@ -230,6 +239,7 @@ int main(const int argc, char* const argv[]){
 	  hl->Draw("HIST same");
 	}
 	MSG_DEBUG("Drawing "<<hist<<" name: "<<hist->GetName()<<" "<<draw_opt);
+	decorator.DrawLatexNDC(0.2,0.95,name.c_str());
 	hist->Draw(draw_opt.c_str());
 	draw_copy=false;
       }

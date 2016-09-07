@@ -136,6 +136,7 @@ int main(const int argc, char* const argv[]){
   }
   if(xsec > 0){
     Forest["TruthJets"]=retrieve<TTree>(file,"TruthJets");
+    Forest["JPsiTruthJets"]=retrieve<TTree>(file,"JPsiTruthJets");
     // Forest["MuonTruthJets"]=retrieve<TTree>(file,"MuonTruthJets");
   }
   const double weight=xsec > 0 ? xsec/Forest["AUX"]->GetEntries() : fabs(xsec);
