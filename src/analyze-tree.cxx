@@ -332,6 +332,16 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       tvec.SetPtEtaPhiE(t_jpsi_pt,t_jpsi_eta,t_jpsi_phi, t_jpsi_E);
       t_jpsi_rap=tvec.Rapidity();
       t_jpsi_m=tvec.M();
+      size_t n_jets = t_jet_pt->size();
+      if(t_jet_eta->size()!=n_jets ||
+	 t_jet_phi->size()!=n_jets ||
+	 t_jet_E->size()!=n_jets){
+	MSG_ERROR("Truth Jet size mismatch!");
+	MSG_DEBUG("pT size: "<<n_jets);
+	MSG_DEBUG("E size: "<<t_jet_E->size());
+	MSG_DEBUG("phi size: "<<t_jet_phi->size());
+	MSG_DEBUG("eta size: "<<t_jet_eta->size());
+      }
       for(size_t i = 0; i < t_jet_pt->size(); i++){
 	TLorentzVector tmp_vec(0,0,0,0);
 	tmp_vec.SetPtEtaPhiE(t_jet_pt->at(i)*GeV,

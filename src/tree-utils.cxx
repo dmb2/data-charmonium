@@ -25,6 +25,7 @@ void initialize_forest(tree_collection& forest){
     it->second->SetCacheLearnEntries(5);
   }
 }
+/*
 double find_closest(const std::vector<double>& pt,
 		    const std::vector<double>& eta,
 		    const std::vector<double>& phi,
@@ -47,7 +48,8 @@ double find_closest(const std::vector<double>& pt,
     }
   }
   return DeltaR;
-}
+  }
+*/
 double find_closest(const std::vector<TLorentzVector>& jets,
 		    TLorentzVector& closest,
 		    TLorentzVector& axis, size_t& idx){
