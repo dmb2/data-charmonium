@@ -178,6 +178,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     MSG("Got "<<nEntries<< " entries in input tree");
   }
   std::vector<TLorentzVector> jets;
+  std::vector<TLorentzVector> t_jets;
   TLorentzVector candJet(0,0,0,0);
   TLorentzVector candTruthJet(0,0,0,0);
   TLorentzVector candJPsi(0,0,0,0);
@@ -331,8 +332,16 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       tvec.SetPtEtaPhiE(t_jpsi_pt,t_jpsi_eta,t_jpsi_phi, t_jpsi_E);
       t_jpsi_rap=tvec.Rapidity();
       t_jpsi_m=tvec.M();
-      t_delta_r=find_closest(*t_jet_pt,*t_jet_eta,*t_jet_phi,*t_jet_E, 
-			    candTruthJet, candJet,idx);
+      for(size_t i = 0; i < t_jet_pt->size(); i++){
+	TLorentzVector tmp_vec(0,0,0,0);
+	tmp_vec.SetPtEtaPhiE(t_jet_pt->at(i)*GeV,
+			     t_jet_eta->at(i),
+			     t_jet_phi->at(i),
+			     t_jet_E->at(i)*GeV);
+	t_jets.push_back(tmp_vec);
+      }
+      find_closest(t_jets,candTruthJet,candJet,idx);
+      t_delta_r = candTruthJet.DeltaR(tvec);
       if(jet_type.find("TrackZ")!=std::string::npos  || jet_type == "MuonLCTopoJets"){
 	t_z=(t_jpsi_pt)/candTruthJet.Pt();
       }
