@@ -325,7 +325,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     store_four_vector(candJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
 
     if(is_MC){
-      idx=0;
+      size_t t_idx=0;
       t_jpsi_pt*=GeV;
       t_jpsi_E*=GeV;
       TLorentzVector tvec(0,0,0,0);
@@ -333,15 +333,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       t_jpsi_rap=tvec.Rapidity();
       t_jpsi_m=tvec.M();
       size_t n_jets = t_jet_pt->size();
-      if(t_jet_eta->size()!=n_jets ||
-	 t_jet_phi->size()!=n_jets ||
-	 t_jet_E->size()!=n_jets){
-	MSG_ERROR("Truth Jet size mismatch!");
-	MSG_DEBUG("pT size: "<<n_jets);
-	MSG_DEBUG("E size: "<<t_jet_E->size());
-	MSG_DEBUG("phi size: "<<t_jet_phi->size());
-	MSG_DEBUG("eta size: "<<t_jet_eta->size());
-      }
+      t_jets.clear();
+      t_jets.reserve(t_jet_pt->size());
       for(size_t i = 0; i < t_jet_pt->size(); i++){
 	TLorentzVector tmp_vec(0,0,0,0);
 	tmp_vec.SetPtEtaPhiE(t_jet_pt->at(i)*GeV,
@@ -350,7 +343,11 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 			     t_jet_E->at(i)*GeV);
 	t_jets.push_back(tmp_vec);
       }
-      find_closest(t_jets,candTruthJet,candJet,idx);
+      find_closest(t_jets,candTruthJet,candJet,t_idx);
+      if(t_idx>=n_jets){
+	MSG_ERR("No matched truth jet!");
+	continue;
+      }
       t_delta_r = candTruthJet.DeltaR(tvec);
       if(jet_type.find("TrackZ")!=std::string::npos  || jet_type == "MuonLCTopoJets"){
 	t_z=(t_jpsi_pt)/candTruthJet.Pt();
@@ -364,11 +361,12 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       if(t_jet_tau1->size()==0){
 	continue;
       }
-      t_tau1=t_jet_tau1->at(idx);
-      t_tau2=t_jet_tau2->at(idx);
-      t_tau3=t_jet_tau3->at(idx);
+      t_tau1=t_jet_tau1->at(t_idx);
+      t_tau2=t_jet_tau2->at(t_idx);
+      t_tau3=t_jet_tau3->at(t_idx);
       t_tau32=t_tau3/t_tau2;
       t_tau21=t_tau2/t_tau1;
+      t_idx=0;
     }
     OutTree.Fill();
   }

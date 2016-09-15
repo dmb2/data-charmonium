@@ -58,7 +58,6 @@ double find_closest(const std::vector<TLorentzVector>& jets,
   size_t i=0;
   for(std::vector<TLorentzVector>::const_iterator jet = jets.begin();
       jet != jets.end(); ++jet,++i){
-
     dR = axis.DeltaR(*jet);
     if (dR < DeltaR){
       DeltaR = dR;
@@ -66,6 +65,7 @@ double find_closest(const std::vector<TLorentzVector>& jets,
       idx=i;
     }
   }
+  i=0;
   return DeltaR;
 }
 std::vector<size_t> filter_by_pt(const std::vector<double>& pt,
