@@ -60,6 +60,8 @@ bin/sbs: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) bin/sbs.o
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats
 bin/splot: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) src/tree-utils.o bin/splot.o 
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats
+bin/train-response: src/unfolding-utils.o $(HISTO_DEPS) src/tree-utils.o bin/train-response.o
+	$(CC) $^ -o $@ $(LDFLAGS) -lRooUnfold -L./RooUnfold
 bin/test-err-prop: bin/test-err-prop.o src/math.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 bin/cut-flow-plots: $(HISTO_DEPS) bin/cut-flow-plots.o
