@@ -30,6 +30,11 @@ install-plots:
 	mv *_sbs_p8.pdf ~/Documents/JPsiJetSubstructure/plots/
 	mv *_splot.pdf ~/Documents/JPsiJetSubstructure/plots/
 	mv *_bkg.pdf ~/Documents/JPsiJetSubstructure/plots/splot-bkg/
+install-roounfold:
+	svn co https://svnsrv.desy.de/public/unfolding/RooUnfold/trunk RooUnfold
+	cd RooUnfold/
+	make
+	cd ../
 src/dict.cxx: $(INCDIR)/LinkDef.h
 	rootcint -f $@ -c -I$(INCDIR) -p $^
 src/libDict.so: src/dict.cxx
@@ -60,7 +65,7 @@ bin/sbs: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) bin/sbs.o
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats
 bin/splot: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) src/tree-utils.o bin/splot.o 
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats
-bin/train-response: src/unfolding-utils.o $(HISTO_DEPS) src/tree-utils.o bin/train-response.o
+bin/unfold: src/unfolding-utils.o $(HISTO_DEPS) src/tree-utils.o bin/unfold.o
 	$(CC) $^ -o $@ $(LDFLAGS) -lRooUnfold -L./RooUnfold
 bin/test-err-prop: bin/test-err-prop.o src/math.o
 	$(CC) $^ -o $@ $(LDFLAGS)
