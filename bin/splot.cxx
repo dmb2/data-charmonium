@@ -22,19 +22,23 @@
 
 
 void usage(const char* name){
-  MSG("Usage: "<<name<<" -i input.root -t tree_name -l lumi -r fitresult.root");
+  MSG("Usage: "<<name<<" -i input.root -t tree_name -l lumi -r fitresult.root -o out.root");
 }
 
 int main(const int argc, char* const argv[]){
   char* inFName=NULL;
   char* tree_name = NULL;
   char* fit_fname = NULL;
+  char* out_fname = NULL;
   int c;
   double lumi;
   bool print_validation_plots=true;
   
-  while((c = getopt(argc,argv,"i:l:t:r:"))!= -1){
+  while((c = getopt(argc,argv,"o:i:l:t:r:"))!= -1){
     switch(c){
+    case 'o':
+      out_fname=optarg;
+      break;
     case 'i':
       inFName=optarg;
       break;
@@ -51,7 +55,8 @@ int main(const int argc, char* const argv[]){
       abort();
     }
   }
-  if(fit_fname==NULL || inFName==NULL || tree_name==NULL || !std::isfinite(lumi) ){
+  if(fit_fname==NULL || inFName==NULL || tree_name==NULL || !std::isfinite(lumi) ||
+     out_fname==NULL){
     usage(argv[0]);
     exit(1);
   }
@@ -113,6 +118,7 @@ int main(const int argc, char* const argv[]){
 			     "jpsi_pt","jpsi_eta",
 			     "tau1","tau2", "tau3","tau21","tau32"
   };
+  std::vector<TH1*> to_write;
   for(size_t i=0; i < LEN(variables); i++){
     TH1* base_hist = HistBook[variables[i]];
     std::pair<TH1*,TH1*> final_hists=make_splot(tree,base_hist,&wkspc);
@@ -147,6 +153,13 @@ int main(const int argc, char* const argv[]){
     }
     print_splot_stack(tree,HistBook[variables[i]],sig_final,bkg_final,data_cut_expr,lumi,".pdf");
     print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
+    to_write.push_back(sig_final);
   }
+  TFile out_file(out_fname,"RECREATE");
+  for(std::vector<TH1*>::iterator it=to_write.begin(); it!=to_write.end(); ++it){
+    (*it)->Write();
+  }
+  out_file.Write();
+  out_file.Close();
   return 0;
 }
