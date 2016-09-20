@@ -194,9 +194,7 @@ TH1* make_rel_res_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 
 TH1* make_response_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 			const char* weight_expr, const std::string& name_suffix){
-  // Suppress compiler warnings, yes that is what I want.
-  if(name_suffix != ""){};
-  TH1* hist = (TH1*)base_hist->Clone((plot + "_rsp_NOM").c_str());
+  TH1* hist = (TH1*)base_hist->Clone((plot + name_suffix+"_rsp_NOM").c_str());
   draw_histo(tree,(plot + ":truth_"+plot).c_str(), hist->GetName(), weight_expr);
   return hist;
 }

@@ -32,10 +32,13 @@ int main(const int argc, char* const argv[]){
   char* out_fname = NULL;
   int c;
   double lumi;
-  bool print_validation_plots=true;
+  bool print_validation_plots=false;
   
-  while((c = getopt(argc,argv,"o:i:l:t:r:"))!= -1){
+  while((c = getopt(argc,argv,"vo:i:l:t:r:"))!= -1){
     switch(c){
+    case 'v':
+      print_validation_plots=true;
+      break;
     case 'o':
       out_fname=optarg;
       break;
@@ -153,6 +156,7 @@ int main(const int argc, char* const argv[]){
     }
     print_splot_stack(tree,HistBook[variables[i]],sig_final,bkg_final,data_cut_expr,lumi,".pdf");
     print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
+    sig_final->SetName(variables[i]);
     to_write.push_back(sig_final);
   }
   TFile out_file(out_fname,"RECREATE");
