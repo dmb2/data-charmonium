@@ -32,9 +32,8 @@ install-plots:
 	mv *_bkg.pdf ~/Documents/JPsiJetSubstructure/plots/splot-bkg/
 install-roounfold:
 	svn co https://svnsrv.desy.de/public/unfolding/RooUnfold/trunk RooUnfold
-	cd RooUnfold/
-	make
-	cd ../
+	cp RooUnfold/src/*.h ./include
+	cp RooUnfold/*RooUnfold* ./src/
 src/dict.cxx: $(INCDIR)/LinkDef.h
 	rootcint -f $@ -c -I$(INCDIR) -p $^
 src/libDict.so: src/dict.cxx

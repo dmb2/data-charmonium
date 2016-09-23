@@ -22,7 +22,7 @@ void setup_global_style(){
   AtlasStyle style;
   style.SetAtlasStyle();
   gStyle->SetFrameLineWidth(0.0);
-  gStyle->SetPalette(1);
+  // gStyle->SetPalette(1);
   gStyle->SetTitleYOffset(1.6);
   gStyle->SetLegendTextSize(0.03);
   TGaxis::SetMaxDigits(4);

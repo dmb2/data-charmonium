@@ -65,8 +65,8 @@ int main(const int argc, char* const argv[]){
   }
   setup_global_style();
 
-  double stops[]={0.0,0.25,0.5,0.75,1.0};
-  heat_gradient(gStyle,stops,LEN(stops));
+  // double stops[]={0.0,0.25,0.5,0.75,1.0};
+  // heat_gradient(gStyle,stops,LEN(stops));
   
   TFile* file = TFile::Open(inFName);
   TFile* fit_file = TFile::Open(fit_fname);
