@@ -22,7 +22,7 @@ HISTO_DEPS:=$(COMMON_DEPS) src/stack-utils.o src/AtlasStyle.o\
 	src/histo-meta-data.o src/histo-utils.o\
 	src/plot-utils.o src/color.o src/math.o\
 	src/histo-style.o 
-.PHONY: all clean install-plots
+.PHONY: all clean install-plots install-roounfold
 all: $(BINS)
 
 install-plots: 
@@ -32,6 +32,7 @@ install-plots:
 	mv *_bkg.pdf ~/Documents/JPsiJetSubstructure/plots/splot-bkg/
 install-roounfold:
 	svn co https://svnsrv.desy.de/public/unfolding/RooUnfold/trunk RooUnfold
+	@$(MAKE) -C RooUnfold
 	cp RooUnfold/src/*.h ./include
 	cp RooUnfold/*RooUnfold* ./src/
 src/dict.cxx: $(INCDIR)/LinkDef.h
@@ -64,7 +65,7 @@ bin/sbs: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) bin/sbs.o
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats
 bin/splot: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) src/tree-utils.o bin/splot.o 
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats
-bin/unfold: src/unfolding-utils.o $(HISTO_DEPS) src/tree-utils.o bin/unfold.o
+bin/unfold: src/unfolding-utils.o $(HISTO_DEPS) src/tree-utils.o bin/unfold.o 
 	$(CC) $^ -o $@ $(LDFLAGS) -lRooUnfold -L./RooUnfold
 bin/test-err-prop: bin/test-err-prop.o src/math.o
 	$(CC) $^ -o $@ $(LDFLAGS)
