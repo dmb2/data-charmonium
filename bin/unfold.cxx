@@ -80,6 +80,7 @@ int main(const int argc, char* const argv[]){
       TH1* truth_hist = make_normal_hist(base_hist,tree,(std::string("truth_")+base_hist->GetName()),"SF*weight","_truth");
       double N_sig = hist->Integral();
       double N_MC = reco_hist->Integral();
+      MSG_DEBUG("NSig: "<<N_sig<<" N_MC: "<<N_MC);
       reco_hist->Scale(N_sig/N_MC);
       truth_hist->Scale(N_sig/N_MC);//n_truth?
       if(print_validation_plots){

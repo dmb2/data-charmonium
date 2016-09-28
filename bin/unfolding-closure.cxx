@@ -40,7 +40,6 @@ int main(const int argc, char* const argv[]){
     exit(1);
   }
   TTree* tree = retrieve<TTree>(in_fname,"mini");
-  MSG_DEBUG(tree);
   
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
@@ -51,8 +50,7 @@ int main(const int argc, char* const argv[]){
       it!=HistBook.end(); ++it){
     const std::string& name = it->first;
     TH1* hist = make_normal_hist(it->second,tree,name.c_str(),"weight");
-    
-    // hist->Write();
+    hist->SetName(name.c_str());
   }
   out_file.Write();
   out_file.Close();
