@@ -41,22 +41,11 @@ src/libDict.so: src/dict.cxx
 	$(CC) -shared -fPIC -o$@ $(CXXFLAGS) $^
 src/analyze-cut-tree.o: src/analyze-tree.cxx
 	$(CC) $(CXXFLAGS) -D__ANALYZE_TREE_CUTFLOW__ -c $< -o $@ 
-bin/tree-bug: bin/tree-bug.o src/libDict.so
-	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -lDict
-bin/split-tree: $(COMMON_DEPS)
-bin/make-closure-sample: $(COMMON_DEPS) bin/make-closure-sample.o src/simple-parser.o src/Cut.o
-bin/simple-parser-test: bin/simple-parser-test.o src/simple-parser.o src/Cut.o
-	$(CC) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 bin/skim-tree:  $(SKIM_DEPS) bin/skim-tree.o src/analyze-tree.o src/libDict.so
 	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -l Dict
 bin/skim-tree-response: $(SKIM_DEPS) bin/skim-tree.o src/analyze-cut-tree.o src/libDict.so
 	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -l Dict
-bin/plot-slices: $(HISTO_DEPS) bin/plot-slices.o
-	$(CC) $^ -o $@ $(LDFLAGS)
-bin/print-plot-panels: $(HISTO_DEPS) bin/print-plot-panels.o
-	$(CC) $^ -o $@ $(LDFLAGS)
-bin/%-plots: $(HISTO_DEPS) bin/%-plots.o
-	$(CC) $^ -o $@ $(LDFLAGS)
+# TODO these should all get their own rule
 bin/fit-and-sbs: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS)  bin/fit-and-sbs.o 
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats
 bin/fit: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) src/tree-utils.o bin/fit.o 
@@ -69,10 +58,12 @@ bin/unfold: src/unfolding-utils.o $(HISTO_DEPS) src/tree-utils.o bin/unfold.o
 	$(CC) $^ -o $@ $(LDFLAGS) -lRooUnfold -L./RooUnfold
 bin/test-err-prop: bin/test-err-prop.o src/math.o
 	$(CC) $^ -o $@ $(LDFLAGS)
-bin/cut-flow-plots: $(HISTO_DEPS) bin/cut-flow-plots.o
+bin/make-closure-sample: $(COMMON_DEPS) bin/make-closure-sample.o src/simple-parser.o src/Cut.o
+bin/simple-parser-test: bin/simple-parser-test.o src/simple-parser.o src/Cut.o
+bin/%: $(HISTO_DEPS) bin/%.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 %.o: %.cxx
 	$(CC) $(CXXFLAGS) -c $< -o $@
 clean:
-	-rm $(BINS) $(wildcard bin/*.o) $(wildcard src/*.o) src/dict.cxx src/dict.h src/libDict.so
+	-rm $(BINS) $(wildcard bin/*.o) $(wildcard src/*.o) src/dict.cxx src/dict_rdict.pcm src/libDict.so
 # DO NOT DELETE
