@@ -1,6 +1,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <fstream>
 
 #include "TTree.h"
 #include "TF1.h"
@@ -504,6 +505,11 @@ THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aestheti
   add_to_legend(leg,tot_syst_err,styles["global_syst_err"]);
   for(size_t i=0; i < LEN(samp_names); i++){
     const std::string name(samp_names[i]);
+    std::ifstream file((name+".mini.root").c_str());
+    if(!file.good()){
+      MSG_ERR("Could not find file: "<<name<<"mini.root continuing...");
+      continue;
+    }
     TH1* syst_err= build_syst_err_hist(base_hist,name,cut_expr);
     TTree* tree = retrieve<TTree>((name+".mini.root").c_str(),"mini");
     TH1* hist = make_normal_hist(base_hist,tree,base_hist->GetName(), cut_expr, name);

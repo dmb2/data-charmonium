@@ -64,8 +64,9 @@ int main(const int argc, char* const argv[]){
   TKey *key=NULL;
   while((key=(TKey*)iter())){
     const std::string name(key->GetName());
-    if(std::string(key->GetClassName()).find("TH")==std::string::npos ||
-       !(name=="delta_r" || name=="jet_z")){
+    if(std::string(key->GetClassName()).find("TH")==std::string::npos 
+       /*|| !(name=="delta_r" || name=="jet_z")*/
+       || name.find("truth")!=std::string::npos || name.find("response")!=std::string::npos){
       continue;
     }
     MSG_DEBUG(name);
