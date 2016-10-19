@@ -126,7 +126,7 @@ TH1* make_response_hist(TH1* base_hist, TTree* tree,
   TH1* response = (TH1*)base_hist->Clone((plot + "_RSP_"+
 					  str_join("_",cut_branches,
 						   0,cut_index+1)).c_str());
-  draw_histo(tree,(plot+":truth_"+plot).c_str(),response->GetName(),
+  draw_histo(tree,("truth_"+plot+":"+plot).c_str(),response->GetName(),
   	     str_join("*",cut_branches,0,cut_index+1).c_str());
   return response;
 }
@@ -195,7 +195,7 @@ TH1* make_rel_res_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 TH1* make_response_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 			const char* weight_expr, const std::string& name_suffix){
   TH1* hist = (TH1*)base_hist->Clone((plot + name_suffix+"_rsp_NOM").c_str());
-  draw_histo(tree,(plot + ":truth_"+plot).c_str(), hist->GetName(), weight_expr);
+  draw_histo(tree,("truth_"+plot + ":"+plot).c_str(), hist->GetName(), weight_expr);
   return hist;
 }
 TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot,

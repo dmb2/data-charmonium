@@ -325,7 +325,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     store_four_vector(candJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
 
     if(is_MC){
-      size_t t_idx=0;
+      size_t t_idx=-1;
       t_jpsi_pt*=GeV;
       t_jpsi_E*=GeV;
       TLorentzVector tvec(0,0,0,0);
@@ -366,7 +366,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       t_tau3=t_jet_tau3->at(t_idx);
       t_tau32=t_tau3/t_tau2;
       t_tau21=t_tau2/t_tau1;
-      t_idx=0;
+      t_idx=-1;
     }
     OutTree.Fill();
   }
