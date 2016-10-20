@@ -14,33 +14,35 @@
 #include "root-sugar.hh"
 
 void usage(const char* name){
-  MSG("Usage: "<< name << "-l lumi -i input.root -o output.root");
+  MSG("Usage: "<< name << " -i input.root -o output.root");
 }
-TMatrixD make_response_matrix(TTree* tree, TH1* base_hist,const char* weight_expr){
-    TH2D* response_hist = setup_response_hist(base_hist);
-    response_hist->SetDirectory(NULL);
-    response_hist = dynamic_cast<TH2D*>(make_response_hist(response_hist,tree,base_hist->GetName(),weight_expr,"_response"));
-    for(int i =1; i <= response_hist->GetNbinsX(); i++){
-      TH1* hist = response_hist->ProjectionY("_py",i,i+1,"e");
-      hist->SetDirectory(NULL);
-      double norm_factor = hist->Integral();
-      MSG_DEBUG("Norm factor: "<<norm_factor);
-      if(norm_factor==0){
-	continue;
+TMatrixD TH2_to_TMatrix(TH2D* h2){
+    int n=h2->GetNbinsX()+2;
+    int m=h2->GetNbinsY()+2;
+    TMatrixD M(n,m,h2->GetArray(),"D");
+    for(int i=0; i < m; i++){
+      double norm=0;
+      for(int j=0; j < m; j++){
+	norm+=M[j][i];
       }
-      for(int j = 0; j < response_hist->GetNbinsY(); j++){
-	double bc=response_hist->GetBinContent(i,j);
-	response_hist->SetBinContent(i,j,bc/norm_factor);
+      for(int j=0; j < m; j++){
+	if(norm!=0){
+	  M[j][i]/=norm;
+	}
       }
     }
-    return TMatrixD(response_hist->GetNbinsX()+2,response_hist->GetNbinsY()+2,
-		    response_hist->GetArray(),"D");
+    return M;
+}
+TMatrixD make_response_matrix(TTree* tree, TH1* base_hist){
+    TH2D* response_hist = setup_response_hist(base_hist);
+    response_hist->SetDirectory(NULL);
+    response_hist = dynamic_cast<TH2D*>(make_response_hist(response_hist,tree,base_hist->GetName(),"","_response"));
+    return TH2_to_TMatrix(response_hist);
 }
 
 int main(const int argc, char* const argv[]){
   char* in_fname=nullptr;
   char* out_fname=nullptr;
-  double lumi;
   int c;
   while((c = getopt(argc,argv,"l:i:o:"))!= -1){
     switch(c){
@@ -50,16 +52,12 @@ int main(const int argc, char* const argv[]){
     case 'o':
       out_fname=optarg;
       break;
-    case 'l':
-      lumi = atof(optarg);
-      break;
     default:
       abort();
     }
   }
   if(in_fname==nullptr ||
-     out_fname==nullptr ||
-     !std::isfinite(lumi)){
+     out_fname==nullptr){
     usage(argv[0]);
     exit(1);
   }
@@ -67,13 +65,11 @@ int main(const int argc, char* const argv[]){
   
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
-  char weight_expr[20];
-  snprintf(weight_expr,20,"weight*%.4g*SF",lumi);
   TFile out_file(out_fname,"RECREATE");
   for(std::map<std::string,TH1D*>::iterator it=HistBook.begin();
       it!=HistBook.end(); ++it){
     const std::string& name = it->first;
-    TMatrixD response_matrix = make_response_matrix(tree,it->second,"");
+    TMatrixD response_matrix = make_response_matrix(tree,it->second);
     TH1D* hist = dynamic_cast<TH1D*>(make_normal_hist(it->second,tree,("truth_"+name).c_str(),""));
     hist->SetName(("tmp_"+name).c_str());
     hist->SetDirectory(NULL);
