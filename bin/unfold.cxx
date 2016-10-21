@@ -81,14 +81,14 @@ int main(const int argc, char* const argv[]){
       base_hist->SetBinError(i,0);
     }
     TH2D* response_hist = setup_response_hist(base_hist);
-    response_hist = dynamic_cast<TH2D*>(make_response_hist(response_hist,tree,base_hist->GetName(),"SF*weight","_response"));
-    TH1* reco_hist = make_normal_hist(base_hist,tree,base_hist->GetName(),"SF*weight","_reco");
-    TH1* truth_hist = make_normal_hist(base_hist,tree,(std::string("truth_")+base_hist->GetName()),"SF*weight","_truth");
+    response_hist = dynamic_cast<TH2D*>(make_response_hist(response_hist,tree,base_hist->GetName(),"","_response"));
+    TH1* reco_hist = make_normal_hist(base_hist,tree,base_hist->GetName(),"","_reco");
+    TH1* truth_hist = make_normal_hist(base_hist,tree,(std::string("truth_")+base_hist->GetName()),"","_truth");
     double N_sig = hist->Integral();
     double N_MC = reco_hist->Integral();
     MSG_DEBUG("NSig: "<<N_sig<<" N_MC: "<<N_MC);
-    reco_hist->Scale(N_sig/N_MC);
-    truth_hist->Scale(N_sig/N_MC);//n_truth?
+    // reco_hist->Scale(N_sig/N_MC);
+    // truth_hist->Scale(N_sig/N_MC);//n_truth?
     if(print_validation_plots){
       //TODO Polish these and put them in supplement
       TCanvas debug("debug","debug",600,600);

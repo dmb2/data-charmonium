@@ -22,7 +22,6 @@ void setup_global_style(){
   AtlasStyle style;
   style.SetAtlasStyle();
   gStyle->SetFrameLineWidth(0.0);
-  // gStyle->SetPalette(1);
   gStyle->SetTitleYOffset(1.6);
   gStyle->SetLegendTextSize(0.03);
   TGaxis::SetMaxDigits(4);
@@ -84,8 +83,8 @@ TH2D* setup_response_hist(TH1* hist){
   hist2D->SetMarkerStyle(6);
   hist2D->SetMarkerColor(color->GetNumber());
 
-  hist2D->GetXaxis()->SetTitle("Truth");
-  hist2D->GetYaxis()->SetTitle("Reconstructed");
+  hist2D->GetYaxis()->SetTitle("Truth");
+  hist2D->GetXaxis()->SetTitle("Reconstructed");
   delete color;
   return hist2D;
 }
