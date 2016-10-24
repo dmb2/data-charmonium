@@ -8,6 +8,7 @@
 #include "TH1.h"
 #include "TH2D.h"
 #include "TTree.h"
+#include "TCanvas.h"
 
 #include "RooUnfoldResponse.h"
 #include "RooUnfoldBayes.h"
@@ -15,6 +16,7 @@
 #include "RooRealVar.h"
 #include "RooPolyVar.h"
 #include "RooGaussian.h"
+#include "RooAddPdf.h"
 
 #include "histo-meta-data.hh"
 #include "histo-utils.hh"
@@ -23,7 +25,8 @@
 void usage(const char* name){
   MSG("Usage: "<< name << " -i input.root -o output.root");
 }
-TMatrixD norm_hist_to_mat(TH2D* h2){
+template<class Hist2D>
+TMatrixD norm_hist_to_mat(Hist2D* h2){
     int n=h2->GetNbinsX()+2;
     int m=h2->GetNbinsY()+2;
     TMatrixD M(n,m,h2->GetArray(),"D");
@@ -57,9 +60,19 @@ TH1D* fold_truth(TH1D* truth, const TMatrixD& response_matrix, int n_events){
   return rec_hist;
 }
 void print_closure_plot(TH2D* response_hist, TH1D* truth, TH1D* reco, TH1D* unfolded){
-  
+  TCanvas canv("canv","Canv",1200,600);
+  canv.Divide(2,1);
+  canv.cd(1);
+  response_hist->Draw("colz");
+  canv.cd(2);
+  truth->Draw();
+  reco->Draw("same");
+  unfolded->Draw("same");
+  canv.cd();
+  canv.SaveAs((std::string("unfolding_closure_")+truth->GetName()+".pdf").c_str());
 }
 int main(const int argc, char* const argv[]){
+  setup_global_style();
   char* in_fname=nullptr;
   char* out_fname=nullptr;
   int c;
@@ -100,19 +113,23 @@ int main(const int argc, char* const argv[]){
     TMatrixD response_matrix = norm_hist_to_mat(response_hist);
     RooUnfoldResponse response(NULL, NULL,response_hist,
 			       (name+"_unfolded").c_str(),base_hist->GetTitle());
-    RooRealVar x("x","x",base_hist->GetXaxis()->GetXmin(), base_hist->GetXaxis()->GetXmax());
-    RooRealVar y("y","y",base_hist->GetXaxis()->GetXmin(), base_hist->GetXaxis()->GetXmax());
+    double x_min(base_hist->GetXaxis()->GetXmin());
+    double x_max(base_hist->GetXaxis()->GetXmax());
+    
+    RooRealVar x("x","x",x_min,x_max);
+    RooRealVar y("y","y",x_min,x_max);
     // Toy Response gaussian + linear mean
     RooRealVar a0("a0","a0",0,-5,5);
     RooRealVar a1("a1","a1",1,0.5,2);
     RooPolyVar fy("fy","fy",y,RooArgSet(a0,a1));
     RooRealVar sigma("sigma","width of gaussian",0.5);
     RooGaussian model("model","Gaussian with shifting mean",x,fy,sigma);
+    TH2F* linear_response_hist = dynamic_cast<TH2F*>(model.createHistogram("x,y"));
     // Toy Response gaussian + quadratic mean
     RooRealVar a2("a2","a2",1,0.5,2);
     RooPolyVar fy2("fy2","fy2",y,RooArgSet(a0,a1,a2));
     RooGaussian quad_model("quad_model","Gaussian with shifting mean",x,fy2,sigma);
-    TH2D* quad_response_hist = dynamic_cast<TH2D*>(quad_model.createHistogram("x,y"));
+    TH2F* quad_response_hist = dynamic_cast<TH2F*>(quad_model.createHistogram("x,y"));
     
     
     // Toy Response gaussian + linear width
@@ -121,16 +138,17 @@ int main(const int argc, char* const argv[]){
     RooPolyVar fw("fw","fw",y,RooArgSet(b0,b1));
     
     RooGaussian width_model("width_model","Gaussian with shifting width",x,fy,fw);
-    
+    TH2F* width_response_hist = dynamic_cast<TH2F*>(width_model.createHistogram("x,y"));
     // Toy Truth Single Gaussian
-    
+    RooRealVar mean("mean","mean of toy signal", 0.25*(x_max-x_min));
+    RooGaussian gauss("gauss","Gaussian of toy signal",x,mean,sigma);
     // Toy Truth Double Gaussian 
-    
-    // Toy Truth Long tail
-    
+    RooRealVar mean2("mean2","second mean",0.75*(x_max-x_min));
+    RooGaussian gauss2("gauss2","Gaussian of toy signal",x,mean2,sigma);
+    RooRealVar frac("frac","Fraction",0.34,0,1);
+    RooAddPdf toy2("toy2","toy Signal",RooArgList(gauss,gauss2),frac);
     // Monte Carlo Truth
-    
-    TH1D* truth = NULL;
+    TH1D* truth = dynamic_cast<TH1D*>(make_normal_hist(base_hist,tree,name,"","_truth"));
     TH1D* reco = fold_truth(truth,response_matrix,171000);
     RooUnfoldBayes unfold(&response,reco,n_itr);
     TH1D* unfolded = dynamic_cast<TH1D*>(unfold.Hreco(RooUnfold::kCovariance));
