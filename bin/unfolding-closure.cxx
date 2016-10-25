@@ -3,12 +3,15 @@
 #include <string>
 #include "TMath.h"
 #include "TMatrixD.h"
-#include "TVectorD.h"
+#include "TMatrixF.h"
+#include "TVectorF.h"
 #include "TH1D.h"
 #include "TH1.h"
 #include "TH2D.h"
 #include "TTree.h"
+#include "TColor.h"
 #include "TCanvas.h"
+#include "TLegend.h"
 
 #include "RooUnfoldResponse.h"
 #include "RooUnfoldBayes.h"
@@ -19,25 +22,25 @@
 #include "RooAddPdf.h"
 
 #include "histo-meta-data.hh"
+#include "histo-style.hh"
 #include "histo-utils.hh"
 #include "root-sugar.hh"
 
 void usage(const char* name){
   MSG("Usage: "<< name << " -i input.root -o output.root");
 }
-template<class Hist2D>
-TMatrixD norm_hist_to_mat(Hist2D* h2){
+TMatrixD norm_hist_to_mat(TH2* h2){
     int n=h2->GetNbinsX()+2;
     int m=h2->GetNbinsY()+2;
-    TMatrixD M(n,m,h2->GetArray(),"D");
-    for(int i=0; i < m; i++){
+    TMatrixD M(n,m);
+    for(int j=0; j < m; j++){
       double norm=0;
-      for(int j=0; j < m; j++){
-	norm+=M[j][i];
+      for(int i=0; i < n; i++){
+	norm+=h2->GetBinContent(i,j);
       }
-      for(int j=0; j < m; j++){
+      for(int i=0; i < n; i++){
 	if(norm!=0){
-	  M[j][i]/=norm;
+	  M[i][j]=h2->GetBinContent(i,j)/norm;
 	}
       }
     }
@@ -59,45 +62,115 @@ TH1D* fold_truth(TH1D* truth, const TMatrixD& response_matrix, int n_events){
   }
   return rec_hist;
 }
-void print_closure_plot(TH2D* response_hist, TH1D* truth, TH1D* reco, TH1D* unfolded){
+void print_closure_plot(TH2* response_hist, TH1D* truth, TH1D* reco, TH1D* unfolded, const std::string& suffix){
+  aesthetic truth_aes=hist_aes("Truth",TColor::GetColor(8,81,156),0,kSolid);
+  aesthetic reco_aes=hist_aes("Reconstructed",TColor::GetColor(165,15,21),0,kSolid);
+  aesthetic unfolded_aes=hist_aes("Unfolded",TColor::GetColor(0,0,0),0,kSolid);
+  style_hist(truth,truth_aes);
+  style_hist(reco,reco_aes);
+  style_hist(unfolded,unfolded_aes);
+  
   TCanvas canv("canv","Canv",1200,600);
+  TLegend* leg = init_legend();
+  add_to_legend(leg,truth,truth_aes);
+  add_to_legend(leg,reco,reco_aes);
+  add_to_legend(leg,unfolded,unfolded_aes);
   canv.Divide(2,1);
   canv.cd(1);
   response_hist->Draw("colz");
   canv.cd(2);
-  truth->Draw();
-  reco->Draw("same");
-  unfolded->Draw("same");
+  truth->Draw("H");
+  reco->Draw("H same");
+  unfolded->Draw("H same");
+  leg->Draw("lp");
   canv.cd();
-  canv.SaveAs((std::string("unfolding_closure_")+truth->GetName()+".pdf").c_str());
+  canv.SaveAs((std::string("unfolding_closure_")+truth->GetName()+suffix+".pdf").c_str());
 }
+void unfold_toy(TH2* response_hist, TH1D* reco, TH1D* truth, int n_itr,
+		const std::string& suffix){
+    RooUnfoldResponse response(NULL, NULL,response_hist,
+			       (std::string(reco->GetName())+"_unfolded").c_str(),reco->GetTitle());
+    RooUnfoldBayes unfold(&response,reco,n_itr);
+    TH1D* unfolded = dynamic_cast<TH1D*>(unfold.Hreco(RooUnfold::kCovariance));
+    print_closure_plot(response_hist,truth,reco,unfolded,suffix);
+}
+TH2F* linear_response_toy(double x_min,double x_max){
+  RooRealVar x("x","x",x_min,x_max);
+  RooRealVar y("y","y",x_min,x_max);
+  
+  RooRealVar a0("a0","a0",x_min,-5,5);
+  RooRealVar a1("a1","a1",1,0.5,2);
+  //a0 + a1*y
+  RooPolyVar fy("fy","fy",y,RooArgSet(a0,a1));
+  RooRealVar sigma("sigma","width of gaussian",0.05*(x_max-x_min));
+  RooGaussian model("model","Gaussian with shifting mean",x,fy,sigma);
+  return dynamic_cast<TH2F*>(model.createHistogram("x,y"));
+}
+TH2F* quad_response_toy(double x_min,double x_max){
+  RooRealVar x("x","x",x_min,x_max);
+  RooRealVar y("y","y",x_min,x_max);
+  double delta_x = x_max - x_min;
+  RooRealVar a0("a0","a0",x_min*x_min/delta_x+x_min,-1e6,1e6);
+  RooRealVar a1("a1","a1",2*x_min/delta_x,-1e6,1e6);
+  RooRealVar a2("a2","a2",1/delta_x,-1e6,1e6);
+  RooRealVar sigma("sigma","width of gaussian",0.05*delta_x);
+  // a0 + a1*y + a2*y^2
+  RooPolyVar fy("fy2","fy2",y,RooArgSet(a0,a1,a2));
+  RooGaussian model("quad_model","Gaussian with shifting mean",x,fy,sigma);
+  return dynamic_cast<TH2F*>(model.createHistogram("y,x"));
+}
+TH2F* width_response_toy(double x_min,double x_max){
+  RooRealVar x("x","x",x_min,x_max);
+  RooRealVar y("y","y",x_min,x_max);
+  RooRealVar a0("a0","a0",0,-5,5);
+  RooRealVar a1("a1","a1",1,0.5,2);
+  // a0 + a1*y
+  RooPolyVar fy("fy","fy",y,RooArgSet(a0,a1));
+  RooRealVar b0("b0","b0",0,-5,5);
+  RooRealVar b1("b1","b1",0.1,0.5,2);
+  // b0 + b1*y
+  RooPolyVar fw("fw","fw",y,RooArgSet(b0,b1));
+  RooGaussian model("model","Gaussian with shifting width",x,fy,fw);
+  return dynamic_cast<TH2F*>(model.createHistogram("x,y"));
+}
+
 int main(const int argc, char* const argv[]){
   setup_global_style();
   char* in_fname=nullptr;
-  char* out_fname=nullptr;
+  // char* out_fname=nullptr;
   int c;
   while((c = getopt(argc,argv,"l:i:o:"))!= -1){
     switch(c){
     case 'i':
       in_fname=optarg;
       break;
-    case 'o':
-      out_fname=optarg;
-      break;
+    // case 'o':
+    //   out_fname=optarg;
+    //   break;
     default:
       abort();
     }
   }
-  if(in_fname==nullptr ||
-     out_fname==nullptr){
+  if(in_fname==nullptr){
     usage(argv[0]);
     exit(1);
   }
-  TTree* tree = retrieve<TTree>(in_fname,"mini");
+  TFile* file = TFile::Open(in_fname);
+  if(!file){
+    MSG_ERR("Could not open file: "<<in_fname);
+    exit(-1);
+  }
+  TTree* tree = nullptr;
+  file->GetObject("mini",tree);
+  if(!tree){
+    MSG_ERR("Could not retrieve tree: mini");
+    exit(-2);
+  }
+  // TTree* tree = retrieve<TTree>(in_fname,"mini");
   
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
-  TFile out_file(out_fname,"RECREATE");
+  // TFile out_file(out_fname,"RECREATE");
   
   const char* variables[] = {"jet_pt","jet_z","delta_r", 
 			     "jpsi_pt","jpsi_eta"};
@@ -105,57 +178,20 @@ int main(const int argc, char* const argv[]){
   for(size_t i=0; i < LEN(variables); i++){
     const std::string name(variables[i]);
     TH1D* base_hist = HistBook[name];
+    double x_min(base_hist->GetXaxis()->GetXmin());
+    double x_max(base_hist->GetXaxis()->GetXmax());
       
     // MC Response
     TH2D* response_hist = setup_response_hist(base_hist);
-    response_hist->SetDirectory(NULL);
     response_hist = dynamic_cast<TH2D*>(make_response_hist(response_hist,tree,base_hist->GetName(),"","_response"));
-    TMatrixD response_matrix = norm_hist_to_mat(response_hist);
-    RooUnfoldResponse response(NULL, NULL,response_hist,
-			       (name+"_unfolded").c_str(),base_hist->GetTitle());
-    double x_min(base_hist->GetXaxis()->GetXmin());
-    double x_max(base_hist->GetXaxis()->GetXmax());
     
-    RooRealVar x("x","x",x_min,x_max);
-    RooRealVar y("y","y",x_min,x_max);
-    // Toy Response gaussian + linear mean
-    RooRealVar a0("a0","a0",0,-5,5);
-    RooRealVar a1("a1","a1",1,0.5,2);
-    RooPolyVar fy("fy","fy",y,RooArgSet(a0,a1));
-    RooRealVar sigma("sigma","width of gaussian",0.5);
-    RooGaussian model("model","Gaussian with shifting mean",x,fy,sigma);
-    TH2F* linear_response_hist = dynamic_cast<TH2F*>(model.createHistogram("x,y"));
-    // Toy Response gaussian + quadratic mean
-    RooRealVar a2("a2","a2",1,0.5,2);
-    RooPolyVar fy2("fy2","fy2",y,RooArgSet(a0,a1,a2));
-    RooGaussian quad_model("quad_model","Gaussian with shifting mean",x,fy2,sigma);
-    TH2F* quad_response_hist = dynamic_cast<TH2F*>(quad_model.createHistogram("x,y"));
+    TH2F* linear_response_hist=linear_response_toy(x_min,x_max);
+    linear_response_hist->SetName((name+"_linear_response_hist").c_str());
+    TH1D* truth = dynamic_cast<TH1D*>(make_normal_hist(base_hist,tree,"truth_"+name,"","_tmp"));
+    TH1D* linear_reco = fold_truth(truth,norm_hist_to_mat(linear_response_hist),171000);
     
-    
-    // Toy Response gaussian + linear width
-    RooRealVar b0("b0","b0",0,-5,5);
-    RooRealVar b1("b1","b1",0.1,0.5,2);
-    RooPolyVar fw("fw","fw",y,RooArgSet(b0,b1));
-    
-    RooGaussian width_model("width_model","Gaussian with shifting width",x,fy,fw);
-    TH2F* width_response_hist = dynamic_cast<TH2F*>(width_model.createHistogram("x,y"));
-    // Toy Truth Single Gaussian
-    RooRealVar mean("mean","mean of toy signal", 0.25*(x_max-x_min));
-    RooGaussian gauss("gauss","Gaussian of toy signal",x,mean,sigma);
-    // Toy Truth Double Gaussian 
-    RooRealVar mean2("mean2","second mean",0.75*(x_max-x_min));
-    RooGaussian gauss2("gauss2","Gaussian of toy signal",x,mean2,sigma);
-    RooRealVar frac("frac","Fraction",0.34,0,1);
-    RooAddPdf toy2("toy2","toy Signal",RooArgList(gauss,gauss2),frac);
-    // Monte Carlo Truth
-    TH1D* truth = dynamic_cast<TH1D*>(make_normal_hist(base_hist,tree,name,"","_truth"));
-    TH1D* reco = fold_truth(truth,response_matrix,171000);
-    RooUnfoldBayes unfold(&response,reco,n_itr);
-    TH1D* unfolded = dynamic_cast<TH1D*>(unfold.Hreco(RooUnfold::kCovariance));
-    print_closure_plot(response_hist,truth,reco,unfolded);
+    unfold_toy(linear_response_hist,truth,linear_reco,n_itr,"_linear");
   }
-  out_file.Write();
-  out_file.Close();
-    
+  file->Close();
   return 0;
 }
