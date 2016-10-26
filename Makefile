@@ -55,9 +55,9 @@ bin/sbs: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) bin/sbs.o
 bin/splot: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) src/tree-utils.o bin/splot.o 
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats
 bin/unfold: src/unfolding-utils.o $(HISTO_DEPS) src/tree-utils.o bin/unfold.o 
-	$(CC) $^ -o $@ $(LDFLAGS) -lRooUnfold -L./RooUnfold
+	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats -lRooUnfold -L./RooUnfold
 bin/unfolding-closure: src/unfolding-utils.o $(HISTO_DEPS) src/tree-utils.o bin/unfolding-closure.o 
-	$(CC) $^ -o $@ $(LDFLAGS) -lRooUnfold -L./RooUnfold -lRooFit -lRooFitCore
+	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats -lRooUnfold -L./RooUnfold
 bin/test-err-prop: bin/test-err-prop.o src/math.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 bin/make-closure-sample: $(COMMON_DEPS) bin/make-closure-sample.o src/simple-parser.o src/Cut.o

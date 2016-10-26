@@ -21,7 +21,7 @@ void init_hist_book(std::map<std::string,TH1D*>& HistBook){
   HistBook["jet_eta"]=new TH1D("jet_eta","Jet #eta;#eta;evts/binwidth",50,-2.6,2.6);
   HistBook["jet_e"]=new TH1D("jet_e","Jet E;E [GeV]; evts/binwidth",50,0,500);
   HistBook["jet_m"]=new TH1D("jet_m","Jet Mass; M [GeV]; evts/binwidth",50,0,45);
-  HistBook["jet_z"]=new TH1D("jet_z","Jet Z;z;evts/binwidth",50,0,1.1);
+  HistBook["jet_z"]=new TH1D("jet_z","Jet Z;z;evts/binwidth",10,0,1.1);
 
   HistBook["tau1"]=new TH1D("tau1","N Subjettiness #tau_{1};#tau_{1};evts/binwidth",50,0,1.2);
   HistBook["tau2"]=new TH1D("tau2","N Subjettiness #tau_{2};#tau_{2};evts/binwidth",50,0,0.5);
