@@ -41,6 +41,7 @@ int main(const int argc, char* const argv[]){
     usage(argv[0]);
     exit(1);
   }
+  
   TFile* file = TFile::Open(in_fname);
   if(!file){
     MSG_ERR("Could not open file: "<<in_fname);
@@ -60,15 +61,18 @@ int main(const int argc, char* const argv[]){
 			     "jpsi_pt","jpsi_eta"
   };
   for(size_t i=0; i < LEN(variables); i++){
-    const std::string name(variables[i]);
-    TH1D* base_hist = HistBook[name];
-    
+    TH1D* base_hist = HistBook[variables[i]];
     // MC Response
     unfold_toy(mc_response,mc_truth,base_hist,tree,n_itr,n_evts,"_mc");
     //Linear response 
     unfold_toy(linear_response_toy,mc_truth,base_hist,tree,n_itr,n_evts,"_linear");
     // Quadratice response
     unfold_toy(quad_response_toy,mc_truth,base_hist,tree,n_itr,n_evts,"_quad");
+    
+    // Custom truth
+    unfold_toy(mc_response,gauss_truth,base_hist,tree,n_itr,n_evts,"_gauss_truth");
+    unfold_toy(mc_response,dbl_gauss_truth,base_hist,tree,n_itr,n_evts,"_dbl_gauss_truth");
+    
     
   }
   file->Close();

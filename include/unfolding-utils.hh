@@ -18,6 +18,8 @@ void unfold_toy(TH2* (*make_response)(TH1D*,TTree*,const int),
 TH1D* unfold(TH2* response_hist, TH1D* reco, int n_itr, const std::string& name);
 
 TH1D* mc_truth(TH1D* base_hist, TTree* tree, const int n_evts);
+TH1D* gauss_truth(TH1D* base_hist, TTree* tree, const int n_evts);
+TH1D* dbl_gauss_truth(TH1D* base_hist, TTree* tree, const int n_evts);
 
 TH2* mc_response(TH1D* base_hist, TTree* tree, int n_evts);
 TH2* linear_response_toy(TH1D* base_hist,TTree* tree,const int n_evts);

@@ -103,8 +103,8 @@ void unfold_toy(TH2* (*make_response)(TH1D*,TTree*,const int),
 		const int n_itr, const int n_evts,
 		const std::string& suffix){
   const std::string name(base_hist->GetName());
-  TH2* response_hist=make_response(base_hist,tree,n_evts);
-  response_hist->SetName((name+"_response_hist").c_str());
+  TH2* response_hist=make_response(base_hist,tree,2e5);
+  response_hist->SetName((name+suffix+"_rsp").c_str());
 
   TH1D* truth_hist = make_truth(base_hist,tree,n_evts);
   TH1D* reco = fold_truth(truth_hist,norm_hist_to_mat(response_hist));
@@ -128,10 +128,64 @@ TH1D* mc_truth(TH1D* base_hist, TTree* tree, const int n_evts){
   truth_hist->FillRandom(truth,n_evts);
   return truth_hist;
 }
+TH1D* gauss_truth(TH1D* base_hist, TTree* tree, const int n_evts){
+  if(tree){};
+  const std::string name(base_hist->GetName());
+
+  int N_bins(base_hist->GetXaxis()->GetNbins());
+  double x_min(base_hist->GetXaxis()->GetXmin());
+  double x_max(base_hist->GetXaxis()->GetXmax());
+  
+  RooRealVar x("x","x",x_min,x_max);
+  x.setBins(N_bins);
+  
+  RooRealVar mean("mean","mean of gaussian",0.5*(x_max-x_min)+x_min);
+  RooRealVar sigma("sigma","width of gaussian",0.1*(x_max-x_min));
+  RooGaussian model("model","Gaussian with shifting mean",x,mean,sigma);
+  RooDataHist* toy_data = model.generateBinned(RooArgSet(x),n_evts); 
+  TH1F* hist = dynamic_cast<TH1F*>(toy_data->createHistogram("x"));
+  TH1D* result = dynamic_cast<TH1D*>(base_hist->Clone(name.c_str()));
+  for(int i=0; i <= hist->GetNbinsX(); i++){
+    result->SetBinContent(i,hist->GetBinContent(i));
+    result->SetBinError(i,hist->GetBinError(i));
+  }
+  return result;
+  
+}
+TH1D* dbl_gauss_truth(TH1D* base_hist, TTree* tree, const int n_evts){
+  if(tree){};
+  const std::string name(base_hist->GetName());
+
+  int N_bins(base_hist->GetXaxis()->GetNbins());
+  double x_min(base_hist->GetXaxis()->GetXmin());
+  double x_max(base_hist->GetXaxis()->GetXmax());
+  
+  RooRealVar x("x","x",x_min,x_max);
+  x.setBins(N_bins);
+  
+  RooRealVar m1("mean","mean of gaussian",0.2*(x_max-x_min)+x_min);
+  RooRealVar m2("mean2","mean of gaussian",0.8*(x_max-x_min)+x_min);
+  RooRealVar sigma("sigma","width of gaussian",0.1*(x_max-x_min));
+  RooRealVar sigma2("sigma","width of gaussian",0.05*(x_max-x_min));
+  RooGaussian gauss1("gauss1","Gaussian ",x,m1,sigma);
+  RooGaussian gauss2("gauss2","Gaussian ",x,m2,sigma2);
+  RooRealVar frac("frac","fraction",0.5,0,1);
+  RooAddPdf model("model","Model",RooArgList(gauss1,gauss2),frac);
+  RooDataHist* toy_data = model.generateBinned(RooArgSet(x),n_evts); 
+  TH1F* hist = dynamic_cast<TH1F*>(toy_data->createHistogram("x"));
+  TH1D* result = dynamic_cast<TH1D*>(base_hist->Clone(name.c_str()));
+  for(int i=0; i <= hist->GetNbinsX(); i++){
+    result->SetBinContent(i,hist->GetBinContent(i));
+    result->SetBinError(i,hist->GetBinError(i));
+  }
+  return result;
+  
+}
+
 TH2* mc_response(TH1D* base_hist, TTree* tree, int n_evts){
   if(n_evts){};
   TH2* response_hist = setup_response_hist(base_hist);
-  return dynamic_cast<TH2D*>(make_response_hist(response_hist,tree,base_hist->GetName(),"","_response"));
+  return dynamic_cast<TH2D*>(make_response_hist(response_hist,tree,base_hist->GetName()));
 }
 
 TH2* linear_response_toy(TH1D* base_hist,TTree* tree,int n_evts){
