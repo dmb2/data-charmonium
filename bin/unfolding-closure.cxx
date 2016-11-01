@@ -57,8 +57,8 @@ int main(const int argc, char* const argv[]){
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
   
-  const char* variables[] = {"jet_pt","jet_z","delta_r", 
-			     "jpsi_pt","jpsi_eta"
+  const char* variables[] = {"delta_r"//"jet_pt","jet_z","delta_r", 
+			     // "jpsi_pt","jpsi_eta"
   };
   for(size_t i=0; i < LEN(variables); i++){
     TH1D* base_hist = HistBook[variables[i]];
