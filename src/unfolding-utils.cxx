@@ -144,11 +144,7 @@ void unfold_toy(TH2* (*make_response)(TH1D*,TTree*,const int),
   
   TH1D* truth_hist = make_truth(&truth_base,tree,n_evts);
   TH1D* reco = fold_truth(truth_hist,norm_hist_to_mat(response_hist));
-  // TH2D* response_hist_t = transpose_hist(response_hist);
   TH1D* unfolded = unfold(response_hist, reco, n_itr, name);
-  // if(truth_hist->GetNbinsX()!=reco->GetNbinsX()){
-  //   truth_hist->Rebin(2);
-  // }
   print_closure_plot(response_hist,truth_hist,reco,unfolded,suffix);
 }
 
@@ -156,7 +152,11 @@ TH1D* unfold(TH2* response_hist, TH1D* reco, int n_itr, const std::string& name)
   RooUnfoldResponse response(NULL, NULL,response_hist,
 			     (name+"_unfolded").c_str(),reco->GetTitle());
   RooUnfoldBayes unfold(&response,reco,n_itr);
-  return dynamic_cast<TH1D*>(unfold.Hreco(RooUnfold::kCovariance));
+  TH1D* unfolded = dynamic_cast<TH1D*>(unfold.Hreco(RooUnfold::kCovariance));
+  if(unfolded->GetNbinsX()!=reco->GetNbinsX()){
+    unfolded->Rebin(2);
+  }
+  return unfolded;
 }
 
 TH1D* mc_truth(TH1D* base_hist, TTree* tree, const int n_evts){
