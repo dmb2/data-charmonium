@@ -152,13 +152,47 @@ TH1D* unfold(TH2* response_hist, TH1D* reco, int n_itr, const std::string& name)
   RooUnfoldResponse response(NULL, NULL,response_hist,
 			     (name+"_unfolded").c_str(),reco->GetTitle());
   RooUnfoldBayes unfold(&response,reco,n_itr);
+  unfold.SetVerbose(0);
   TH1D* unfolded = dynamic_cast<TH1D*>(unfold.Hreco(RooUnfold::kCovariance));
   if(unfolded->GetNbinsX()!=reco->GetNbinsX()){
     unfolded->Rebin(2);
   }
   return unfolded;
 }
-
+int get_iterations(TH1D* base_hist,TH2* response_hist,const int n_evts){
+  TH1D truth_base(base_hist->GetName(),base_hist->GetTitle(),
+  		  response_hist->GetNbinsX(),
+  		  base_hist->GetXaxis()->GetXmin(),
+  		  base_hist->GetXaxis()->GetXmax());
+  TH1D* truth = gauss_truth(&truth_base,NULL,n_evts);
+  TH1D* reco = fold_truth(truth,norm_hist_to_mat(response_hist));
+  double chi2_old(1);
+  double chi2(0);
+  int num_iter(1);
+  // chi2_old = reco->KolmogorovTest(truth,"UONM"); 
+  TH1D* unfold_old=reco;
+  MSG_DEBUG(chi2_old);
+  while(true){
+    TH1D* unfolded = unfold(response_hist,reco,num_iter,base_hist->GetName());
+    chi2 = unfolded->Chi2Test(unfold_old,"CHI2");
+    MSG_DEBUG("Iteration: "<<num_iter<<" "<<chi2<<" delta chi2: "<<chi2_old-chi2);
+    if(chi2_old-chi2 > 0){
+      break;
+    }
+    unfold_old = unfolded;
+    chi2_old=chi2;
+    num_iter++;
+  };
+  
+  // for(int i =1; i < 10; i++){
+  //   TH1D* unfolded = unfold(response_hist,reco,num_iter,base_hist->GetName());
+  //   ks = 1-unfolded->KolmogorovTest(truth,"UONM");
+  //   MSG_DEBUG("Iteration: "<<num_iter<<" "<<ks<<" delta ks: "<<ks_old-ks);
+  //   ks_old=ks;
+  //   num_iter++;
+  // }
+  return num_iter;
+}
 TH1D* mc_truth(TH1D* base_hist, TTree* tree, const int n_evts){
   const std::string name(base_hist->GetName());
   TH1D* truth = dynamic_cast<TH1D*>(make_normal_hist(base_hist,tree,"truth_"+name));
