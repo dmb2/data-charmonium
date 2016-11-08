@@ -27,6 +27,12 @@ void setup_global_style(){
   TGaxis::SetMaxDigits(4);
 }
 
+void ensure_sumw2(TH1* hist){
+  if(hist->GetSumw2N()==0){
+    hist->Sumw2();
+  }
+}
+
 void setup_hist(TH1* hist){
   hist->Sumw2();
   hist->SetMarkerStyle(1);

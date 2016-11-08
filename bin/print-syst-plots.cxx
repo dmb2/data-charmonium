@@ -19,7 +19,12 @@ void usage(const char* name){
   MSG("Usage: "<< name << " [DSID.variation.hist.root]");
   MSG("Prints histograms outputted by make-systematics-plots, input name matters! ");
 }
-
+void style_err_hist(TH1* hist, Color_t color){
+  hist->SetLineColor(TColor::GetColorTransparent(color,1.0));
+  hist->SetFillColor(TColor::GetColorTransparent(color,1.0));
+  hist->SetFillStyle(0);
+  hist->SetLineWidth(2);
+}
 int main(const int argc, const char* argv[]){
   if(argc < 2){
     usage(argv[0]);
@@ -65,62 +70,69 @@ int main(const int argc, const char* argv[]){
     const std::string& plot = *p;
     MSG_DEBUG(plot);
     TH1D* tot_err=dynamic_cast<TH1D*>(HistBook[plot]->Clone((plot+"_tot_err").c_str()));
-    TCanvas canv("canv","canv",1800,600);
-    canv.Divide(3,1);
+    TCanvas canv("canv","canv",1200,600);
+    canv.Divide(2,1);
     // canv.SetLogy();
     double max(10);
     TLegend *leg = init_legend(0.1,0.1,0.9,0.9);
     leg->SetTextSize(0.05);
     for(std::map<std::string,TFile*>::iterator f=files.begin();
 	f!=files.end(); ++f){
-      TVirtualPad* pad = canv.cd(1);
+      const std::string& syst_name = f->first;
+      canv.cd(1);
       TH1D* hist = retrieve<TH1D>(f->second,(plot+"_syst").c_str());
       if(tot_err->GetEntries()==0){
-	for(int i=0; i < hist->GetNbinsX(); i++){
-	  tot_err->SetBinContent(i,hist->GetBinContent(i));
-	  tot_err->SetBinError(i,0);
-	}
+      	for(int i=0; i < hist->GetNbinsX(); i++){
+      	  tot_err->SetBinContent(i,hist->GetBinContent(i));
+      	  tot_err->SetBinError(i,0);
+      	}
       }
       add_err(tot_err,hist);
-      style_hist(hist,styles[f->first]);
+      style_hist(hist,styles[syst_name]);
+      // hist->SetLineWidth(0);
       TH1D* nom = dynamic_cast<TH1D*>(hist->Clone("tmp"));
       nom->SetFillStyle(0);
       nom->SetLineColor(kBlack);
-      hist->SetLineWidth(0);
-      nom->Draw("HIST same");
-      if(has_non_zero_error(hist)){
-	hist->Draw("e2 same");
-      }
-      pad=canv.cd(2);
-      pad->SetLogy();
+      // nom->Draw("HIST same");
+      // if(has_non_zero_error(hist)){
+      // 	hist->Draw("e2 same");
+      // }
+      // canv.cd(2);
+      // pad->SetLogy();
       TH1D* rel_err = dynamic_cast<TH1D*>(hist->Clone((std::string(hist->GetName())+"_rel_err").c_str()));
       scale_errors(rel_err);
-      Color_t cn=styles[f->first].color;
-      rel_err->SetLineColor(TColor::GetColorTransparent(cn,1.0));
-      rel_err->SetFillColor(TColor::GetColorTransparent(cn,1.0));
-      rel_err->SetFillStyle(0);
-      rel_err->SetLineWidth(2);
-      rel_err->GetYaxis()->SetTitle("Relative Systematic Error");
-      rel_err->SetMaximum(max);
-      add_to_legend(leg,rel_err,styles[f->first]);
+      
+      // rel_err->Add(nom,-1);
+      // rel_err->Divide(nom);
+      rel_err->Scale(100);
+      for(int i=0; i < rel_err->GetNbinsX(); i++){
+	double err=rel_err->GetBinContent(i);
+	rel_err->SetBinError(i,err);
+	rel_err->SetBinContent(i,0);
+      }
+      style_err_hist(rel_err,styles[syst_name].color);
+      rel_err->GetYaxis()->SetTitle("% Error");
+      rel_err->SetMaximum(100);
+      rel_err->SetMinimum(-100);
+      add_to_legend(leg,rel_err,styles[syst_name]);
       rel_err->Draw("H same");
     }
     tot_err->Write();
     aesthetic tot_aes = hist_aes("Total Syst Error",TColor::GetColorTransparent(kBlack,0.4),1001,0);
     TH1D* rel_err = dynamic_cast<TH1D*>(tot_err->Clone((std::string(tot_err->GetName())+"_rel_err").c_str()));
     scale_errors(rel_err);
+    rel_err->Scale(100);
+    
     add_to_legend(leg,tot_err,tot_aes);
-    rel_err->SetLineColor(TColor::GetColorTransparent(tot_aes.color,1.0));
-    rel_err->SetFillColor(TColor::GetColorTransparent(tot_aes.color,1.0));
-    rel_err->SetFillStyle(0);
-    rel_err->SetLineWidth(2);
-    canv.cd(2);
-    rel_err->Draw("H same");
-    style_hist(tot_err,tot_aes);
+    style_err_hist(tot_err,tot_aes.color);
     canv.cd(1);
-    tot_err->Draw("e2 same");
-    canv.cd();
-    canv.cd(3);
+    rel_err->DrawCopy("H same");
+    rel_err->Scale(-1);
+    rel_err->DrawCopy("H same");
+    style_hist(tot_err,tot_aes);
+    // canv.cd(1);
+    // tot_err->Draw("e2 same");
+    canv.cd(2);
     leg->Draw();
     canv.SaveAs((plot+"_syst.pdf").c_str());
   }

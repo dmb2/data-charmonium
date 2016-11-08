@@ -67,6 +67,7 @@ TH1* make_normal_hist(TH1* base_hist,TTree* tree,const std::string& plot,
 		      const char* weight_expr="weight",
 		      const std::string& name_suffix="_NOM");
 void scale_errors(TH1* hist);
+void ensure_sumw2(TH1* hist);
 
 void add_bc(TH1* hista, TH1* histb);
 void add_err(TH1* hista, TH1* histb);

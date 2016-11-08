@@ -88,11 +88,6 @@ std::string make_cut_expr(const std::list<std::string>& regions, const std::stri
   }
   return expr;
 }
-static void ensure_sumw2(TH1* hist){
-  if(hist->GetSumw2N()==0){
-    hist->Sumw2();
-  }
-}
 void scale_hist(TH1* hist, num_err scale_factor){
   // Scales hist and propagates error correctly
   ensure_sumw2(hist);

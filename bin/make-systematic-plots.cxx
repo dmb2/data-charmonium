@@ -57,9 +57,9 @@ int main(const int argc, const char* argv[]){
     TH1* nominal_hist = make_normal_hist(base_hist,nominal_tree,plot,"weight*SF","_syst");
     TH1D* result = dynamic_cast<TH1D*>(base_hist->Clone((plot + "_tmp").c_str()));
     // (up - down)/2
-    syst_up_hist->Sumw2();
-    syst_down_hist->Sumw2();
-    nominal_hist->Sumw2();
+    ensure_sumw2(syst_up_hist);
+    ensure_sumw2(syst_down_hist);
+    ensure_sumw2(nominal_hist);
     result->Add(syst_up_hist,syst_down_hist,sf,-sf);
     for(int i = 0; i < nominal_hist->GetNbinsX(); i++){
       nominal_hist->SetBinError(i,result->GetBinContent(i));
