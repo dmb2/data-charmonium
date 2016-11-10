@@ -18,7 +18,7 @@
 #include "RooUnfoldSvd.h"
 
 void usage(const char* prog_name){
-  MSG("Usage: "<<prog_name<< " -t truth_file.root -i in_file.root -n N -v");
+  MSG("Usage: "<<prog_name<< " -t truth_file.root -i in_file.root ");
 }
 
 int main(const int argc, char* const argv[]){
@@ -50,7 +50,7 @@ int main(const int argc, char* const argv[]){
   TFile* reco_file = TFile::Open(in_fname);
   
   const char* variables[] = {"delta_r","jet_pt","jet_z",
-			     "jpsi_pt","jpsi_eta"
+			     "jpsi_pt","jpsi_eta"//,"tau1","tau2","tau3","tau32","tau21"
   };
   int n_evts = tree->GetEntries();
   for(size_t i=0; i < LEN(variables); i++){
@@ -66,10 +66,11 @@ int main(const int argc, char* const argv[]){
     TH2* response_hist = mc_response(base_hist,tree,n_evts);
     num_iter = get_iterations(base_hist,response_hist,int(reco_hist->Integral()));
     TH1D* unfolded = unfold(response_hist,reco_hist,num_iter,name);
+    unfolded->GetXaxis()->SetTitle(base_hist->GetXaxis()->GetTitle());
     TCanvas canv("canv","canv",600,600);
-    unfolded->SetMarkerColor(kBlue);
-    reco_hist->SetMarkerColor(kRed);
-    reco_hist->Draw("e1");
+    // unfolded->SetMarkerColor(kBlue);
+    // reco_hist->SetMarkerColor(kRed);
+    // reco_hist->Draw("e1");
     unfolded->Draw("e1 same");
     canv.SaveAs((std::string(variables[i])+"_unfolded.pdf").c_str());
   }

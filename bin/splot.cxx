@@ -65,9 +65,6 @@ int main(const int argc, char* const argv[]){
   }
   setup_global_style();
 
-  // double stops[]={0.0,0.25,0.5,0.75,1.0};
-  // heat_gradient(gStyle,stops,LEN(stops));
-  
   TFile* file = TFile::Open(inFName);
   TFile* fit_file = TFile::Open(fit_fname);
   TTree* tree = retrieve<TTree>(file,tree_name);
@@ -142,8 +139,8 @@ int main(const int argc, char* const argv[]){
       add_err(bkg_tot_err,bkg_syst_hist);
       add_err(sig_tot_err,sig_syst_hist);
     }
-    add_err(sig_final,sig_tot_err);
-    add_err(bkg_final,bkg_tot_err);
+    // add_err(sig_final,sig_tot_err);
+    // add_err(bkg_final,bkg_tot_err);
     if(print_validation_plots){
       print_corr_plot(HistBook[variables[i]],"jpsi_tau",
       		      HistBook["jpsi_tau"]->GetNbinsX(),
@@ -157,6 +154,7 @@ int main(const int argc, char* const argv[]){
     print_splot_stack(tree,HistBook[variables[i]],sig_final,bkg_final,data_cut_expr,lumi,".pdf");
     print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
     sig_final->SetName(variables[i]);
+    to_write.push_back(sig_tot_err);
     to_write.push_back(sig_final);
   }
   TFile out_file(out_fname,"RECREATE");

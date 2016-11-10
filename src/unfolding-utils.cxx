@@ -169,27 +169,33 @@ int get_iterations(TH1D* base_hist,TH2* response_hist,const int n_evts){
   double chi2_old(1);
   double chi2(0);
   int num_iter(1);
-  // chi2_old = reco->KolmogorovTest(truth,"UONM"); 
+  chi2_old = reco->Chi2Test(truth,"CHI2"); 
   TH1D* unfold_old=reco;
   MSG_DEBUG(chi2_old);
+  
   while(true){
     TH1D* unfolded = unfold(response_hist,reco,num_iter,base_hist->GetName());
     chi2 = unfolded->Chi2Test(unfold_old,"CHI2");
     MSG_DEBUG("Iteration: "<<num_iter<<" "<<chi2<<" delta chi2: "<<chi2_old-chi2);
-    if(chi2_old-chi2 > 0){
+    if(fabs(chi2_old-chi2) < 100){
       break;
     }
     unfold_old = unfolded;
     chi2_old=chi2;
     num_iter++;
   };
-  
-  // for(int i =1; i < 10; i++){
+  // double chi2_arr[50];
+  // for(int i =1; i < 50; i++){
   //   TH1D* unfolded = unfold(response_hist,reco,num_iter,base_hist->GetName());
-  //   ks = 1-unfolded->KolmogorovTest(truth,"UONM");
-  //   MSG_DEBUG("Iteration: "<<num_iter<<" "<<ks<<" delta ks: "<<ks_old-ks);
-  //   ks_old=ks;
+  //   chi2 = unfolded->Chi2Test(unfold_old,"CHI2");
+  //   chi2_arr[i]=chi2;
+  //   // MSG_DEBUG("Iteration: "<<num_iter<<" "<<chi2<<" delta chi2: "<<chi2_old-chi2);
+  //   unfold_old = unfolded;
+  //   chi2_old=chi2;
   //   num_iter++;
+  // }
+  // for(int i =0; i < 49; i++){
+  //   MSG_DEBUG(i<<"\t"<<chi2_arr[i]-chi2_arr[i+1]);
   // }
   return num_iter;
 }
