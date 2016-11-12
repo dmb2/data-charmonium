@@ -58,24 +58,13 @@ TH1D* fold_truth(TH1D* truth_hist, const TMatrixD& response_matrix){
   MSG_DEBUG("truth :"<<true_vec.GetNrows());
   TVectorD rec_vec = response_matrix*true_vec;
   MSG_DEBUG("reco :"<<rec_vec.GetNrows());
-  // double t_tot;
-  // double r_tot;
-  // std::cout<<std::setw(10)<<"Truth "<<"Reco"<<std::endl;
-  // for(int i=0; i < truth_hist->GetNbinsX()+2; i++){
-  //   t_tot+=true_vec[i];
-  //   r_tot+=rec_vec[i];
-  //   std::cout<<std::setw(10)<<true_vec[i]<<" "<<rec_vec[i]<<std::endl;
-  // }
-  //     std::cout << "Truth norm: "<<t_tot<<" Reco norm: "<<r_tot<<std::endl;
   TH1D* rec_hist = dynamic_cast<TH1D*>(truth_hist->Clone(name.c_str()));
   rec_hist->Reset();
-  // if(truth_hist->GetNbinsX()+2!=rec_vec.GetNrows()){
-  //   rec_hist->Rebin(2);
-  // }
+  
   for(int i =0; i <= rec_hist->GetNbinsX(); i++){
     rec_hist->SetBinContent(i,rec_vec[i]);
     rec_hist->SetBinError(i,TMath::Sqrt(rec_vec[i]));
-    // std::cout<<rec_hist->GetBinContent(i)<<std::endl;
+    std::cout<<rec_hist->GetBinContent(i)<<std::endl;
   }
   return rec_hist;
 }
@@ -144,6 +133,10 @@ void unfold_toy(TH2* (*make_response)(TH1D*,TTree*,const int),
   
   TH1D* truth_hist = make_truth(&truth_base,tree,n_evts);
   TH1D* reco = fold_truth(truth_hist,norm_hist_to_mat(response_hist));
+  MSG_DEBUG(std::setw(10)<<"Truth"<<std::setw(10)<<"Reco");
+  for(int i = 0 ; i < truth_hist->GetNbinsX(); i++){
+    MSG_DEBUG(std::setw(10)<<truth_hist->GetBinContent(i)<<" "<<std::setw(10)<<reco->GetBinContent(i));
+  }
   TH1D* unfolded = unfold(response_hist, reco, n_itr, name);
   print_closure_plot(response_hist,truth_hist,reco,unfolded,suffix);
 }
@@ -154,9 +147,6 @@ TH1D* unfold(TH2* response_hist, TH1D* reco, int n_itr, const std::string& name)
   RooUnfoldBayes unfold(&response,reco,n_itr);
   unfold.SetVerbose(0);
   TH1D* unfolded = dynamic_cast<TH1D*>(unfold.Hreco(RooUnfold::kCovariance));
-  if(unfolded->GetNbinsX()!=reco->GetNbinsX()){
-    unfolded->Rebin(2);
-  }
   return unfolded;
 }
 int get_iterations(TH1D* base_hist,TH2* response_hist,const int n_evts){
@@ -172,12 +162,12 @@ int get_iterations(TH1D* base_hist,TH2* response_hist,const int n_evts){
   chi2_old = reco->Chi2Test(truth,"CHI2"); 
   TH1D* unfold_old=reco;
   MSG_DEBUG(chi2_old);
-  
+  int nbins = reco->GetNbinsX();
   while(true){
     TH1D* unfolded = unfold(response_hist,reco,num_iter,base_hist->GetName());
     chi2 = unfolded->Chi2Test(unfold_old,"CHI2");
-    MSG_DEBUG("Iteration: "<<num_iter<<" "<<chi2<<" delta chi2: "<<chi2_old-chi2);
-    if(fabs(chi2_old-chi2) < 100){
+    MSG_DEBUG("Iteration: "<<num_iter<<" "<<chi2/nbins<<" delta chi2: "<<chi2_old-chi2);
+    if(chi2/nbins < 1){
       break;
     }
     unfold_old = unfolded;

@@ -40,8 +40,16 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double jpsi_m(0.), jpsi_rap(0.);
   double jpsi_pt(0.), jpsi_eta(0.), jpsi_phi(0.), jpsi_E(0.);
   // double cand_psi_m(0.);
-  double cand_jet_m(0.), emfrac(0.);
+  double cand_jet_m(0.);//, emfrac(0.);
   double cand_jet_pt(0.), cand_jet_eta(0.),cand_jet_phi(0.), cand_jet_E(0.);
+  //Jet systematics 
+  double cand_jet_filt_pt(0.), cand_jet_filt_eta(0.),cand_jet_filt_phi(0.), cand_jet_filt_E(0.);
+  double cand_jet_smear_pt(0.), cand_jet_smear_eta(0.),cand_jet_smear_phi(0.), cand_jet_smear_E(0.);
+  double cand_jet_sup_pt(0.), cand_jet_sup_eta(0.),cand_jet_sup_phi(0.), cand_jet_sup_E(0.);
+  double cand_jet_sdown_pt(0.), cand_jet_sdown_eta(0.),cand_jet_sdown_phi(0.), cand_jet_sdown_E(0.);
+  double cand_jet_rup_pt(0.), cand_jet_rup_eta(0.),cand_jet_rup_phi(0.), cand_jet_rup_E(0.);
+  double cand_jet_rdown_pt(0.), cand_jet_rdown_eta(0.),cand_jet_rdown_phi(0.), cand_jet_rdown_E(0.);
+
   std::vector<std::vector<int> > *mu_trk_idx = NULL;
   
   std::vector<int> *mu_charge=NULL;
@@ -51,9 +59,16 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   std::vector<double> *vtx_pt=NULL, *vtx_z=NULL;
   // std::vector<double> *psi_m=NULL, *psi_pt=NULL;
   std::vector<double> *vtx_px=NULL, *vtx_py=NULL, *vtx_pz=NULL, *vtx_e=NULL;
-  std::vector<double> *jet_emfrac=NULL;
+  // std::vector<double> *jet_emfrac=NULL;
   std::vector<double> *jet_tau1=NULL, *jet_tau2=NULL, *jet_tau3=NULL;
   std::vector<double> *jet_pt=NULL, *jet_eta=NULL, *jet_phi=NULL, *jet_E=NULL;
+
+  std::vector<double> *jet_filt_pt=NULL, *jet_filt_eta=NULL, *jet_filt_phi=NULL, *jet_filt_E=NULL;
+  std::vector<double> *jet_smear_pt=NULL, *jet_smear_eta=NULL, *jet_smear_phi=NULL, *jet_smear_E=NULL;
+  std::vector<double> *jet_sup_pt=NULL, *jet_sup_eta=NULL, *jet_sup_phi=NULL, *jet_sup_E=NULL;
+  std::vector<double> *jet_sdown_pt=NULL, *jet_sdown_eta=NULL, *jet_sdown_phi=NULL, *jet_sdown_E=NULL;
+  std::vector<double> *jet_rup_pt=NULL, *jet_rup_eta=NULL, *jet_rup_phi=NULL, *jet_rup_E=NULL;
+  std::vector<double> *jet_rdown_pt=NULL, *jet_rdown_eta=NULL, *jet_rdown_phi=NULL, *jet_rdown_E=NULL;
   
   double t_z(0.), t_delta_r(0.);
   double t_jpsi_m(0.), t_jpsi_rap(0.);
@@ -100,11 +115,18 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   // Forest["MuTracks"]->SetBranchAddress("MuTracks_TRKS_d0Err",&mu_d0_err);
 
   setup_pt_eta_phi_e(Forest[jet_type], jet_pt, jet_eta, jet_phi, jet_E, "JET");
+  
   Forest[jet_type]->SetBranchAddress("JET_tau1",&jet_tau1);
   Forest[jet_type]->SetBranchAddress("JET_tau2",&jet_tau2);
   Forest[jet_type]->SetBranchAddress("JET_tau3",&jet_tau3);
-  Forest[jet_type]->SetBranchAddress("JET_emfrac",&jet_emfrac);
+  // Forest[jet_type]->SetBranchAddress("JET_emfrac",&jet_emfrac);
   if(is_MC){
+    setup_pt_eta_phi_e(Forest["TrackZFilteredJPsiJets"], jet_filt_pt, jet_filt_eta, jet_filt_phi, jet_filt_E, "JET");
+    setup_pt_eta_phi_e(Forest["TrackZSmearedJPsiJets"], jet_smear_pt, jet_smear_eta, jet_smear_phi, jet_smear_E, "JET");
+    setup_pt_eta_phi_e(Forest["TrackZScaledUpJPsiJets"], jet_sup_pt, jet_sup_eta, jet_sup_phi, jet_sup_E, "JET");
+    setup_pt_eta_phi_e(Forest["TrackZScaledDownJPsiJets"], jet_sdown_pt, jet_sdown_eta, jet_sdown_phi, jet_sdown_E, "JET");
+    setup_pt_eta_phi_e(Forest["TrackZRadialScaledUpJPsiJets"], jet_rup_pt, jet_rup_eta, jet_rup_phi, jet_rup_E, "JET");
+    setup_pt_eta_phi_e(Forest["TrackZRadialScaledDownJPsiJets"], jet_rdown_pt, jet_rdown_eta, jet_rdown_phi, jet_rdown_E, "JET");
     setup_pt_eta_phi_e(Forest["AUX"], t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
     const std::string t_jet_type = (jet_type=="MuonLCTopoJets" /*|| jet_type.find("TrackZ")!=std::string::npos */) ? "MuonTruthJets" : "JPsiTruthJets";
     // MSG_DEBUG("Setting up with tree: "<<t_jet_type<<" using jet type: "<<jet_type);
@@ -116,7 +138,15 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 
   setup_four_vector_output(OutTree,cand_jet_pt, cand_jet_eta, 
 			   cand_jet_phi, cand_jet_E, "jet");
+  
   if(is_MC){
+    setup_four_vector_output(OutTree,cand_jet_filt_pt, cand_jet_filt_eta,cand_jet_filt_phi, cand_jet_filt_E, "jet_filt");
+    setup_four_vector_output(OutTree,cand_jet_smear_pt, cand_jet_smear_eta,cand_jet_smear_phi, cand_jet_smear_E, "jet_smear");
+    setup_four_vector_output(OutTree,cand_jet_sup_pt, cand_jet_sup_eta,cand_jet_sup_phi, cand_jet_sup_E, "jet_sup");
+    setup_four_vector_output(OutTree,cand_jet_sdown_pt, cand_jet_sdown_eta,cand_jet_sdown_phi, cand_jet_sdown_E, "jet_sdown");
+    setup_four_vector_output(OutTree,cand_jet_rup_pt, cand_jet_rup_eta,cand_jet_rup_phi, cand_jet_rup_E, "jet_rup");
+    setup_four_vector_output(OutTree,cand_jet_rdown_pt, cand_jet_rdown_eta,cand_jet_rdown_phi, cand_jet_rdown_E, "jet_rdown");
+  
     setup_four_vector_output(OutTree,cand_t_jet_pt, cand_t_jet_eta, 
 			     cand_t_jet_phi, cand_t_jet_E, "truth_jet");
     OutTree.Branch("truth_jpsi_rap",&t_jpsi_rap);
@@ -127,7 +157,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     OutTree.Branch("truth_tau3",&t_tau3);
     OutTree.Branch("truth_tau21",&t_tau21);
     OutTree.Branch("truth_tau32",&t_tau32);
-		        
+			
     OutTree.Branch("truth_jet_z",&t_z);
     OutTree.Branch("truth_jet_m",&cand_t_jet_m);
     OutTree.Branch("truth_delta_r",&t_delta_r);
@@ -146,7 +176,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   OutTree.Branch("tau21",&tau21);
   OutTree.Branch("tau32",&tau32);
   OutTree.Branch("jet_z",&z);
-  OutTree.Branch("jet_emfrac",&emfrac);
+  // OutTree.Branch("jet_emfrac",&emfrac);
   OutTree.Branch("jet_m",&cand_jet_m);
   OutTree.Branch("delta_r",&delta_r);
   setup_four_vector_output(OutTree,jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
@@ -313,7 +343,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       continue;
     }
 
-    emfrac=jet_emfrac->at(idx);
+    // emfrac=jet_emfrac->at(idx);
     tau1=jet_tau1->at(idx);
     tau2=jet_tau2->at(idx);
     tau3=jet_tau3->at(idx);
@@ -322,6 +352,43 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     tau21= (tau2*tau1 > 0) ? tau2/tau1 : -1.;
 
     cand_jet_m = candJet.M();
+    if(idx < jet_filt_pt->size()){
+      cand_jet_filt_pt = jet_filt_pt->at(idx);
+      cand_jet_filt_eta = jet_filt_eta->at(idx);
+      cand_jet_filt_phi = jet_filt_phi->at(idx);
+      cand_jet_filt_E = jet_filt_E->at(idx);
+    }
+    if(idx < jet_smear_pt->size()){
+      cand_jet_smear_pt = jet_smear_pt->at(idx);
+      cand_jet_smear_eta = jet_smear_eta->at(idx);
+      cand_jet_smear_phi = jet_smear_phi->at(idx);
+      cand_jet_smear_E = jet_smear_E->at(idx);
+    }
+    if(idx < jet_sup_pt->size()){
+      cand_jet_sup_pt = jet_sup_pt->at(idx);
+      cand_jet_sup_eta = jet_sup_eta->at(idx);
+      cand_jet_sup_phi = jet_sup_phi->at(idx);
+      cand_jet_sup_E = jet_sup_E->at(idx);
+    }
+    if(idx < jet_sdown_pt->size()){
+      cand_jet_sdown_pt = jet_sdown_pt->at(idx);
+      cand_jet_sdown_eta = jet_sdown_eta->at(idx);
+      cand_jet_sdown_phi = jet_sdown_phi->at(idx);
+      cand_jet_sdown_E = jet_sdown_E->at(idx);
+    }
+    if(idx < jet_rup_pt->size()){
+      cand_jet_rup_pt = jet_rup_pt->at(idx);
+      cand_jet_rup_eta = jet_rup_eta->at(idx);
+      cand_jet_rup_phi = jet_rup_phi->at(idx);
+      cand_jet_rup_E = jet_rup_E->at(idx);
+    }
+    if(idx < jet_rdown_pt->size()){
+      cand_jet_rdown_pt = jet_rdown_pt->at(idx);
+      cand_jet_rdown_eta = jet_rdown_eta->at(idx);
+      cand_jet_rdown_phi = jet_rdown_phi->at(idx);
+      cand_jet_rdown_E = jet_rdown_E->at(idx);
+    }
+    
     store_four_vector(candJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
 
     if(is_MC){

@@ -85,7 +85,7 @@ TH2D* setup_response_hist(TH1* hist){
   const TAxis* axis = hist->GetXaxis();
   TH2D* hist2D = new TH2D((std::string(hist->GetName())+ "_rsp").c_str(), hist->GetTitle(),
 			  axis->GetNbins(), axis->GetXmin(), axis->GetXmax(),
-			  2*axis->GetNbins(), axis->GetXmin(), axis->GetXmax());
+			  axis->GetNbins(), axis->GetXmin(), axis->GetXmax());
   hist2D->SetMarkerStyle(6);
   hist2D->SetMarkerColor(color->GetNumber());
 

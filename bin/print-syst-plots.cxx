@@ -20,10 +20,10 @@ void usage(const char* name){
   MSG("Prints histograms outputted by make-systematics-plots, input name matters! ");
 }
 void style_err_hist(TH1* hist, Color_t color){
-  hist->SetLineColor(TColor::GetColorTransparent(color,1.0));
-  hist->SetFillColor(TColor::GetColorTransparent(color,1.0));
-  hist->SetFillStyle(0);
-  hist->SetLineWidth(2);
+  hist->SetLineColor(TColor::GetColorTransparent(color,0.6));
+  hist->SetFillColor(TColor::GetColorTransparent(color,0.6));
+  hist->SetFillStyle(1001);
+  hist->SetLineWidth(0);
 }
 int main(const int argc, const char* argv[]){
   if(argc < 2){
@@ -70,6 +70,7 @@ int main(const int argc, const char* argv[]){
     const std::string& plot = *p;
     MSG_DEBUG(plot);
     TH1D* tot_err=dynamic_cast<TH1D*>(HistBook[plot]->Clone((plot+"_tot_err").c_str()));
+    tot_err->Rebin(5);
     TCanvas canv("canv","canv",1200,600);
     canv.Divide(2,1);
     // canv.SetLogy();
@@ -81,6 +82,7 @@ int main(const int argc, const char* argv[]){
       const std::string& syst_name = f->first;
       canv.cd(1);
       TH1D* hist = retrieve<TH1D>(f->second,(plot+"_syst").c_str());
+      hist->Rebin(5);
       if(tot_err->GetEntries()==0){
       	for(int i=0; i < hist->GetNbinsX(); i++){
       	  tot_err->SetBinContent(i,hist->GetBinContent(i));
@@ -115,20 +117,21 @@ int main(const int argc, const char* argv[]){
       rel_err->SetMaximum(100);
       rel_err->SetMinimum(-100);
       add_to_legend(leg,rel_err,styles[syst_name]);
-      rel_err->Draw("H same");
+      rel_err->Draw("e2 same");
     }
     tot_err->Write();
     aesthetic tot_aes = hist_aes("Total Syst Error",TColor::GetColorTransparent(kBlack,0.4),1001,0);
     TH1D* rel_err = dynamic_cast<TH1D*>(tot_err->Clone((std::string(tot_err->GetName())+"_rel_err").c_str()));
     scale_errors(rel_err);
     rel_err->Scale(100);
-    
+    tot_aes.color=kBlack;
     add_to_legend(leg,tot_err,tot_aes);
     style_err_hist(tot_err,tot_aes.color);
+    tot_err->SetFillStyle(0);
     canv.cd(1);
-    rel_err->DrawCopy("H same");
+    rel_err->DrawCopy("e3 same");
     rel_err->Scale(-1);
-    rel_err->DrawCopy("H same");
+    rel_err->DrawCopy("e2 same");
     style_hist(tot_err,tot_aes);
     // canv.cd(1);
     // tot_err->Draw("e2 same");

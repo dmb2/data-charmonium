@@ -129,7 +129,7 @@ int main(const int argc, char* const argv[]){
   for(size_t i=0; i < LEN(treeNames); i++){
     Forest[std::string(treeNames[i])]=retrieve<TTree>(file,treeNames[i]);
   }
-  if(runSystematics){
+  if(runSystematics || xsec > 0 ){
     for(size_t i=0; i < LEN(jet_variations); i++){
       Forest[std::string(jet_variations[i])]=retrieve<TTree>(file,jet_variations[i]);
     }
