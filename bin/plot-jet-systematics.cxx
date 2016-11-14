@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <map>
+#include <vector>
 #include <string>
 
 #include "TROOT.h"
@@ -41,6 +42,17 @@ int main(const int argc, char* const argv[]){
   TFile* file = TFile::Open(in_fname);
   TTree* tree = nullptr;
   file->GetObject("mini",tree);
-  
+  std::map<std::string,TH1D*> HistBook;
+  init_hist_book(HistBook);
+  const char* plot_names[] = { "jet_pt","delta_r","jet_z",
+			       "tau1","tau2","tau3",
+			       "tau32","tau21"
+  };
+  std::vector<std::string> plots(plot_names,plot_names + sizeof(plot_names)/sizeof(*plot_names));
+  for(std::vector<std::string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
+    const std::string& plot = *p;
+    MSG_DEBUG(plot);
+  } 
+  file->Close();
   return 0;
 }

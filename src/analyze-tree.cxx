@@ -353,40 +353,40 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
 
     cand_jet_m = candJet.M();
     if(idx < jet_filt_pt->size()){
-      cand_jet_filt_pt = jet_filt_pt->at(idx);
-      cand_jet_filt_eta = jet_filt_eta->at(idx);
-      cand_jet_filt_phi = jet_filt_phi->at(idx);
-      cand_jet_filt_E = jet_filt_E->at(idx);
+      cand_jet_filt_pt = jet_filt_pt->at(idx)*GeV;
+      cand_jet_filt_eta = jet_filt_eta->at(idx)*GeV;
+      cand_jet_filt_phi = jet_filt_phi->at(idx)*GeV;
+      cand_jet_filt_E = jet_filt_E->at(idx)*GeV;
     }
     if(idx < jet_smear_pt->size()){
-      cand_jet_smear_pt = jet_smear_pt->at(idx);
-      cand_jet_smear_eta = jet_smear_eta->at(idx);
-      cand_jet_smear_phi = jet_smear_phi->at(idx);
-      cand_jet_smear_E = jet_smear_E->at(idx);
+      cand_jet_smear_pt = jet_smear_pt->at(idx)*GeV;
+      cand_jet_smear_eta = jet_smear_eta->at(idx)*GeV;
+      cand_jet_smear_phi = jet_smear_phi->at(idx)*GeV;
+      cand_jet_smear_E = jet_smear_E->at(idx)*GeV;
     }
     if(idx < jet_sup_pt->size()){
-      cand_jet_sup_pt = jet_sup_pt->at(idx);
-      cand_jet_sup_eta = jet_sup_eta->at(idx);
-      cand_jet_sup_phi = jet_sup_phi->at(idx);
-      cand_jet_sup_E = jet_sup_E->at(idx);
+      cand_jet_sup_pt = jet_sup_pt->at(idx)*GeV;
+      cand_jet_sup_eta = jet_sup_eta->at(idx)*GeV;
+      cand_jet_sup_phi = jet_sup_phi->at(idx)*GeV;
+      cand_jet_sup_E = jet_sup_E->at(idx)*GeV;
     }
     if(idx < jet_sdown_pt->size()){
-      cand_jet_sdown_pt = jet_sdown_pt->at(idx);
-      cand_jet_sdown_eta = jet_sdown_eta->at(idx);
-      cand_jet_sdown_phi = jet_sdown_phi->at(idx);
-      cand_jet_sdown_E = jet_sdown_E->at(idx);
+      cand_jet_sdown_pt = jet_sdown_pt->at(idx)*GeV;
+      cand_jet_sdown_eta = jet_sdown_eta->at(idx)*GeV;
+      cand_jet_sdown_phi = jet_sdown_phi->at(idx)*GeV;
+      cand_jet_sdown_E = jet_sdown_E->at(idx)*GeV;
     }
     if(idx < jet_rup_pt->size()){
-      cand_jet_rup_pt = jet_rup_pt->at(idx);
-      cand_jet_rup_eta = jet_rup_eta->at(idx);
-      cand_jet_rup_phi = jet_rup_phi->at(idx);
-      cand_jet_rup_E = jet_rup_E->at(idx);
+      cand_jet_rup_pt = jet_rup_pt->at(idx)*GeV;
+      cand_jet_rup_eta = jet_rup_eta->at(idx)*GeV;
+      cand_jet_rup_phi = jet_rup_phi->at(idx)*GeV;
+      cand_jet_rup_E = jet_rup_E->at(idx)*GeV;
     }
     if(idx < jet_rdown_pt->size()){
-      cand_jet_rdown_pt = jet_rdown_pt->at(idx);
-      cand_jet_rdown_eta = jet_rdown_eta->at(idx);
-      cand_jet_rdown_phi = jet_rdown_phi->at(idx);
-      cand_jet_rdown_E = jet_rdown_E->at(idx);
+      cand_jet_rdown_pt = jet_rdown_pt->at(idx)*GeV;
+      cand_jet_rdown_eta = jet_rdown_eta->at(idx)*GeV;
+      cand_jet_rdown_phi = jet_rdown_phi->at(idx)*GeV;
+      cand_jet_rdown_E = jet_rdown_E->at(idx)*GeV;
     }
     
     store_four_vector(candJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
