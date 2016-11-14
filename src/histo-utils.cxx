@@ -246,8 +246,15 @@ void add_atlas_badge(TVirtualPad& canv,const double x, const double y,
   l.DrawLatex(x+delx,y,status_label.c_str());
   if(lumi_fb > 0 ){
     char data_cond[70];
-    const char* fmt_str = "#sqrt{s} = 8 TeV; #int L dt = %.3g fb^{-1}";
-    snprintf(data_cond,sizeof(data_cond)/sizeof(*data_cond),fmt_str,lumi_fb);
+    if(lumi_fb > 0){
+      const char* fmt_str = "#sqrt{s} = 8 TeV; #int L dt = %.3g fb^{-1}";
+      snprintf(data_cond,sizeof(data_cond)/sizeof(*data_cond),fmt_str,lumi_fb);
+    }
+    else{
+      const char* fmt_str = "#sqrt{s} = 8 TeV;";
+      snprintf(data_cond,sizeof(data_cond)/sizeof(*data_cond),fmt_str);
+    }
+      
     l.DrawLatex(x,y-dely,data_cond);
   }
 }
