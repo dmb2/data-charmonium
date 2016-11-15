@@ -64,6 +64,9 @@ int main(const int argc, char* const argv[]){
     TH1D* base_hist = HistBook[variables[i]];
     // MC Response
     unfold_toy(mc_response,mc_truth,base_hist,tree,n_itr,n_evts,"_mc");
+    
+    unfold_toy(mc_response,mc_truth,base_hist,tree,n_itr,2000,"_mc_2k");
+    unfold_toy(mc_response,mc_truth,base_hist,tree,n_itr,2e5,"_mc_200k");
     //Linear response 
     // unfold_toy(linear_response_toy,mc_truth,base_hist,tree,n_itr,n_evts,"_linear");
     // Quadratice response

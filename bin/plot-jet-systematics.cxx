@@ -48,14 +48,14 @@ int main(const int argc, char* const argv[]){
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
   std::map<std::string,std::string> leg_names;
-  leg_names["filt"]="Efficiency";
-  leg_names["smear"]="Resolution";
-  leg_names["sdown"]="Scale";
-  leg_names["rdown"]="Radial Scale";
+  leg_names["filt"]="Efficiency #frac{(var-nom)}{nom}";
+  leg_names["smear"]="Resolution #frac{(var-nom)}{nom}";
+  leg_names["sdown"]="Scale #frac{(up-down)}{nom}";
+  leg_names["rdown"]="Radial Scale #frac{(up-down)}{nom}";
     
   const char* plot_names[] = { "jet_pt","delta_r","jet_z",
 			       "tau1","tau2","tau3",
-			       "tau32","tau21"
+			       "tau32","tau21","pileup"
   };
   const char* syst_names[] = {
     "filt","smear","sup","rup"
@@ -67,7 +67,9 @@ int main(const int argc, char* const argv[]){
     MSG_DEBUG(plot);
     TH1D* hist = HistBook[plot];
     TAxis* axis = hist->GetXaxis();
-    TLegend* leg = init_legend(0.65,0.65,0.92,0.92);
+    TLegend* leg = init_legend(0.2,0.2,0.8,0.6);
+    double draw_max(0);
+    double draw_min(0);
     for(size_t i = 0; i < LEN(syst_names); i++){
       std::string syst = syst_names[i];
       std::string plot_name = syst+"_"+plot;
@@ -75,6 +77,7 @@ int main(const int argc, char* const argv[]){
 			     axis->GetNbins(),axis->GetXmin(),axis->GetXmax(),
 			     50,-100,200);
       std::string draw_str = "100*(jet_"+syst+"_pt - jet_pt )/jet_pt:"+plot+">>"+plot_name;
+      std::string y_axis_title="% Error on Jet p_{T}";
       size_t pos=syst.find("up");
       if(pos!=std::string::npos){
 	std::string sup = syst;
@@ -86,21 +89,39 @@ int main(const int argc, char* const argv[]){
       tree->Draw(draw_str.c_str(),cut_expr.c_str());
       TProfile* prof = error->ProfileX();
       prof->SetMarkerStyle(24+i);
+      prof->SetErrorOption("i");
       leg->AddEntry(prof,leg_names[syst].c_str(),"p");
-      prof->GetYaxis()->SetTitle("% Error");
+      if(prof->GetMaximum() > draw_max){
+	draw_max = prof->GetMaximum()+prof->GetBinError(prof->GetMaximumBin());
+      }
+      if(prof->GetMinimum() < draw_min){
+	draw_min = prof->GetMinimum()-prof->GetBinError(prof->GetMinimumBin());
+      }
+      prof->GetYaxis()->SetTitle(y_axis_title.c_str());
       prof->GetXaxis()->SetTitle(hist->GetXaxis()->GetTitle());
       to_draw.push_back(prof);
     }
-    TCanvas canv("canv","canv",600,600);
+    TCanvas canv("canv","canv",1200,600);
+    canv.Divide(2,1);
+    canv.cd(1);
+    if(draw_max > 30){
+      draw_max=15;
+    }
+    if(draw_min < -30){
+      draw_min=-15;
+    }
     for(std::vector<TProfile*>::iterator it = to_draw.begin();
 	it!=to_draw.end(); ++it){
       TProfile* prof = *it;
       prof->Draw("e1 x0 same");
-      prof->SetMaximum(15);
-      prof->SetMinimum(-15);
+      prof->SetMaximum(1.2*draw_max);
+      prof->SetMinimum(1.2*draw_min);
     }
+    canv.cd(2);
+    leg->SetTextSize(0.05);
     leg->Draw();
-    add_atlas_badge(canv, 0.2,0.9,-1);
+    canv.cd();
+    add_atlas_badge(canv, 0.55,0.9,-1);
     canv.SaveAs((plot+"_syst_err.pdf").c_str());
   } 
   file->Close();

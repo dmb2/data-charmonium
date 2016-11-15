@@ -38,7 +38,10 @@ void init_hist_book(std::map<std::string,TH1D*>& HistBook){
   HistBook["jpsi_m"]=new TH1D("jpsi_m","J/#psi Mass; M(#mu#mu) [GeV]; evts/binwidth",50,2.,4.);
   HistBook["jpsi_lxy"]=new TH1D("jpsi_lxy","J/#psi L_{xy}; L_{xy} [mm]; evts/binwidth",50,-4,10);
   HistBook["jpsi_tau"]= new TH1D("jpsi_tau","J/#psi c#tau; c#tau; evts/binwidth",50,-1,5);
+
+  HistBook["pileup"]= new TH1D("pileup","Average interactions per bunch crossing; Avg. Interactions <#mu>; evts/binwidth",40,0,40);
   
+  HistBook["delta_r"]->GetXaxis()->SetNdivisions(508);
   // Doctor the y axis titles for binwidth
   char axis_title[200];
   std::string unit;

@@ -32,8 +32,6 @@
 TMatrixD norm_hist_to_mat(TH2* h2){
     int n=h2->GetNbinsX()+2;
     int m=h2->GetNbinsY()+2;
-    MSG_DEBUG("X: "<<n);
-    MSG_DEBUG("Y: "<<m);
     TMatrixD M(m,n);
     for(int i=0; i < n; i++){
       double norm=0;
@@ -51,27 +49,21 @@ TMatrixD norm_hist_to_mat(TH2* h2){
 
 TH1D* fold_truth(TH1D* truth_hist, const TMatrixD& response_matrix){
   const std::string name(truth_hist->GetName());
-  MSG_DEBUG("Columns: "<<response_matrix.GetNcols());
-  MSG_DEBUG("Rows: "<<response_matrix.GetNrows());
-  MSG_DEBUG("Truth X: "<<truth_hist->GetNbinsX());
   TVectorD true_vec(truth_hist->GetNbinsX()+2,truth_hist->GetArray());
-  MSG_DEBUG("truth :"<<true_vec.GetNrows());
   TVectorD rec_vec = response_matrix*true_vec;
-  MSG_DEBUG("reco :"<<rec_vec.GetNrows());
   TH1D* rec_hist = dynamic_cast<TH1D*>(truth_hist->Clone(name.c_str()));
   rec_hist->Reset();
   
   for(int i =0; i <= rec_hist->GetNbinsX(); i++){
     rec_hist->SetBinContent(i,rec_vec[i]);
     rec_hist->SetBinError(i,TMath::Sqrt(rec_vec[i]));
-    std::cout<<rec_hist->GetBinContent(i)<<std::endl;
   }
   return rec_hist;
 }
 void print_closure_plot(TH2* response_hist, TH1D* truth, TH1D* reco, TH1D* unfolded, const std::string& suffix){
   aesthetic truth_aes=hist_aes("Truth",TColor::GetColor(8,81,156),0,kSolid);
   aesthetic reco_aes=hist_aes("Reconstructed",TColor::GetColor(165,15,21),0,kSolid);
-  aesthetic unfolded_aes=hist_aes("Unfolded",TColor::GetColor(0,0,0),0,kSolid);
+  aesthetic unfolded_aes=data_aes("Unfolded",TColor::GetColor(0,0,0),kFullCircle,kSolid);
   style_hist(truth,truth_aes);
   style_hist(reco,reco_aes);
   style_hist(unfolded,unfolded_aes);
@@ -88,7 +80,7 @@ void print_closure_plot(TH2* response_hist, TH1D* truth, TH1D* reco, TH1D* unfol
   truth->Draw("H");
   
   reco->Draw("H same");
-  unfolded->Draw("H same");
+  unfolded->Draw("e1 x0 same");
   double max(std::max(std::max(truth->GetMaximum(),reco->GetMaximum()),unfolded->GetMaximum()));
   truth->SetMaximum(1.1*max);
   leg->Draw("lp");
@@ -133,11 +125,13 @@ void unfold_toy(TH2* (*make_response)(TH1D*,TTree*,const int),
   
   TH1D* truth_hist = make_truth(&truth_base,tree,n_evts);
   TH1D* reco = fold_truth(truth_hist,norm_hist_to_mat(response_hist));
-  MSG_DEBUG(std::setw(10)<<"Truth"<<std::setw(10)<<"Reco");
-  for(int i = 0 ; i < truth_hist->GetNbinsX(); i++){
-    MSG_DEBUG(std::setw(10)<<truth_hist->GetBinContent(i)<<" "<<std::setw(10)<<reco->GetBinContent(i));
-  }
   TH1D* unfolded = unfold(response_hist, reco, n_itr, name);
+  double err_chg(0);
+  for(int i =0 ; i < truth_hist->GetNbinsX(); i++){
+    
+    err_chg = truth_hist->GetBinError(i) > 0 ? (unfolded->GetBinError(i)-truth_hist->GetBinError(i))/truth_hist->GetBinError(i) : 0 ;
+    MSG_DEBUG(truth_hist->GetBinCenter(i)<<" "<<err_chg);
+  }
   print_closure_plot(response_hist,truth_hist,reco,unfolded,suffix);
 }
 
