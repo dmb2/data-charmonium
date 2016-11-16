@@ -307,14 +307,6 @@ std::pair<TH1*,TH1*> make_splot(TTree* tree, TH1* base_hist, RooWorkspace* wkspc
   splot_to_hist(interest_var,data_background,bkg_final);
   return std::pair<TH1*,TH1*>(sig_final,bkg_final);
 }
-void dump_hist(const TH1* hist){
-  MSG_DEBUG("Hist: "<<hist->GetName());
-  MSG_DEBUG("Integral: "<<hist->Integral());
-  MSG_DEBUG("Entries: "<<hist->GetEntries());
-  for(int i =0; i < hist->GetNbinsX(); i++){
-    MSG_DEBUG(i<<" "<<hist->GetBinContent(i)<<"+/-"<<hist->GetBinError(i));
-  }
-}
 void print_splot_stack(TTree* tree,TH1* base_hist,TH1* sig_final,TH1* bkg_final,const char* signal_cut_expr, const double lumi, const char* suffix){
   const std::string plot_name(base_hist->GetName());
   TCanvas canv("canv","SPlot diagnostic Canvas",600,600);
@@ -505,7 +497,7 @@ THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aestheti
       MSG_ERR("Could not find file: "<<name<<"mini.root continuing...");
       continue;
     }
-    TH1* syst_err= build_syst_err_hist(base_hist,name,cut_expr);
+    TH1* syst_err= build_syst_err_hist(base_hist,name,cut_expr,make_normal_hist);
     TTree* tree = retrieve<TTree>((name+".mini.root").c_str(),"mini");
     TH1* hist = make_normal_hist(base_hist,tree,base_hist->GetName(), cut_expr, name);
     stack->Add(hist);

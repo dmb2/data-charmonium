@@ -13,6 +13,7 @@
 #include "TTree.h"
 
 #include "TColor.h"
+#include "TROOT.h"
 #include "TCanvas.h"
 #include "TLegend.h"
 
@@ -60,7 +61,7 @@ TH1D* fold_truth(TH1D* truth_hist, const TMatrixD& response_matrix){
   }
   return rec_hist;
 }
-void print_closure_plot(TH2* response_hist, TH1D* truth, TH1D* reco, TH1D* unfolded, const std::string& suffix){
+void print_closure_plot(TH2* response_hist, TH1D* truth, TH1D* reco, TH1* unfolded, const std::string& suffix){
   aesthetic truth_aes=hist_aes("Truth",TColor::GetColor(8,81,156),0,kSolid);
   aesthetic reco_aes=hist_aes("Reconstructed",TColor::GetColor(165,15,21),0,kSolid);
   aesthetic unfolded_aes=data_aes("Unfolded",TColor::GetColor(0,0,0),kFullCircle,kSolid);
@@ -109,7 +110,7 @@ TH2D* transpose_hist(TH2* hist){
   return transposed;
 }
 
-void unfold_toy(TH2* (*make_response)(TH1D*,TTree*,const int),
+void unfold_toy(TH2* (*make_response)(TH1*,TTree*,const int),
 		TH1D* make_truth(TH1D*,TTree*,const int),
 		TH1D* base_hist, TTree* tree, 
 		const int n_itr, const int n_evts,
@@ -125,7 +126,7 @@ void unfold_toy(TH2* (*make_response)(TH1D*,TTree*,const int),
   
   TH1D* truth_hist = make_truth(&truth_base,tree,n_evts);
   TH1D* reco = fold_truth(truth_hist,norm_hist_to_mat(response_hist));
-  TH1D* unfolded = unfold(response_hist, reco, n_itr, name);
+  TH1* unfolded = unfold(response_hist, reco, n_itr, name);
   double err_chg(0);
   for(int i =0 ; i < truth_hist->GetNbinsX(); i++){
     
@@ -135,7 +136,7 @@ void unfold_toy(TH2* (*make_response)(TH1D*,TTree*,const int),
   print_closure_plot(response_hist,truth_hist,reco,unfolded,suffix);
 }
 
-TH1D* unfold(TH2* response_hist, TH1D* reco, int n_itr, const std::string& name){
+TH1* unfold(TH2* response_hist, TH1* reco, int n_itr, const std::string& name){
   RooUnfoldResponse response(NULL, NULL,response_hist,
 			     (name+"_unfolded").c_str(),reco->GetTitle());
   RooUnfoldBayes unfold(&response,reco,n_itr);
@@ -143,7 +144,7 @@ TH1D* unfold(TH2* response_hist, TH1D* reco, int n_itr, const std::string& name)
   TH1D* unfolded = dynamic_cast<TH1D*>(unfold.Hreco(RooUnfold::kCovariance));
   return unfolded;
 }
-int get_iterations(TH1D* base_hist,TH2* response_hist,const int n_evts){
+int get_iterations(TH1* base_hist,TH2* response_hist,const int n_evts){
   TH1D truth_base(base_hist->GetName(),base_hist->GetTitle(),
   		  response_hist->GetNbinsX(),
   		  base_hist->GetXaxis()->GetXmin(),
@@ -154,11 +155,11 @@ int get_iterations(TH1D* base_hist,TH2* response_hist,const int n_evts){
   double chi2(0);
   int num_iter(1);
   chi2_old = reco->Chi2Test(truth,"CHI2"); 
-  TH1D* unfold_old=reco;
+  TH1* unfold_old=reco;
   MSG_DEBUG(chi2_old);
   int nbins = reco->GetNbinsX();
   while(true){
-    TH1D* unfolded = unfold(response_hist,reco,num_iter,base_hist->GetName());
+    TH1* unfolded = unfold(response_hist,reco,num_iter,base_hist->GetName());
     chi2 = unfolded->Chi2Test(unfold_old,"CHI2");
     MSG_DEBUG("Iteration: "<<num_iter<<" "<<chi2/nbins<<" delta chi2: "<<chi2_old-chi2);
     if(chi2/nbins < 1){
@@ -182,6 +183,30 @@ int get_iterations(TH1D* base_hist,TH2* response_hist,const int n_evts){
   //   MSG_DEBUG(i<<"\t"<<chi2_arr[i]-chi2_arr[i+1]);
   // }
   return num_iter;
+}
+TH1* unfold_syst_err(TH1* reco_hist,TTree* tree, 
+		     const std::string& name,
+		     const char* num_iter_str,
+		     const std::string& suffix){
+  int num_iter=-1;
+  num_iter = atoi(num_iter_str);
+  if(num_iter < 0){
+    MSG_ERR("Unable to parse number of iterations, exiting");
+    exit(num_iter);
+  }
+  TH1* unfolded;
+  TDirectory *staging = gROOT->mkdir("staging");
+  {
+    TDirectory::TContext ctxt(staging); // Set staging to be the current directory, return to the previous current directory at the end of the scope
+    TH1* base_hist = dynamic_cast<TH1*>(reco_hist->Clone(name.c_str()));
+    base_hist->Reset();
+    TH2* response_hist = mc_response(base_hist,tree,tree->GetEntries());
+    unfolded =  unfold(response_hist,reco_hist,num_iter,name);
+    unfolded->SetDirectory(nullptr);
+    response_hist->SetDirectory(nullptr);
+    base_hist->SetDirectory(nullptr);
+  }
+  return unfolded;
 }
 TH1D* mc_truth(TH1D* base_hist, TTree* tree, const int n_evts){
   const std::string name(base_hist->GetName());
@@ -246,13 +271,13 @@ TH1D* dbl_gauss_truth(TH1D* base_hist, TTree* tree, const int n_evts){
   
 }
 
-TH2* mc_response(TH1D* base_hist, TTree* tree, int n_evts){
+TH2* mc_response(TH1* base_hist, TTree* tree, int n_evts){
   if(n_evts){};
   TH2D* response_hist = setup_response_hist(base_hist);
   return dynamic_cast<TH2D*>(make_response_hist(response_hist,tree,base_hist->GetName()));
 }
 
-TH2* linear_response_toy(TH1D* base_hist,TTree* tree,int n_evts){
+TH2* linear_response_toy(TH1* base_hist,TTree* tree,int n_evts){
   if(tree){};
   int N_bins(base_hist->GetXaxis()->GetNbins());
   double x_min(base_hist->GetXaxis()->GetXmin());
@@ -273,7 +298,7 @@ TH2* linear_response_toy(TH1D* base_hist,TTree* tree,int n_evts){
   return dynamic_cast<TH2*>(toy_data->createHistogram("x,y"));
 }
 
-TH2* quad_response_toy(TH1D* base_hist, TTree* tree, int n_evts){
+TH2* quad_response_toy(TH1* base_hist, TTree* tree, int n_evts){
   if(tree){};
   int N_bins(base_hist->GetXaxis()->GetNbins());
   double x_min(base_hist->GetXaxis()->GetXmin());
@@ -296,7 +321,7 @@ TH2* quad_response_toy(TH1D* base_hist, TTree* tree, int n_evts){
   return dynamic_cast<TH2*>(toy_data->createHistogram("x,y"));
 }
 
-TH2* width_response_toy(TH1D* base_hist, TTree* tree, int n_evts){
+TH2* width_response_toy(TH1* base_hist, TTree* tree, int n_evts){
   if(tree){};
   int N_bins(base_hist->GetXaxis()->GetNbins());
   double x_min(base_hist->GetXaxis()->GetXmin());

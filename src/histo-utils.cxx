@@ -328,7 +328,9 @@ void print_hist(TTree* tree, const std::string& plot,
   canv.SaveAs((plot+suffix).c_str());
 }
 TH1* build_syst_err_hist(TH1* base_hist, const std::string& samp_name,
-		     const char* cut_expr){
+			 const char* cut_expr, 
+			 TH1* (make_var_hist)(TH1*,TTree*, const std::string&,
+					      const char*,const std::string&)){
   std::map<std::string,std::string> syst_map;
   syst_map["MuonEfficiency"]="";
   syst_map["MuonSmearedUp"]="MuonSmearedLow";
@@ -361,15 +363,31 @@ TH1* build_syst_err_hist(TH1* base_hist, const std::string& samp_name,
     TTree* up_tree = mu_eff ? tree : retrieve<TTree>(fname,"mini");
     snprintf(fname,LEN(fname),"%s-systematics/%s.%s.mini.root",dsid.c_str(),dsid.c_str(),var_down.c_str());
     TTree* down_tree = var_down!="" && !mu_eff ? retrieve<TTree>(fname,"mini") : tree;
-
-    TH1* syst_up_hist = make_normal_hist(base_hist,up_tree,base_hist->GetName(),
-					 mu_eff ? (std::string(cut_expr)+"*(1+SFTotalErr)").c_str(): cut_expr,
-					 samp_name+"_syst_up");
-    TH1* syst_down_hist = make_normal_hist(base_hist,down_tree,base_hist->GetName(),
-					   mu_eff ? (std::string(cut_expr)+"*(1-SFTotalErr)").c_str():cut_expr,
-					   samp_name+"_syst_down");
+    const char* up_cut_expr;
+    const char* down_cut_expr;
+    if(std::string(cut_expr).size() < 3){
+      up_cut_expr=cut_expr;
+      down_cut_expr=cut_expr;
+    } else {
+      up_cut_expr = mu_eff ? (std::string(cut_expr)+"*(1+SFTotalErr)").c_str(): cut_expr;
+      down_cut_expr = mu_eff ? (std::string(cut_expr)+"*(1-SFTotalErr)").c_str():cut_expr;
+    }
+    TH1* syst_up_hist = make_var_hist(base_hist,up_tree,base_hist->GetName(),
+				      up_cut_expr,
+				      samp_name+"_syst_up");
+    syst_up_hist->SetName((base_hist->GetName()+var_up).c_str());
+    TH1* syst_down_hist = make_var_hist(base_hist,down_tree,base_hist->GetName(),
+					down_cut_expr,
+					samp_name+"_syst_down");
+    syst_down_hist->SetName((base_hist->GetName()+var_down).c_str());
     syst_up_hist->Add(syst_down_hist,-1.0);
     syst_up_hist->Scale(sf);
+    double bc;
+    for(int i=0; i <syst_up_hist->GetNbinsX(); i++){
+      bc=syst_up_hist->GetBinContent(i);
+      syst_up_hist->SetBinContent(i,0);
+      syst_up_hist->SetBinError(i,fabs(bc));
+    }
     add_err(tot_err,syst_up_hist);
   }
   return tot_err;
@@ -479,4 +497,13 @@ void print_corr_plot(TH1* base_hist, const std::string disc_name,
   decorator.DrawLatexNDC(0.02,0.05,corr_str);
   // decorator.DrawLatexNDC(0.5,0.0,base_hist->GetTitle());
   canv.SaveAs((plot_name+suffix).c_str());
+}
+
+void dump_hist(const TH1* hist){
+  MSG_DEBUG("Hist: "<<hist->GetName());
+  MSG_DEBUG("Integral: "<<hist->Integral());
+  MSG_DEBUG("Entries: "<<hist->GetEntries());
+  for(int i =0; i < hist->GetNbinsX(); i++){
+    MSG_DEBUG(i<<" "<<hist->GetBinContent(i)<<"+/-"<<hist->GetBinError(i));
+  }
 }

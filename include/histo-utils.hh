@@ -74,7 +74,9 @@ void add_err(TH1* hista, TH1* histb);
 bool has_non_zero_error(TH1* hist);
 
 TH1* build_syst_err_hist(TH1* base_hist, const std::string& samp_name,
-			 const char* cut_expr);
+			 const char* cut_expr, 
+			 TH1* (make_var_hist)(TH1*,TTree*, const std::string&,
+					      const char*,const std::string&));
 
 void add_atlas_badge(TVirtualPad& canv,const double x, const double y, 
 		     const double lumi_fb, const status_t status=INTERNAL);
@@ -98,3 +100,5 @@ void print_corr_plot(TH1* base_hist, const std::string disc_name,
 		     const int n_bins, const double min, const double max,
 		     TTree* tree, const char* suffix,
 		     const double lumi, const char* weight_expr);
+
+void dump_hist(const TH1* hist);
