@@ -53,7 +53,7 @@ int main(const int argc, char* const argv[]){
   TTree* tree = retrieve<TTree>(truth_fname,"mini");
   TFile* reco_file = TFile::Open(in_fname);
   
-  const char* variables[] = {"delta_r"//,"jet_pt","jet_z",
+  const char* variables[] = {"delta_r","jet_pt","jet_z",
 			     // "jpsi_pt","jpsi_eta"//,"tau1","tau2","tau3","tau32","tau21"
   };
   int n_evts = tree->GetEntries();
@@ -72,8 +72,10 @@ int main(const int argc, char* const argv[]){
     TH1* unfolded = unfold(response_hist,reco_hist,num_iter,name);
     unfolded->GetXaxis()->SetTitle(base_hist->GetXaxis()->GetTitle());
     TCanvas canv("canv","canv",600,600);
-    unfolded->SetMarkerStyle(kFullDotMedium);
-    unfolded->SetLineWidth(4);
+    unfolded->SetMarkerStyle(kFullDotLarge);
+    unfolded->SetMarkerSize(0.75);
+    int width=6;
+    unfolded->SetLineWidth(width);
     unfolded->DrawCopy("e1 x0");
     if(do_syst){
       //square peg, round hole. I'm pidgeon-holing num_iter into a string... what could go wrong
@@ -83,10 +85,16 @@ int main(const int argc, char* const argv[]){
       TH1* splot_err_hist = nullptr;
       reco_file->GetObject((std::string(variables[i])+"_sig_tot_err").c_str(),splot_err_hist);
       if(splot_err_hist!=nullptr){
-	syst_err_hist->Add(splot_err_hist);
+	MSG_DEBUG("Adding splot syst hist");
+	width-=2;
+	unfolded->SetLineWidth(width);
+	unfolded->Add(splot_err_hist);
+	unfolded->DrawCopy("e1 x0 same");
+	// syst_err_hist->Add(splot_err_hist);
       }
+      width-=2;
       unfolded->Add(syst_err_hist);
-      unfolded->SetLineWidth(2);
+      unfolded->SetLineWidth(width);
     }
     unfolded->DrawCopy("e1 x0 same");
     canv.SaveAs((std::string(variables[i])+"_unfolded.pdf").c_str());
