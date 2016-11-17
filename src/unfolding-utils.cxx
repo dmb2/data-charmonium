@@ -184,6 +184,21 @@ int get_iterations(TH1* base_hist,TH2* response_hist,const int n_evts){
   // }
   return num_iter;
 }
+TH1* build_unfold_err_hist(TH1* unfolded, TH2* response_hist, int num_iter,const std::string& name){
+  TH1D* toy_hist = dynamic_cast<TH1D*>(unfolded->Clone((std::string(unfolded->GetName())+"_toy").c_str()));
+  toy_hist->Reset();
+  toy_hist->FillRandom(unfolded,unfolded->Integral());
+  TH1* reco = fold_truth(toy_hist,norm_hist_to_mat(response_hist));
+  TH1* unfold_toy = unfold(response_hist,reco,num_iter,name);
+  unfold_toy->Add(toy_hist,-1);
+  double bc;
+  for(int i=0; i < unfold_toy->GetNbinsX(); i++){
+    bc=unfold_toy->GetBinContent(i);
+    unfold_toy->SetBinContent(i,0);
+    unfold_toy->SetBinError(i,bc);
+  }
+  return unfold_toy;
+}
 TH1* unfold_syst_err(TH1* reco_hist,TTree* tree, 
 		     const std::string& name,
 		     const char* num_iter_str,

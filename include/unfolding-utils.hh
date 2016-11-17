@@ -32,3 +32,8 @@ TH1* unfold_syst_err(TH1* reco_hist,TTree* tree,
 		     const std::string& name,
 		     const char* num_iter_str,
 		     const std::string& suffix);
+
+TH1* build_unfold_err_hist(TH1* unfolded, 
+			   TH2* response_hist,
+			   int num_iter,
+			   const std::string& name);

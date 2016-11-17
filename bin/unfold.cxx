@@ -92,6 +92,9 @@ int main(const int argc, char* const argv[]){
 	unfolded->DrawCopy("e1 x0 same");
 	// syst_err_hist->Add(splot_err_hist);
       }
+      TH1* unfold_err_hist = build_unfold_err_hist(unfolded,response_hist,num_iter,name);
+      // dump_hist(unfold_err_hist);
+      unfolded->Add(unfold_err_hist);
       width-=2;
       unfolded->Add(syst_err_hist);
       unfolded->SetLineWidth(width);
