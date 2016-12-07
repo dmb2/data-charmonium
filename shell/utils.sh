@@ -147,7 +147,7 @@ organize_slice_files(){
     local BRANCH_NAME="$1"
     for dir in "${BRANCH_NAME}"*/; 
     do 
-    	for dsid in 20802{4..8}; 
+    	for dsid in 20802{4..8} total; 
     	do 
     	    mkdir -p "$dir/$dsid-systematics/"
     	    mv "$dir/${dsid}."{M,T}*.mini.root "$dir/$dsid-systematics/";
@@ -156,20 +156,28 @@ organize_slice_files(){
     	mv "$dir/non_prompt.mini"{.mini,}.root
     done
 }
+slice_file(){
+    local DSID="$1"
+    local BRANCH_NAME="$2"
+    local INIT_VAL="$3"
+    local BIN_VALS="$4"
+    
+    python/split_by_branch -a "${BIN_VALS}"\
+			   ${DSID}*.mini.root\
+			   -i "${INIT_VAL}" -b "${BRANCH_NAME}"
+    for bin_label in $(ls ${DSID}*${BRANCH_NAME}*.root | awk -F '.' '{print $3}' | sort -u); do 
+	mkdir -p "slices/${bin_label}"
+	mv ${DSID}*${bin_label}.mini.root slices/${bin_label}/
+    done
+}
 setup_slices(){
     local BRANCH_NAME="$1"
     local INIT_VAL="$2"
     local BIN_VALS="$3"
     # 20802{4..8} non_prompt.mini.root full2012.mini.root
-    for dsid in  20802{4..8}-systematics/ 20802{4..8} non_prompt full2012
+    for dsid in  20802{4..8}-systematics/ 20802{4..8} non_prompt total full2012
     do
-	python/split_by_branch -a "${BIN_VALS}"\
-			       ${dsid}*.mini.root\
-			       -i "${INIT_VAL}" -b "${BRANCH_NAME}"
-	for bin_label in $(ls ${dsid}*${BRANCH_NAME}*.root | awk -F '.' '{print $3}' | sort -u); do 
-	    mkdir -p "slices/${bin_label}"
-	    mv ${dsid}*${bin_label}.mini.root slices/${bin_label}/
-	done
+	slice_file "$dsid" "$BRANCH_NAME" "$INIT_VAL" "$BIN_VALS"
     done
     cd slices;
     strip_slice_name "${BRANCH_NAME}"

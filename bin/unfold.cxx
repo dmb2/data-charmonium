@@ -10,6 +10,7 @@
 #include "TStyle.h"
 #include "color.hh"
 #include "histo-utils.hh"
+#include "histo-meta-data.hh"
 #include "unfolding-utils.hh"
 
 #include "RooUnfoldResponse.h"
@@ -26,8 +27,9 @@ int main(const int argc, char* const argv[]){
   char* truth_fname=NULL;
   bool do_syst=false;
   int num_iter(0);
+  double lumi=-1;
   int c;
-  while((c = getopt(argc,argv,"st:i:")) != -1){
+  while((c = getopt(argc,argv,"st:i:l:")) != -1){
     switch(c){
     case 't':
       truth_fname = optarg;
@@ -38,11 +40,14 @@ int main(const int argc, char* const argv[]){
     case 's':
       do_syst = true;
       break;
+    case 'l':
+      lumi=atof(optarg);
+      break;
     default:
       abort();
     }
   }
-  if(in_fname==NULL || truth_fname==NULL){
+  if(in_fname==NULL || truth_fname==NULL || !std::isfinite(lumi)){
     usage(argv[0]);
     exit(1);
   }
@@ -70,13 +75,28 @@ int main(const int argc, char* const argv[]){
     TH2* response_hist = mc_response(base_hist,tree,n_evts);
     num_iter = get_iterations(base_hist,response_hist,int(reco_hist->Integral()));
     TH1* unfolded = unfold(response_hist,reco_hist,num_iter,name);
+    unfolded->GetYaxis()->SetTitle();
+    fix_axis_labels(unfolded);
+    if(std::string(base_hist->GetName())=="delta_r"){
+      unfolded->SetNdivisions(508);
+    }
+
     unfolded->GetXaxis()->SetTitle(base_hist->GetXaxis()->GetTitle());
     TCanvas canv("canv","canv",600,600);
-    unfolded->SetMarkerStyle(kFullDotLarge);
-    unfolded->SetMarkerSize(0.75);
-    int width=6;
+    TLegend* leg = init_legend(0.65,0.7,0.9,0.9);
+    if(std::string(base_hist->GetName())=="jet_z"){
+      delete leg;
+      leg = init_legend(0.2,0.5,0.6,0.75);
+    } 
+    int width=4;
     unfolded->SetLineWidth(width);
-    unfolded->DrawCopy("e1 x0");
+    unfolded->SetMarkerSize(0);
+    unfolded->SetFillColor(TColor::GetColorTransparent(kBlack,0.4));
+    unfolded->SetLineColor(TColor::GetColorTransparent(kBlack,0.4));
+    unfolded->SetMarkerColor(TColor::GetColorTransparent(kBlack,0.4));
+    unfolded->SetLineWidth(15);
+    TH1* draw_hist =unfolded->DrawCopy("e2");
+    leg->AddEntry(draw_hist,"Stat + Syst  Error","lf");
     if(do_syst){
       //square peg, round hole. I'm pidgeon-holing num_iter into a string... what could go wrong
       char iter_str[20];
@@ -86,17 +106,29 @@ int main(const int argc, char* const argv[]){
       reco_file->GetObject((std::string(variables[i])+"_sig_tot_err").c_str(),splot_err_hist);
       if(splot_err_hist!=nullptr){
 	MSG_DEBUG("Adding splot syst hist");
-	width-=2;
+	width-=1;
 	unfolded->SetLineWidth(width);
 	unfolded->Add(splot_err_hist);
-	unfolded->DrawCopy("e1 x0 same");
-	// syst_err_hist->Add(splot_err_hist);
+	unfolded->DrawCopy("e2 same");
       }
-      width-=2;
+      width-=1;
       unfolded->Add(syst_err_hist);
       unfolded->SetLineWidth(width);
     }
-    unfolded->DrawCopy("e1 x0 same");
+    unfolded->SetFillColor(kBlack);
+    unfolded->SetLineColor(kBlack);
+    unfolded->SetMarkerColor(kBlack);
+    unfolded->SetMarkerStyle(kFullDotLarge);
+    unfolded->SetMarkerSize(0.75);
+    
+    leg->AddEntry(unfolded,"Unfolded Data","lp");
+    unfolded->DrawCopy("e0 x0 same");
+    int max_bin=unfolded->GetMaximumBin();
+    double draw_max = unfolded->GetBinContent(max_bin)
+      + unfolded->GetBinError(max_bin);
+    draw_hist->SetMaximum(1.2*draw_max);
+    leg->Draw();
+    add_atlas_badge(canv,0.2,0.88,lumi);
     canv.SaveAs((std::string(variables[i])+"_unfolded.pdf").c_str());
   }
   reco_file->Close();

@@ -57,7 +57,8 @@ int main(const int argc, char* const argv[]){
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
   
-  const char* variables[] = {"jet_z","delta_r"//,"jet_pt",
+  const char* variables[] = {"jet_z","delta_r",
+			     "tau1","tau2","tau3","tau32","tau21"//,"jet_pt",
 			     // "jpsi_pt","jpsi_eta"
   };
   for(size_t i=0; i < LEN(variables); i++){
@@ -65,11 +66,9 @@ int main(const int argc, char* const argv[]){
     // MC Response
     unfold_toy(mc_response,mc_truth,base_hist,tree,n_itr,n_evts,"_mc");
     
-    unfold_toy(mc_response,mc_truth,base_hist,tree,n_itr,2000,"_mc_2k");
-    unfold_toy(mc_response,mc_truth,base_hist,tree,n_itr,2e5,"_mc_200k");
     //Linear response 
     // unfold_toy(linear_response_toy,mc_truth,base_hist,tree,n_itr,n_evts,"_linear");
-    // Quadratice response
+    // Quadratic response
     // unfold_toy(quad_response_toy,mc_truth,base_hist,tree,n_itr,n_evts,"_quad");
     
     // Custom truth
