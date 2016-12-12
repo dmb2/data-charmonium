@@ -347,31 +347,69 @@ TH1* build_syst_err_hist(TH1* base_hist, const std::string& samp_name,
   TH1* tot_err = dynamic_cast<TH1*>(base_hist->Clone((base_hist->GetName()+samp_name+"_tot_err").c_str()));
   std::string dsid=split_string(samp_name,'.').at(0);
   std::string syst_cut_expr(cut_expr);
-  for(int i =0; i < tot_err->GetNbinsX(); i++){
-    tot_err->SetBinContent(i,0);
-    tot_err->SetBinError(i,0);
-  }
+  tot_err->Reset();
+  // for(int i =0; i < tot_err->GetNbinsX(); i++){
+  //   tot_err->SetBinContent(i,0);
+  //   tot_err->SetBinError(i,0);
+  // }
 
   for(std::map<std::string,std::string>::const_iterator it = syst_map.begin();
       it!=syst_map.end(); ++it){
     const std::string& var_up = it->first;
     const std::string& var_down = it->second;
-    // MSG_DEBUG("Processing up:"<<var_up<<" and down: "<<var_down);
+    // MSG_DEBUG("Variation: "<<var_up<<" and "<<var_down);
     double sf = var_down=="" ? 1.0 : 0.5;
     bool mu_eff=(var_up=="MuonEfficiency");
-    snprintf(fname,LEN(fname),"%s-systematics/%s.%s.mini.root",dsid.c_str(),dsid.c_str(),var_up.c_str());
-    TTree* up_tree = mu_eff ? tree : retrieve<TTree>(fname,"mini");
-    snprintf(fname,LEN(fname),"%s-systematics/%s.%s.mini.root",dsid.c_str(),dsid.c_str(),var_down.c_str());
-    TTree* down_tree = var_down!="" && !mu_eff ? retrieve<TTree>(fname,"mini") : tree;
-    const char* up_cut_expr;
-    const char* down_cut_expr;
-    if(std::string(cut_expr).size() < 3){
-      up_cut_expr=cut_expr;
-      down_cut_expr=cut_expr;
+    TTree* up_tree=nullptr;
+    TTree* down_tree = nullptr;
+    char up_cut_expr[256];
+    char down_cut_expr[256];
+
+    //This is kind of hairy, but here's the rough idea: Every
+    // systematic variation has its own file except for the muon
+    // efficiency. This systematic is applied as a weight to the
+    // distribution. To assess the uncertainty the weight is varied up
+    // and down according to SFTotalErr. Therefore, for our code we
+    // set up the trees to point to the same (nominal) tree, and
+    // modifiy the cut_expression to be weighted according to the
+    // variation's error, up or down. If we aren't assessiong the muon
+    // efficiency, we retrieve the trees and leave the cut expression
+    // alone.
+    if(mu_eff){
+      up_tree = tree;
+      down_tree = tree;
+      snprintf(up_cut_expr,LEN(up_cut_expr),"%s*(1+SFTotalErr)",cut_expr);
+      snprintf(down_cut_expr,LEN(down_cut_expr),"%s*(1-SFTotalErr)",cut_expr);
     } else {
-      up_cut_expr = mu_eff ? (std::string(cut_expr)+"*(1+SFTotalErr)").c_str(): cut_expr;
-      down_cut_expr = mu_eff ? (std::string(cut_expr)+"*(1-SFTotalErr)").c_str():cut_expr;
+      snprintf(up_cut_expr,LEN(up_cut_expr),"%s",cut_expr);
+      snprintf(down_cut_expr,LEN(down_cut_expr),"%s",cut_expr);
+      snprintf(fname,LEN(fname),"%s-systematics/%s.%s.mini.root",dsid.c_str(),dsid.c_str(),var_up.c_str());
+      TFile* file = TFile::Open(fname);
+      file->GetObject("mini",up_tree);
+      if(var_down!=""){
+	snprintf(fname,LEN(fname),"%s-systematics/%s.%s.mini.root",dsid.c_str(),dsid.c_str(),var_down.c_str());
+	file = TFile::Open(fname);
+	file->GetObject("mini",down_tree);
+      }
+      else{
+	down_tree=tree;
+      }
     }
+    if(up_tree==nullptr || down_tree == nullptr){
+      MSG_ERR("Systematic tree was not retrieved, exiting!");
+      exit(-1);
+    }
+    // If the original cut_expr is less than 3, it is the number of
+    // iterations for unfolding. Therefore we override it again so
+    // that the function pointer make_var_hist can properly parse the
+    // string into the number of iterations
+    if(std::string(cut_expr).size() < 3){
+      snprintf(up_cut_expr,LEN(up_cut_expr),"%s",cut_expr);
+      snprintf(down_cut_expr,LEN(down_cut_expr),"%s",cut_expr);
+    }
+    // MSG_DEBUG("Up cut expression: "<<up_cut_expr);
+    // MSG_DEBUG("Down cut expression: "<<down_cut_expr);
+    // MSG_DEBUG("Up Tree: "<<up_tree<<" and down tree: "<<down_tree);
     TH1* syst_up_hist = make_var_hist(base_hist,up_tree,base_hist->GetName(),
 				      up_cut_expr,
 				      samp_name+"_syst_up");

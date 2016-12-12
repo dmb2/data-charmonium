@@ -497,6 +497,7 @@ THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aestheti
       MSG_ERR("Could not find file: "<<name<<"mini.root continuing...");
       continue;
     }
+    MSG_DEBUG(cut_expr);
     TH1* syst_err= build_syst_err_hist(base_hist,name,cut_expr,make_normal_hist);
     TTree* tree = retrieve<TTree>((name+".mini.root").c_str(),"mini");
     TH1* hist = make_normal_hist(base_hist,tree,base_hist->GetName(), cut_expr, name);
