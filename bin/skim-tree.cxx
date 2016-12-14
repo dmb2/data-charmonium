@@ -150,7 +150,7 @@ int main(const int argc, char* const argv[]){
   std::string dsid = parts.size()!=0 ? parts.back() : "";
   if (runSystematics){
     // nominal
-    // process(outFName.c_str(),Forest,CutDefReals, CutDefCats, "","TrackZJPsiJets",weight);
+    process(outFName.c_str(),Forest,CutDefReals, CutDefCats, "","TrackZJPsiJets",weight);
     // muon variations
     for(size_t i=0; i < LEN(muon_variations); i++){
       snprintf(outName,100,("%s.Muon%s.mini.root"), dsid.c_str(), muon_variations[i]);
