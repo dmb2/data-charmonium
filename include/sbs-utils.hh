@@ -2,8 +2,8 @@
 #include <string>
 #include <list>
 #include <map>
+
 #include <cstddef>
-#include "math.hh"
 
 class TTree;
 class RooRealVar;
@@ -15,6 +15,7 @@ typedef struct{
   std::list<std::string> regions;
   num_err sts_ratio;
 } sb_info;
+
 void print_bkg_splot(TTree* tree, TH1* hist,const char* suffix, const double lumi,RooWorkspace* wkspc);
 std::pair<TH1*,TH1*> make_splot(TTree* tree, TH1* base_hist, RooWorkspace* wkspc);
 void print_splot_stack(TTree* tree,TH1* base_hist,TH1* sig_final,TH1* bkg_final,const char* signal_cut_expr, const double lumi, const char* suffix);

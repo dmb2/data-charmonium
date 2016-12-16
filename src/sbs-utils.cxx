@@ -24,6 +24,7 @@
 #include "RooDataSet.h"
 #include "RooStats/SPlot.h"
 
+#include "math.hh"
 #include "sbs-utils.hh"
 #include "root-sugar.hh"
 #include "histo-utils.hh"
@@ -550,7 +551,7 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
     }
   }
   tot_syst_err->Add(hist);
-  // tot_syst_err->Scale(N_sig/N_MC);
+  tot_syst_err->Scale(N_sig/N_MC);
 
   stack->Draw("HIST");
   stack->GetXaxis()->SetTitle(signal->GetXaxis()->GetTitle());

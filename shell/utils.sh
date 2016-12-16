@@ -1,5 +1,5 @@
 export PATH=${HOME}/data-charmonium/bin:$PATH
-export LD_LIBRARY_PATH=./src:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=${HOME}/data-charmonium/src:$LD_LIBRARY_PATH
 # Helper functions for bookkeeping, should be sourced not executed 
 
 # usage: proc_file foo.txt echo [cmd opts]
@@ -110,7 +110,7 @@ process_systematics(){
     summarize_systematics $(echo $(basename $FILE .root)).mini.root
 }
 
-# usage: get_ami_exsec DSID.ami_dset/
+# usage: get_ami_xsec DSID.ami_dset/
 # returns string (in fb): DSID=xsec
 get_ami_xsec(){
     local dset_info=$(ami show dataset info $1)

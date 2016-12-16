@@ -23,7 +23,7 @@ HISTO_DEPS:=$(COMMON_DEPS) src/stack-utils.o src/AtlasStyle.o\
 	src/plot-utils.o src/color.o src/math.o\
 	src/histo-style.o 
 .PHONY: all clean install-plots install-roounfold
-all: $(BINS)
+all: $(BINS) ./src/libUtils.so
 
 install-plots: 
 	mv *corr.pdf ~/Documents/JPsiJetSubstructure/plots/correlation/
@@ -39,6 +39,10 @@ src/dict.cxx: $(INCDIR)/LinkDef.h
 	rootcint -f $@ -c -I$(INCDIR) -p $^
 src/libDict.so: src/dict.cxx
 	$(CC) -shared -fPIC -o$@ $(CXXFLAGS) $^
+src/shared_dict.cxx: $(wildcard $(INCDIR)/*.hh) $(INCDIR)/shared_LinkDef.h 
+	rootcint -f $@ -c $(CXXFLAGS) -I$(INCDIR) $^
+src/libUtils.so: src/shared_dict.cxx $(wildcard ./src/*.cxx)
+	$(CC) -shared -fPIC -o$@ $(CXXFLAGS) $(LDFLAGS) -lRooFit -lRooFitCore -L./src -lRooUnfold $^
 src/analyze-cut-tree.o: src/analyze-tree.cxx
 	$(CC) $(CXXFLAGS) -D__ANALYZE_TREE_CUTFLOW__ -c $< -o $@ 
 bin/skim-tree:  $(SKIM_DEPS) bin/skim-tree.o src/analyze-tree.o src/libDict.so
