@@ -39,7 +39,8 @@ src/dict.cxx: $(INCDIR)/LinkDef.h
 	rootcint -f $@ -c -I$(INCDIR) -p $^
 src/libDict.so: src/dict.cxx
 	$(CC) -shared -fPIC -o$@ $(CXXFLAGS) $^
-src/shared_dict.cxx: $(wildcard $(INCDIR)/*.hh) $(INCDIR)/shared_LinkDef.h 
+#math.hh has to be included in sbs-utils.hh so it will be double included here
+src/shared_dict.cxx: $(filter-out $(INCDIR)/math.hh,$(wildcard $(INCDIR)/*.hh)) $(INCDIR)/shared_LinkDef.h 
 	rootcint -f $@ -c $(CXXFLAGS) -I$(INCDIR) $^
 src/libUtils.so: src/shared_dict.cxx $(wildcard ./src/*.cxx)
 	$(CC) -shared -fPIC -o$@ $(CXXFLAGS) $(LDFLAGS) -lRooFit -lRooFitCore -L./src -lRooUnfold $^

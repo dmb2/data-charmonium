@@ -24,7 +24,6 @@
 #include "RooDataSet.h"
 #include "RooStats/SPlot.h"
 
-#include "math.hh"
 #include "sbs-utils.hh"
 #include "root-sugar.hh"
 #include "histo-utils.hh"

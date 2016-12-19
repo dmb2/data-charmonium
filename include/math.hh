@@ -5,10 +5,12 @@ template<typename T>
 bool is_in(T x,T min,T max){
   return (x >= min && x < max);
 }
+
 typedef struct {
   double val;
   double err;
 } num_err;
+
 std::string str_rep(const num_err x);
 num_err add(const num_err x, const num_err y);
 num_err sub(const num_err x, const num_err y);

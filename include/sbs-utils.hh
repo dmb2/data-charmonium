@@ -4,6 +4,7 @@
 #include <map>
 
 #include <cstddef>
+#include "math.hh"
 
 class TTree;
 class RooRealVar;
@@ -11,6 +12,7 @@ class RooAbsPdf;
 class RooAbsCollection;
 class RooWorkspace;
 class TH1;
+
 typedef struct{
   std::list<std::string> regions;
   num_err sts_ratio;
