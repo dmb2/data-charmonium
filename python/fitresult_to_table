@@ -1,0 +1,110 @@
+#!/usr/bin/env python
+import ROOT
+from optparse import OptionParser, OptionGroup
+from sys import stdout, stderr, exit
+from subprocess import Popen,call,PIPE
+
+parser = OptionParser(usage='Usage: %prog [options] [input file list]')
+# parser.add_option('-b','--branch-name',dest='branch_name',
+#                   help='Branch name to be split',metavar='BRANCH')
+(options,args)=parser.parse_args()
+
+def frexp10(dec):
+    logdec=ROOT.TMath.Log10(-1* dec if dec < 0 else dec)
+    mantissa = 10**(logdec-int(logdec)) if dec > 0 else -1*10**(logdec - int(logdec))
+    return mantissa,int(logdec)
+
+def fmtValErr(x):
+    """Given a list of [val,err,syserr] return a tex string that correctly
+reports the right number of sig figs for the given error in scientific
+notation eg. (1.5 \pm 0.5 \pm 0.9)\times 10^{6}"""
+    val,err=x[0],x[1]
+    if val==0.0 or err==0.0:
+        return ''
+    mantissa,exponent=frexp10(val)
+    err*=10**-exponent
+    err_mantissa,err_exponent=frexp10(err)
+    fmtString=''
+    outString=''
+    if exponent!=0:
+        if err > 0:
+            fmtString='(%%.%df \\pm %%.%df)\\times 10^{%d}'%(abs(err_exponent)+1,
+                                                             abs(err_exponent)+1,
+                                                             exponent)
+            outString=fmtString%(mantissa,err)
+        else:
+            fmtString='%%.%df\\times 10^{%d}'%(abs(err_exponent)+1,exponent)
+            outString=fmtString%(mantissa)
+    else:
+        if err > 0:
+            fmtString='%%.%df \\pm %%.%df'%(abs(err_exponent)+1,
+                                            abs(err_exponent)+1)
+            outString=fmtString%(mantissa,err)
+        else:
+            fmtString="%%.%df"%(abs(err_exponent)+1)
+            outString=fmtString%(mantissa)
+    return outString 
+def print_table(workspace,variation,slice_name):
+    result = workspace.obj("result")
+    float_pars = result.floatParsFinal()
+    pretty_caption={"nom":"nominal parameterization",
+                    "crystal_ball_alpha10_n1":"Crystal Ball $\\alpha=10$ $n=1$",
+                    "crystal_ball_alpha10_n5":"Crystal Ball $\\alpha=10$ $n=5$",
+                    "crystal_ball_alpha1_n1":"Crystal Ball $\\alpha=1$ $n=1$",
+                    "lifetime":"single sided non-coherent lifetime component",
+                    "mass2":"parabolic mass background",
+                    "mass3":"cubic mass background",
+                    "mass_exp":"no exponential mass background component",
+                    "resolution":"only one gaussian resolution function for lifetime"
+    }
+    row_order=["nsig","nbkg","mean_m",
+               "sigma_m","lifetime",
+               "nclt","nplt","sigma_t1",
+               "sigma_t2","cb_sf","mass_frac",
+               "non_prompt_bkg_frac","prompt_bkg_frac","prompt_frac",
+               "res_frac","Pc1","Pc2","Pc3"]
+    pretty_names={"Pc1":"Non-Coherent Mass c_{1}",
+                  "Pc2":"Non-Coherent Mass c_{2}",
+                  "Pc3":"Non-Coherent Mass c_{3}",
+                  "cb_sf":"Crystal Ball Scale Factor",
+                  "lifetime":"Lifetime",
+                  "mass_frac":"Mass Fraction",
+                  "mean_m":"$J/\psi$ Mass",
+                  "nbkg":"Number of Background Events",
+                  "nclt":"Non-coherent Lifetime",
+                  "non_prompt_bkg_frac":"Non-prompt Background Fraction",
+                  "nplt":"Non-prompt Lifetime",
+                  "nsig":"Number of Signal Events",
+                  "prompt_bkg_frac":"Prompt Background Fraction",
+                  "prompt_frac":"Prompt Fraction",
+                  "res_frac":"Resolution Fraction",
+                  "sigma_m":"$J/\psi$ Width",
+                  "sigma_t1":"Resolution Width",
+                  "sigma_t2":"Second Resolution Width"}
+    print "#+CAPTION: Result of fit to dataset with %s, Estimated Distance to Minimum: %s"%(pretty_caption[variation],fmtValErr([result.edm(),-10]))
+    print  "#+LABEL: tab:fitresult-%s-%s"%(variation,slice_name)if slice_name!="" else "#+LABEL: tab:fitresult-%s"%(variation)
+    print "| %34s | %34s |"%("Parameter Name"," Fitted Value")
+    print "|"+"-"*36 + "+" + "-"*36+"|"
+    for par_name in row_order:
+        par = float_pars.find(par_name)#float_pars.at(float_pars.find(par_name))
+        err_str = fmtValErr([par.getVal(), par.getError()]) if par!=None else "N/A"
+        print "| %34s | %34s |"%(pretty_names[par_name],err_str)
+    print "|"+"-"*36 + "+" + "-"*36+"|"
+
+def main():
+    tfile = ROOT.TFile.Open(args[0])
+    workspace = tfile.Get("workspace")
+    variations = ["crystal_ball_alpha10_n1",
+                  "crystal_ball_alpha10_n5",
+                  "crystal_ball_alpha1_n1",
+                  "lifetime",
+                  "mass2",
+                  "mass3",
+                  "mass_exp",
+                  "resolution"]
+    print_table(workspace,"nom",args[1])
+    for var in variations:
+        workspace = tfile.Get("workspace_"+var)
+        print_table(workspace,var,args[1])
+if __name__ == "__main__":
+    main()

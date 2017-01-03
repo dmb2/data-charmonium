@@ -32,16 +32,12 @@
 # Conf files
 *.conf
 *.txt
+# Dictionaries
+*dict.cxx
+*.pcm
+*.d
 
 # Made binaries
-cut-flow-plots
-fit-and-sbs
-make-plots
-make-stack-plots
-simple-parser-test
-skim-tree
-skim-truth-tree
-truth-study-plots
 /bin/add-systematic-plots
 /bin/make-closure-sample
 /bin/make-systematic-plots
