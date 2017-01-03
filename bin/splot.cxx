@@ -113,10 +113,10 @@ int main(const int argc, char* const argv[]){
 	   tau->getMin(),tau->getMax());
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
-  const char* variables[] = {"delta_r","jet_pt","jet_eta", "jet_e",
-			     "jet_z" ,
+  const char* variables[] = {//"delta_r","jet_pt","jet_eta", "jet_e",
+			     // "jet_z" ,
 			     "jpsi_pt","jpsi_eta",
-			     "tau1","tau2", "tau3","tau21","tau32"
+			     // "tau1","tau2", "tau3","tau21","tau32"
   };
   std::vector<TH1*> to_write;
   for(size_t i=0; i < LEN(variables); i++){

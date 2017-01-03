@@ -476,11 +476,11 @@ THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aestheti
 		     const char* cut_expr){
   THStack* stack = new THStack(("pythia_stk_"+std::string(base_hist->GetName())).c_str(),"Stack");
   const char* samp_names[]={
+    // "208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8",
+    // "208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8",
     "208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1",
     // "208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1",
-    // "208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8",
-    // "208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8",
-    // "208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8"
+    "208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"
   };
   TH1* tot_syst_err = dynamic_cast<TH1*>(base_hist->Clone((std::string(base_hist->GetName())+"_global_syst_err").c_str()));
   // tot_syst_err->Reset("ICES");
@@ -537,10 +537,14 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
   }
 
   TH1* hist = NULL;
-  for(int i = 0; i < stack->GetStack()->GetEntries(); i++){
-    hist = dynamic_cast<TH1*>(stack->GetStack()->At(i));
-    hist->Scale(N_sig/N_MC);
-  }
+  // MSG_DEBUG("Scale Factor: "<<N_sig/N_MC);
+  // for(int i = 0; i < stack->GetStack()->GetEntries(); i++){
+  //   hist = dynamic_cast<TH1*>(stack->GetStack()->At(i));
+  //   // dump_hist(hist);
+  //   // MSG_DEBUG("Old Integral: "<<hist->Integral());
+  //   hist->Scale(N_sig/N_MC);
+  //   // MSG_DEBUG("New Integral: "<<hist->Integral());
+  // }
   TIter next(stack->GetHists());
   while((hist=dynamic_cast<TH1*>(next()))){
     if(std::string(hist->GetName()).find("global_syst_err")!=std::string::npos){
@@ -550,7 +554,7 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
     }
   }
   tot_syst_err->Add(hist);
-  tot_syst_err->Scale(N_sig/N_MC);
+  // tot_syst_err->Scale(N_sig/N_MC);
 
   stack->Draw("HIST");
   stack->GetXaxis()->SetTitle(signal->GetXaxis()->GetTitle());
