@@ -537,14 +537,14 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
   }
 
   TH1* hist = NULL;
-  // MSG_DEBUG("Scale Factor: "<<N_sig/N_MC);
-  // for(int i = 0; i < stack->GetStack()->GetEntries(); i++){
-  //   hist = dynamic_cast<TH1*>(stack->GetStack()->At(i));
-  //   // dump_hist(hist);
-  //   // MSG_DEBUG("Old Integral: "<<hist->Integral());
-  //   hist->Scale(N_sig/N_MC);
-  //   // MSG_DEBUG("New Integral: "<<hist->Integral());
-  // }
+  MSG_DEBUG("Scale Factor: "<<N_sig/N_MC);
+  for(int i = 0; i < stack->GetStack()->GetEntries(); i++){
+    hist = dynamic_cast<TH1*>(stack->GetStack()->At(i));
+    // dump_hist(hist);
+    // MSG_DEBUG("Old Integral: "<<hist->Integral());
+    hist->Scale(N_sig/N_MC);
+    // MSG_DEBUG("New Integral: "<<hist->Integral());
+  }
   TIter next(stack->GetHists());
   while((hist=dynamic_cast<TH1*>(next()))){
     if(std::string(hist->GetName()).find("global_syst_err")!=std::string::npos){
@@ -554,7 +554,7 @@ void print_pythia_stack(TH1* base_hist, TH1* signal,
     }
   }
   tot_syst_err->Add(hist);
-  // tot_syst_err->Scale(N_sig/N_MC);
+  tot_syst_err->Scale(N_sig/N_MC);
 
   stack->Draw("HIST");
   stack->GetXaxis()->SetTitle(signal->GetXaxis()->GetTitle());
