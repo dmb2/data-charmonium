@@ -124,8 +124,8 @@ int main(const int argc, char* const argv[]){
   const char* jet_variations[] = {"TrackZFilteredJPsiJets","TrackZSmearedJPsiJets",
 				  "TrackZScaledUpJPsiJets", "TrackZScaledDownJPsiJets",
 				  "TrackZRadialScaledUpJPsiJets", "TrackZRadialScaledDownJPsiJets"};
-  const char* treeNames[] = {"AUX","LCTopoJets", "TrackZJPsiJets",
-			     "Mu", "JPsi", "FakeJPsi", "TRIG"};
+  const char* treeNames[] = {"AUX", "TrackZJPsiJets","PRIVX",
+			     "Mu", "JPsi", "TRIG"};
   for(size_t i=0; i < LEN(treeNames); i++){
     Forest[std::string(treeNames[i])]=retrieve<TTree>(file,treeNames[i]);
   }

@@ -38,7 +38,7 @@ void init_hist_book(std::map<std::string,TH1D*>& HistBook){
   HistBook["tau3"]=new TH1D("tau3","N Subjettiness #tau_{3};#tau_{3};evts/binwidth",50,0,0.5);
   HistBook["tau32"]=new TH1D("tau32","N Subjettiness #tau_{32};#tau_{32};evts/binwidth",50,0,1.2);
   HistBook["tau21"]=new TH1D("tau21","N Subjettiness #tau_{21};#tau_{21};evts/binwidth",50,0,1.2);
-  HistBook["delta_r"]=new TH1D("delta_r","#Delta R(J/#psi,Jet); #Delta R; evts/binwidth",50,0,.2);
+  HistBook["delta_r"]=new TH1D("delta_r","#Delta R(J/#psi,Jet); #Delta R; evts/binwidth",50,0,.08);
 
   // HistBook["psi_m"]=new TH1D("psi_m","J/#psi + 2 Tracks Mass; M(#mu #mu Trk Trk) [GeV]; evts/binwidth",50,3.3,4.1);
 

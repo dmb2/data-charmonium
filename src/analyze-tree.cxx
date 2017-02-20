@@ -46,6 +46,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double mu2_pt(0.), mu2_eta(0.0);
   
   size_t vtx_n(0);
+  size_t vtx_ntrk(0);
   double vtx_chi2(0.);
   //Jet systematics 
   double cand_jet_filt_pt(0.), cand_jet_filt_eta(0.),cand_jet_filt_phi(0.), cand_jet_filt_E(0.);
@@ -115,9 +116,10 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   Forest["JPsi"]->SetBranchAddress("VTX_pt",&vtx_pt);
   Forest["JPsi"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
   Forest["JPsi"]->SetBranchAddress("VTX_zposition",&vtx_z);
+  std::vector<double> *pvtx_chi2(NULL);
+  std::vector<int> *pvtx_ntrk(NULL);
   Forest["PRIVX"]->SetBranchAddress("VTX_chi2",&pvtx_chi2);
-  Forest["PRIVX"]->SetBranchAddress("VTX_n",&pvtx_chi2);
-  Forest["PRIVX"]->SetBranchAddress("VTX_ntrk",&pvtx_chi2);
+  Forest["PRIVX"]->SetBranchAddress("VTX_ntrk",&pvtx_ntrk);
   
   Forest["TRIG"]->SetBranchAddress("TRIG_EF_trigger_name",&EF_trigger_names);
   // Forest["MuTracks"]->SetBranchAddress("MuTracks_TRKS_qOverP",&mu_qbyp);
@@ -181,6 +183,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   
   OutTree.Branch("vtx_n",&vtx_n);
   OutTree.Branch("vtx_chi2",&vtx_chi2);
+  OutTree.Branch("vtx_ntrk",&vtx_ntrk);
   
   OutTree.Branch("jpsi_lxy",&jpsi_lxy);
   OutTree.Branch("jpsi_vtx_z",&jpsi_vtx_z);
@@ -348,7 +351,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     jpsi_lxy = (jpsi_idx < vtx_lxy->size() ) ? vtx_lxy->at(jpsi_idx).at(0) : -99999.;
     jpsi_vtx_z = (jpsi_idx < vtx_z->size() ) ? vtx_z->at(jpsi_idx) : -99999.;
     jpsi_tau = jpsi_lxy*(3096.915*GeV)/jpsi_pt;
-    vtx_chi2 = (jpsi_idx < v_vtx_chi2->size() ) ? v_vtx_chi2->at(jpsi_idx).at(0) : -99999.;
+    vtx_chi2 = (jpsi_idx < pvtx_chi2->size() ) ? pvtx_chi2->at(jpsi_idx) : -99999.;
+    vtx_n = pvtx_chi2->size();
 
     has_delta_r=CutDefReal["delta_r"].pass(delta_r,w);
     has_jet_eta=CutDefReal["jet_eta"].pass(fabs(candJet.Eta()),w);

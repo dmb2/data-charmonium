@@ -139,8 +139,8 @@ int main(const int argc, char* const argv[]){
       add_err(bkg_tot_err,bkg_syst_hist);
       add_err(sig_tot_err,sig_syst_hist);
     }
-    // add_err(sig_final,sig_tot_err);
-    // add_err(bkg_final,bkg_tot_err);
+    add_err(sig_final,sig_tot_err);
+    add_err(bkg_final,bkg_tot_err);
     if(print_validation_plots){
       print_corr_plot(HistBook[variables[i]],"jpsi_tau",
       		      HistBook["jpsi_tau"]->GetNbinsX(),
