@@ -42,6 +42,11 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   // double cand_psi_m(0.);
   double cand_jet_m(0.);//, emfrac(0.);
   double cand_jet_pt(0.), cand_jet_eta(0.),cand_jet_phi(0.), cand_jet_E(0.);
+  double mu1_pt(0.), mu1_eta(0.0);
+  double mu2_pt(0.), mu2_eta(0.0);
+  
+  size_t vtx_n(0);
+  double vtx_chi2(0.);
   //Jet systematics 
   double cand_jet_filt_pt(0.), cand_jet_filt_eta(0.),cand_jet_filt_phi(0.), cand_jet_filt_E(0.);
   double cand_jet_smear_pt(0.), cand_jet_smear_eta(0.),cand_jet_smear_phi(0.), cand_jet_smear_E(0.);
@@ -49,6 +54,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double cand_jet_sdown_pt(0.), cand_jet_sdown_eta(0.),cand_jet_sdown_phi(0.), cand_jet_sdown_E(0.);
   double cand_jet_rup_pt(0.), cand_jet_rup_eta(0.),cand_jet_rup_phi(0.), cand_jet_rup_E(0.);
   double cand_jet_rdown_pt(0.), cand_jet_rdown_eta(0.),cand_jet_rdown_phi(0.), cand_jet_rdown_E(0.);
+
 
   std::vector<std::vector<int> > *mu_trk_idx = NULL;
   
@@ -109,6 +115,10 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   Forest["JPsi"]->SetBranchAddress("VTX_pt",&vtx_pt);
   Forest["JPsi"]->SetBranchAddress("VTX_lxy",&vtx_lxy);
   Forest["JPsi"]->SetBranchAddress("VTX_zposition",&vtx_z);
+  Forest["PRIVX"]->SetBranchAddress("VTX_chi2",&pvtx_chi2);
+  Forest["PRIVX"]->SetBranchAddress("VTX_n",&pvtx_chi2);
+  Forest["PRIVX"]->SetBranchAddress("VTX_ntrk",&pvtx_chi2);
+  
   Forest["TRIG"]->SetBranchAddress("TRIG_EF_trigger_name",&EF_trigger_names);
   // Forest["MuTracks"]->SetBranchAddress("MuTracks_TRKS_qOverP",&mu_qbyp);
   // Forest["MuTracks"]->SetBranchAddress("MuTracks_TRKS_d0",&mu_d0);
@@ -164,6 +174,14 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   }
   OutTree.Branch("trigger_category",&trigger_cat);
   // OutTree.Branch("psi_m",&cand_psi_m);
+  OutTree.Branch("mu1_pt",&mu1_pt);
+  OutTree.Branch("mu1_eta",&mu1_eta);
+  OutTree.Branch("mu2_pt",&mu2_pt);
+  OutTree.Branch("mu2_eta",&mu2_eta);
+  
+  OutTree.Branch("vtx_n",&vtx_n);
+  OutTree.Branch("vtx_chi2",&vtx_chi2);
+  
   OutTree.Branch("jpsi_lxy",&jpsi_lxy);
   OutTree.Branch("jpsi_vtx_z",&jpsi_vtx_z);
   OutTree.Branch("jpsi_tau",&jpsi_tau);
@@ -296,9 +314,13 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     double mu_max_eta=std::max(fabs(mu_eta->at(mu1_idx)),fabs(mu_eta->at(mu2_idx)));
     has_mumu_eta = CutDefReal["mumu_eta"].pass(mu_max_eta,w);
     CUT_CONTINUE(has_mumu_eta);
+    mu1.SetPtEtaPhiM(mu_pt->at(mu1_idx),mu_eta->at(mu1_idx),mu_phi->at(mu1_idx),0.105658);
+    mu2.SetPtEtaPhiM(mu_pt->at(mu2_idx),mu_eta->at(mu2_idx),mu_phi->at(mu2_idx),0.105658);
+    mu1_pt=mu1.Pt();
+    mu1_eta=mu1.Eta();
+    mu2_pt=mu2.Pt();
+    mu2_eta=mu2.Eta();
     if(std::string(muon_variation)!="" && std::string(muon_variation).find("Efficiency")==std::string::npos){
-      mu1.SetPtEtaPhiM(mu_pt->at(mu1_idx),mu_eta->at(mu1_idx),mu_phi->at(mu1_idx),0.105658);
-      mu2.SetPtEtaPhiM(mu_pt->at(mu2_idx),mu_eta->at(mu2_idx),mu_phi->at(mu2_idx),0.105658);
       nom_mu1.SetPtEtaPhiM(mu_nom_pt->at(mu1_idx),mu_eta->at(mu1_idx),mu_phi->at(mu1_idx),0.105658);
       nom_mu2.SetPtEtaPhiM(mu_nom_pt->at(mu2_idx),mu_eta->at(mu2_idx),mu_phi->at(mu2_idx),0.105658);
       jpsi_mu=mu1+mu2;
@@ -311,6 +333,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
       f[0]=f[1]=f[2]=f[3]=1;
     }
     candJPsi.SetPxPyPzE(f[0]*vtx_px->at(jpsi_idx)*GeV, f[1]*vtx_py->at(jpsi_idx)*GeV, f[2]*vtx_pz->at(jpsi_idx)*GeV, f[3]*vtx_e->at(jpsi_idx)*GeV);
+    
     jpsi_pt=candJPsi.Pt();
     jpsi_eta=candJPsi.Eta();
     jpsi_rap=candJPsi.Rapidity();
@@ -322,9 +345,10 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     CUT_CONTINUE(has_jpsi_pt);
     CUT_CONTINUE(has_jpsi_rap);
     delta_r=find_closest(jets,candJet,candJPsi,idx);
-    jpsi_lxy = (vtx_lxy->size() > 0) ? vtx_lxy->at(0).at(0) : -99999.;
-    jpsi_vtx_z = (vtx_z->size() > 0) ? vtx_z->at(0) : -99999.;
+    jpsi_lxy = (jpsi_idx < vtx_lxy->size() ) ? vtx_lxy->at(jpsi_idx).at(0) : -99999.;
+    jpsi_vtx_z = (jpsi_idx < vtx_z->size() ) ? vtx_z->at(jpsi_idx) : -99999.;
     jpsi_tau = jpsi_lxy*(3096.915*GeV)/jpsi_pt;
+    vtx_chi2 = (jpsi_idx < v_vtx_chi2->size() ) ? v_vtx_chi2->at(jpsi_idx).at(0) : -99999.;
 
     has_delta_r=CutDefReal["delta_r"].pass(delta_r,w);
     has_jet_eta=CutDefReal["jet_eta"].pass(fabs(candJet.Eta()),w);
