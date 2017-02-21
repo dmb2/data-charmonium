@@ -231,7 +231,7 @@ process_data(){
       local f;
       local i;
       i=0;
-      DSID=$(echo $1 | awk -F '.' '{print $3}')
+      DSID=$(echo $1 | grep -o "user.davidb.*$" | awk -F '.' '{print $3}')
       OUTDIR=$(dirname $1)
       for f in $@
       do
