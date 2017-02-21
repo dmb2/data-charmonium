@@ -227,3 +227,15 @@ slice_to_tex(){
 	sed 's/rap/$y(/g'|\
 	sed 's/jpsi/J\/\\\\psi)$/g'
 }
+process_data(){
+      local f;
+      local i;
+      i=0;
+      DSID=$(echo $1 | awk -F '.' '{print $3}')
+      OUTDIR=$(dirname $1)
+      for f in $@
+      do
+          skim-tree -c AnalysisCuts.conf -i $f -o "$OUTDIR/$DSID.$i.mini.root" -x -1
+          (( i += 1 ))
+      done
+  }
