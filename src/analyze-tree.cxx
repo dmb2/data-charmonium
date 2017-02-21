@@ -133,12 +133,14 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   Forest[jet_type]->SetBranchAddress("JET_tau3",&jet_tau3);
   // Forest[jet_type]->SetBranchAddress("JET_emfrac",&jet_emfrac);
   if(is_MC){
-    setup_pt_eta_phi_e(Forest["TrackZFilteredJPsiJets"], jet_filt_pt, jet_filt_eta, jet_filt_phi, jet_filt_E, "JET");
-    setup_pt_eta_phi_e(Forest["TrackZSmearedJPsiJets"], jet_smear_pt, jet_smear_eta, jet_smear_phi, jet_smear_E, "JET");
-    setup_pt_eta_phi_e(Forest["TrackZScaledUpJPsiJets"], jet_sup_pt, jet_sup_eta, jet_sup_phi, jet_sup_E, "JET");
-    setup_pt_eta_phi_e(Forest["TrackZScaledDownJPsiJets"], jet_sdown_pt, jet_sdown_eta, jet_sdown_phi, jet_sdown_E, "JET");
-    setup_pt_eta_phi_e(Forest["TrackZRadialScaledUpJPsiJets"], jet_rup_pt, jet_rup_eta, jet_rup_phi, jet_rup_E, "JET");
-    setup_pt_eta_phi_e(Forest["TrackZRadialScaledDownJPsiJets"], jet_rdown_pt, jet_rdown_eta, jet_rdown_phi, jet_rdown_E, "JET");
+    if(jet_type=="TrackZJPsiJets"){
+      setup_pt_eta_phi_e(Forest["TrackZFilteredJPsiJets"], jet_filt_pt, jet_filt_eta, jet_filt_phi, jet_filt_E, "JET");
+      setup_pt_eta_phi_e(Forest["TrackZSmearedJPsiJets"], jet_smear_pt, jet_smear_eta, jet_smear_phi, jet_smear_E, "JET");
+      setup_pt_eta_phi_e(Forest["TrackZScaledUpJPsiJets"], jet_sup_pt, jet_sup_eta, jet_sup_phi, jet_sup_E, "JET");
+      setup_pt_eta_phi_e(Forest["TrackZScaledDownJPsiJets"], jet_sdown_pt, jet_sdown_eta, jet_sdown_phi, jet_sdown_E, "JET");
+      setup_pt_eta_phi_e(Forest["TrackZRadialScaledUpJPsiJets"], jet_rup_pt, jet_rup_eta, jet_rup_phi, jet_rup_E, "JET");
+      setup_pt_eta_phi_e(Forest["TrackZRadialScaledDownJPsiJets"], jet_rdown_pt, jet_rdown_eta, jet_rdown_phi, jet_rdown_E, "JET");
+    }
     setup_pt_eta_phi_e(Forest["AUX"], t_jpsi_pt, t_jpsi_eta, t_jpsi_phi, t_jpsi_E, "truth_jpsi");
     const std::string t_jet_type = (jet_type=="MuonLCTopoJets" /*|| jet_type.find("TrackZ")!=std::string::npos */) ? "MuonTruthJets" : "JPsiTruthJets";
     // MSG_DEBUG("Setting up with tree: "<<t_jet_type<<" using jet type: "<<jet_type);
@@ -384,41 +386,43 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     store_four_vector(candJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
 
     if(is_MC){
-      if(idx < jet_filt_pt->size()){
-	cand_jet_filt_pt = jet_filt_pt->at(idx)*GeV;
-	cand_jet_filt_eta = jet_filt_eta->at(idx)*GeV;
-	cand_jet_filt_phi = jet_filt_phi->at(idx)*GeV;
-	cand_jet_filt_E = jet_filt_E->at(idx)*GeV;
-      }
-      if(idx < jet_smear_pt->size()){
-	cand_jet_smear_pt = jet_smear_pt->at(idx)*GeV;
-	cand_jet_smear_eta = jet_smear_eta->at(idx)*GeV;
-	cand_jet_smear_phi = jet_smear_phi->at(idx)*GeV;
-	cand_jet_smear_E = jet_smear_E->at(idx)*GeV;
-      }
-      if(idx < jet_sup_pt->size()){
-	cand_jet_sup_pt = jet_sup_pt->at(idx)*GeV;
-	cand_jet_sup_eta = jet_sup_eta->at(idx)*GeV;
-	cand_jet_sup_phi = jet_sup_phi->at(idx)*GeV;
-	cand_jet_sup_E = jet_sup_E->at(idx)*GeV;
-      }
-      if(idx < jet_sdown_pt->size()){
-	cand_jet_sdown_pt = jet_sdown_pt->at(idx)*GeV;
-	cand_jet_sdown_eta = jet_sdown_eta->at(idx)*GeV;
-	cand_jet_sdown_phi = jet_sdown_phi->at(idx)*GeV;
-	cand_jet_sdown_E = jet_sdown_E->at(idx)*GeV;
-      }
-      if(idx < jet_rup_pt->size()){
-	cand_jet_rup_pt = jet_rup_pt->at(idx)*GeV;
-	cand_jet_rup_eta = jet_rup_eta->at(idx)*GeV;
-	cand_jet_rup_phi = jet_rup_phi->at(idx)*GeV;
-	cand_jet_rup_E = jet_rup_E->at(idx)*GeV;
-      }
-      if(idx < jet_rdown_pt->size()){
-	cand_jet_rdown_pt = jet_rdown_pt->at(idx)*GeV;
-	cand_jet_rdown_eta = jet_rdown_eta->at(idx)*GeV;
-	cand_jet_rdown_phi = jet_rdown_phi->at(idx)*GeV;
-	cand_jet_rdown_E = jet_rdown_E->at(idx)*GeV;
+      if(jet_type=="TrackZJPsiJets"){
+	if(idx < jet_filt_pt->size()){
+	  cand_jet_filt_pt = jet_filt_pt->at(idx)*GeV;
+	  cand_jet_filt_eta = jet_filt_eta->at(idx)*GeV;
+	  cand_jet_filt_phi = jet_filt_phi->at(idx)*GeV;
+	  cand_jet_filt_E = jet_filt_E->at(idx)*GeV;
+	}
+	if(idx < jet_smear_pt->size()){
+	  cand_jet_smear_pt = jet_smear_pt->at(idx)*GeV;
+	  cand_jet_smear_eta = jet_smear_eta->at(idx)*GeV;
+	  cand_jet_smear_phi = jet_smear_phi->at(idx)*GeV;
+	  cand_jet_smear_E = jet_smear_E->at(idx)*GeV;
+	}
+	if(idx < jet_sup_pt->size()){
+	  cand_jet_sup_pt = jet_sup_pt->at(idx)*GeV;
+	  cand_jet_sup_eta = jet_sup_eta->at(idx)*GeV;
+	  cand_jet_sup_phi = jet_sup_phi->at(idx)*GeV;
+	  cand_jet_sup_E = jet_sup_E->at(idx)*GeV;
+	}
+	if(idx < jet_sdown_pt->size()){
+	  cand_jet_sdown_pt = jet_sdown_pt->at(idx)*GeV;
+	  cand_jet_sdown_eta = jet_sdown_eta->at(idx)*GeV;
+	  cand_jet_sdown_phi = jet_sdown_phi->at(idx)*GeV;
+	  cand_jet_sdown_E = jet_sdown_E->at(idx)*GeV;
+	}
+	if(idx < jet_rup_pt->size()){
+	  cand_jet_rup_pt = jet_rup_pt->at(idx)*GeV;
+	  cand_jet_rup_eta = jet_rup_eta->at(idx)*GeV;
+	  cand_jet_rup_phi = jet_rup_phi->at(idx)*GeV;
+	  cand_jet_rup_E = jet_rup_E->at(idx)*GeV;
+	}
+	if(idx < jet_rdown_pt->size()){
+	  cand_jet_rdown_pt = jet_rdown_pt->at(idx)*GeV;
+	  cand_jet_rdown_eta = jet_rdown_eta->at(idx)*GeV;
+	  cand_jet_rdown_phi = jet_rdown_phi->at(idx)*GeV;
+	  cand_jet_rdown_E = jet_rdown_E->at(idx)*GeV;
+	}
       }
       size_t t_idx=-1;
       t_jpsi_pt*=GeV;
