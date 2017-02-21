@@ -45,8 +45,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double mu1_pt(0.), mu1_eta(0.0);
   double mu2_pt(0.), mu2_eta(0.0);
   
-  size_t vtx_n(0);
-  size_t vtx_ntrk(0);
+  int vtx_n(0);
+  int vtx_ntrk(0);
   double vtx_chi2(0.);
   //Jet systematics 
   double cand_jet_filt_pt(0.), cand_jet_filt_eta(0.),cand_jet_filt_phi(0.), cand_jet_filt_E(0.);
@@ -118,8 +118,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   Forest["JPsi"]->SetBranchAddress("VTX_zposition",&vtx_z);
   std::vector<double> *pvtx_chi2(NULL);
   std::vector<int> *pvtx_ntrk(NULL);
-  Forest["PRIVX"]->SetBranchAddress("VTX_chi2",&pvtx_chi2);
-  Forest["PRIVX"]->SetBranchAddress("VTX_ntrk",&pvtx_ntrk);
+  Forest["PRIVX"]->SetBranchAddress("PRIVX_chi2",&pvtx_chi2);
+  Forest["PRIVX"]->SetBranchAddress("PRIVX_ntrk",&pvtx_ntrk);
   
   Forest["TRIG"]->SetBranchAddress("TRIG_EF_trigger_name",&EF_trigger_names);
   // Forest["MuTracks"]->SetBranchAddress("MuTracks_TRKS_qOverP",&mu_qbyp);
@@ -175,7 +175,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     OutTree.Branch("truth_delta_r",&t_delta_r);
   }
   OutTree.Branch("trigger_category",&trigger_cat);
-  // OutTree.Branch("psi_m",&cand_psi_m);
   OutTree.Branch("mu1_pt",&mu1_pt);
   OutTree.Branch("mu1_eta",&mu1_eta);
   OutTree.Branch("mu2_pt",&mu2_pt);
@@ -319,9 +318,9 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     CUT_CONTINUE(has_mumu_eta);
     mu1.SetPtEtaPhiM(mu_pt->at(mu1_idx),mu_eta->at(mu1_idx),mu_phi->at(mu1_idx),0.105658);
     mu2.SetPtEtaPhiM(mu_pt->at(mu2_idx),mu_eta->at(mu2_idx),mu_phi->at(mu2_idx),0.105658);
-    mu1_pt=mu1.Pt();
+    mu1_pt=mu1.Pt()*GeV;
     mu1_eta=mu1.Eta();
-    mu2_pt=mu2.Pt();
+    mu2_pt=mu2.Pt()*GeV;
     mu2_eta=mu2.Eta();
     if(std::string(muon_variation)!="" && std::string(muon_variation).find("Efficiency")==std::string::npos){
       nom_mu1.SetPtEtaPhiM(mu_nom_pt->at(mu1_idx),mu_eta->at(mu1_idx),mu_phi->at(mu1_idx),0.105658);
@@ -352,6 +351,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     jpsi_vtx_z = (jpsi_idx < vtx_z->size() ) ? vtx_z->at(jpsi_idx) : -99999.;
     jpsi_tau = jpsi_lxy*(3096.915*GeV)/jpsi_pt;
     vtx_chi2 = (jpsi_idx < pvtx_chi2->size() ) ? pvtx_chi2->at(jpsi_idx) : -99999.;
+    vtx_ntrk = (jpsi_idx < pvtx_ntrk->size() ) ? pvtx_ntrk->at(jpsi_idx) : -1;
     vtx_n = pvtx_chi2->size();
 
     has_delta_r=CutDefReal["delta_r"].pass(delta_r,w);
@@ -380,46 +380,46 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     tau21= (tau2*tau1 > 0) ? tau2/tau1 : -1.;
 
     cand_jet_m = candJet.M();
-    if(idx < jet_filt_pt->size()){
-      cand_jet_filt_pt = jet_filt_pt->at(idx)*GeV;
-      cand_jet_filt_eta = jet_filt_eta->at(idx)*GeV;
-      cand_jet_filt_phi = jet_filt_phi->at(idx)*GeV;
-      cand_jet_filt_E = jet_filt_E->at(idx)*GeV;
-    }
-    if(idx < jet_smear_pt->size()){
-      cand_jet_smear_pt = jet_smear_pt->at(idx)*GeV;
-      cand_jet_smear_eta = jet_smear_eta->at(idx)*GeV;
-      cand_jet_smear_phi = jet_smear_phi->at(idx)*GeV;
-      cand_jet_smear_E = jet_smear_E->at(idx)*GeV;
-    }
-    if(idx < jet_sup_pt->size()){
-      cand_jet_sup_pt = jet_sup_pt->at(idx)*GeV;
-      cand_jet_sup_eta = jet_sup_eta->at(idx)*GeV;
-      cand_jet_sup_phi = jet_sup_phi->at(idx)*GeV;
-      cand_jet_sup_E = jet_sup_E->at(idx)*GeV;
-    }
-    if(idx < jet_sdown_pt->size()){
-      cand_jet_sdown_pt = jet_sdown_pt->at(idx)*GeV;
-      cand_jet_sdown_eta = jet_sdown_eta->at(idx)*GeV;
-      cand_jet_sdown_phi = jet_sdown_phi->at(idx)*GeV;
-      cand_jet_sdown_E = jet_sdown_E->at(idx)*GeV;
-    }
-    if(idx < jet_rup_pt->size()){
-      cand_jet_rup_pt = jet_rup_pt->at(idx)*GeV;
-      cand_jet_rup_eta = jet_rup_eta->at(idx)*GeV;
-      cand_jet_rup_phi = jet_rup_phi->at(idx)*GeV;
-      cand_jet_rup_E = jet_rup_E->at(idx)*GeV;
-    }
-    if(idx < jet_rdown_pt->size()){
-      cand_jet_rdown_pt = jet_rdown_pt->at(idx)*GeV;
-      cand_jet_rdown_eta = jet_rdown_eta->at(idx)*GeV;
-      cand_jet_rdown_phi = jet_rdown_phi->at(idx)*GeV;
-      cand_jet_rdown_E = jet_rdown_E->at(idx)*GeV;
-    }
     
     store_four_vector(candJet,cand_jet_pt,cand_jet_eta,cand_jet_phi,cand_jet_E);
 
     if(is_MC){
+      if(idx < jet_filt_pt->size()){
+	cand_jet_filt_pt = jet_filt_pt->at(idx)*GeV;
+	cand_jet_filt_eta = jet_filt_eta->at(idx)*GeV;
+	cand_jet_filt_phi = jet_filt_phi->at(idx)*GeV;
+	cand_jet_filt_E = jet_filt_E->at(idx)*GeV;
+      }
+      if(idx < jet_smear_pt->size()){
+	cand_jet_smear_pt = jet_smear_pt->at(idx)*GeV;
+	cand_jet_smear_eta = jet_smear_eta->at(idx)*GeV;
+	cand_jet_smear_phi = jet_smear_phi->at(idx)*GeV;
+	cand_jet_smear_E = jet_smear_E->at(idx)*GeV;
+      }
+      if(idx < jet_sup_pt->size()){
+	cand_jet_sup_pt = jet_sup_pt->at(idx)*GeV;
+	cand_jet_sup_eta = jet_sup_eta->at(idx)*GeV;
+	cand_jet_sup_phi = jet_sup_phi->at(idx)*GeV;
+	cand_jet_sup_E = jet_sup_E->at(idx)*GeV;
+      }
+      if(idx < jet_sdown_pt->size()){
+	cand_jet_sdown_pt = jet_sdown_pt->at(idx)*GeV;
+	cand_jet_sdown_eta = jet_sdown_eta->at(idx)*GeV;
+	cand_jet_sdown_phi = jet_sdown_phi->at(idx)*GeV;
+	cand_jet_sdown_E = jet_sdown_E->at(idx)*GeV;
+      }
+      if(idx < jet_rup_pt->size()){
+	cand_jet_rup_pt = jet_rup_pt->at(idx)*GeV;
+	cand_jet_rup_eta = jet_rup_eta->at(idx)*GeV;
+	cand_jet_rup_phi = jet_rup_phi->at(idx)*GeV;
+	cand_jet_rup_E = jet_rup_E->at(idx)*GeV;
+      }
+      if(idx < jet_rdown_pt->size()){
+	cand_jet_rdown_pt = jet_rdown_pt->at(idx)*GeV;
+	cand_jet_rdown_eta = jet_rdown_eta->at(idx)*GeV;
+	cand_jet_rdown_phi = jet_rdown_phi->at(idx)*GeV;
+	cand_jet_rdown_E = jet_rdown_E->at(idx)*GeV;
+      }
       size_t t_idx=-1;
       t_jpsi_pt*=GeV;
       t_jpsi_E*=GeV;

@@ -40,16 +40,24 @@ void init_hist_book(std::map<std::string,TH1D*>& HistBook){
   HistBook["tau21"]=new TH1D("tau21","N Subjettiness #tau_{21};#tau_{21};evts/binwidth",50,0,1.2);
   HistBook["delta_r"]=new TH1D("delta_r","#Delta R(J/#psi,Jet); #Delta R; evts/binwidth",50,0,.08);
 
-  // HistBook["psi_m"]=new TH1D("psi_m","J/#psi + 2 Tracks Mass; M(#mu #mu Trk Trk) [GeV]; evts/binwidth",50,3.3,4.1);
+  HistBook["mu1_pt"]=new TH1D("mu1_pt","#mu_1 p_{T};p_{T} [GeV];evts/binwidth",50,0,140);
+  HistBook["mu2_pt"]=new TH1D("mu2_pt","#mu_2 p_{T};p_{T} [GeV];evts/binwidth",50,0,140);
+  HistBook["mu1_eta"]=new TH1D("mu1_eta","#mu_1 #eta;#eta;evts/binwidth",50,-2.6,2.6);
+  HistBook["mu2_eta"]=new TH1D("mu2_eta","#mu_2 #eta;#eta;evts/binwidth",50,-2.6,2.6);
+  
+  HistBook["vtx_ntrk"] = new TH1D("vtx_ntrk","Track Multiplicity in PV;n_{trk};evts/binwidth",50,0,200);
+  HistBook["vtx_chi2"] = new TH1D("vtx_chi2","#chi^2 of PV fit;#chi^2;evts/binwidth",50,0,350);
+  HistBook["vtx_n"] = new TH1D("vtx_n","PV multiplicity;Number of PV;evts/binwidth",41,0,40);
+  
 
   HistBook["jpsi_pt"]=new TH1D("jpsi_pt","J/#psi p_{T};p_{T} [GeV];evts/binwidth",50,0,200);
   HistBook["jpsi_eta"]=new TH1D("jpsi_eta","J/#psi #eta;#eta;evts/binwidth",50,-2.6,2.6);
   HistBook["jpsi_e"]=new TH1D("jpsi_e","J/#psi E;E [GeV]; evts/binwidth",50,0,600);
   HistBook["jpsi_m"]=new TH1D("jpsi_m","J/#psi Mass; M(#mu#mu) [GeV]; evts/binwidth",50,2.,4.);
   HistBook["jpsi_lxy"]=new TH1D("jpsi_lxy","J/#psi L_{xy}; L_{xy} [mm]; evts/binwidth",50,-4,10);
-  HistBook["jpsi_tau"]= new TH1D("jpsi_tau","J/#psi c#tau; c#tau; evts/binwidth",50,-1,5);
+  HistBook["jpsi_tau"]= new TH1D("jpsi_tau","J/#psi c#tau; c#tau [mm]; evts/binwidth",50,-1,5);
 
-  HistBook["pileup"]= new TH1D("pileup","Average interactions per bunch crossing; Avg. Interactions <#mu>; evts/binwidth",40,0,40);
+  HistBook["pileup"]= new TH1D("pileup","Average interactions per bunch crossing; Avg. Interactions <#mu>; evts/binwidth",41,0,40);
   
   HistBook["delta_r"]->GetXaxis()->SetNdivisions(505);
   // Doctor the y axis titles for binwidth

@@ -113,14 +113,16 @@ int main(const int argc, char* const argv[]){
 	   tau->getMin(),tau->getMax());
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
-  const char* variables[] = {"delta_r","jet_pt","jet_eta", "jet_e",
-			      "jet_z" ,
-			     "jpsi_pt","jpsi_eta",
-			     "tau1","tau2", "tau3","tau21","tau32"
-  };
+  // const char* variables[] = {"delta_r","jet_z" ,
+  // 			     "tau1","tau2","tau3","tau21","tau32"
+  // };
+  std::vector<std::string> variables = map_keys(HistBook);
   std::vector<TH1*> to_write;
-  for(size_t i=0; i < LEN(variables); i++){
-    TH1* base_hist = HistBook[variables[i]];
+  //Not using an iterator so I can switch between variables as an
+  //char* array and variables as a std::vector without much effort
+  for(size_t i = 0; i < variables.size(); i++){
+    const std::string var(variables[i]);
+    TH1* base_hist = HistBook[var];
     std::pair<TH1*,TH1*> final_hists=make_splot(tree,base_hist,&wkspc);
     TH1* sig_final = final_hists.first;
     TH1* bkg_final = final_hists.second;
@@ -131,7 +133,7 @@ int main(const int argc, char* const argv[]){
 	it!=syst_wkspaces.end(); ++it){
       const std::string& syst_name = it->first;
       RooWorkspace* syst_w = it->second;
-      std::pair<TH1*,TH1*> syst_var_hists = make_splot(tree,HistBook[variables[i]],syst_w);
+      std::pair<TH1*,TH1*> syst_var_hists = make_splot(tree,base_hist,syst_w);
       TH1* sig_syst_hist = syst_var_hists.first;
       TH1* bkg_syst_hist = syst_var_hists.second;
       sig_syst_hist->Add(sig_final,-1);
@@ -142,18 +144,18 @@ int main(const int argc, char* const argv[]){
     add_err(sig_final,sig_tot_err);
     add_err(bkg_final,bkg_tot_err);
     if(print_validation_plots){
-      print_corr_plot(HistBook[variables[i]],"jpsi_tau",
+      print_corr_plot(base_hist,"jpsi_tau",
       		      HistBook["jpsi_tau"]->GetNbinsX(),
       		      tau->getMin(),tau->getMax(),
       		      tree,"_tau_corr.pdf",lumi,cut_expr);
-      print_corr_plot(HistBook[variables[i]],"jpsi_m",HistBook["jpsi_m"]->GetNbinsX(),
+      print_corr_plot(base_hist,"jpsi_m",HistBook["jpsi_m"]->GetNbinsX(),
       		      mass->getMin(),mass->getMax(),
       		      tree,"_m_corr.pdf",lumi,cut_expr);
       print_bkg_splot(tree,(TH1*)bkg_final->Clone(),".pdf",lumi,&wkspc);
     }
-    print_splot_stack(tree,HistBook[variables[i]],sig_final,bkg_final,data_cut_expr,lumi,".pdf");
-    print_pythia_stack(HistBook[variables[i]],sig_final,lumi,cut_expr,".pdf");
-    sig_final->SetName(variables[i]);
+    print_splot_stack(tree,base_hist,sig_final,bkg_final,data_cut_expr,lumi,".pdf");
+    print_pythia_stack(base_hist,sig_final,lumi,cut_expr,".pdf");
+    sig_final->SetName(var.c_str());
     to_write.push_back(sig_tot_err);
     to_write.push_back(sig_final);
   }
