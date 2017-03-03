@@ -227,15 +227,11 @@ slice_to_tex(){
 	sed 's/rap/$y(/g'|\
 	sed 's/jpsi/J\/\\\\psi)$/g'
 }
-process_data(){
-      local f;
-      local i;
-      i=0;
-      DSID=$(echo $1 | grep -o "user.davidb.*$" | awk -F '.' '{print $3}')
-      OUTDIR=$(dirname $1)
-      for f in $@
-      do
-          skim-tree -c AnalysisCuts.conf -i $f -o "$OUTDIR/$DSID.$i.mini.root" -x -1
-          (( i += 1 ))
-      done
-  }
+skim_data(){
+    DSID=$(echo $1 | grep -o "user.davidb.*$" | awk -F '.' '{print $3}')
+    OUTDIR=$(dirname $1)
+    ID=$(echo $1 | grep -o [0-9]*.ntuple.root | awk -F '.' '{print $1}')
+    skim-tree -c AnalysisCuts.conf -i $1 -o "$OUTDIR/$DSID.$ID.mini.root" -x -1
+}
+export -f skim_data
+# Usage: parallel skim_data ::: [list of ntuple.root files]
