@@ -35,6 +35,11 @@ install-roounfold:
 	@$(MAKE) -C RooUnfold
 	cp RooUnfold/src/*.h ./include
 	cp RooUnfold/*RooUnfold* ./src/
+install-pileuprw:
+	svn co svn+ssh://davidb@svn.cern.ch/reps/atlasoff/PhysicsAnalysis/AnalysisCommon/PileupReweighting/tags/PileupReweighting-00-04-03 PileupReweighting
+	@$(MAKE) -C PileupReweighting/cmt -f Makefile.Standalone
+	cp PileupReweighting/StandAlone/* src/
+	cp PileupReweighting/PileupReweighting/* include/
 src/dict.cxx: $(INCDIR)/LinkDef.h
 	rootcint -f $@ -c -I$(INCDIR) -p $^
 src/libDict.so: src/dict.cxx
@@ -47,9 +52,9 @@ src/libUtils.so: src/shared_dict.cxx $(wildcard ./src/*.cxx)
 src/analyze-cut-tree.o: src/analyze-tree.cxx
 	$(CC) $(CXXFLAGS) -D__ANALYZE_TREE_CUTFLOW__ -c $< -o $@ 
 bin/skim-tree:  $(SKIM_DEPS) bin/skim-tree.o src/analyze-tree.o src/libDict.so
-	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -l Dict
+	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -l Dict -l PileupReweighting
 bin/skim-tree-response: $(SKIM_DEPS) bin/skim-tree.o src/analyze-cut-tree.o src/libDict.so
-	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -l Dict
+	$(CC) $^ -o $@ $(LDFLAGS) -L ./src -l Dict -l PileupReweighting
 # TODO these should all get their own rule
 bin/fit-and-sbs: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS)  bin/fit-and-sbs.o 
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats
@@ -70,7 +75,7 @@ bin/simple-parser-test: bin/simple-parser-test.o src/simple-parser.o src/Cut.o
 bin/%: $(HISTO_DEPS) bin/%.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 %.o: %.cxx
-	$(CC) $(CXXFLAGS) -c $< -o $@
+	$(CC) $(CXXFLAGS) -c $< -o $@  
 clean:
 	-rm $(BINS) $(wildcard bin/*.o) $(wildcard src/*.o) src/dict.cxx src/dict_rdict.pcm src/libDict.so
 # DO NOT DELETE

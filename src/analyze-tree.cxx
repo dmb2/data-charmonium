@@ -12,6 +12,8 @@
 #include "analyze-tree.hh"
 #include "root-sugar.hh"
 #include "Units.hh"
+//RootCore
+#include "TPileupReweighting.h"
 
 #ifndef __ANALYZE_TREE_CUTFLOW__
 #define CUT_CONTINUE(cut) if(!(cut)){continue;};
@@ -132,7 +134,11 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   Forest[jet_type]->SetBranchAddress("JET_tau2",&jet_tau2);
   Forest[jet_type]->SetBranchAddress("JET_tau3",&jet_tau3);
   // Forest[jet_type]->SetBranchAddress("JET_emfrac",&jet_emfrac);
+  setup_four_vector_output(OutTree,cand_jet_pt, cand_jet_eta, 
+			   cand_jet_phi, cand_jet_E, "jet");
   if(is_MC){
+    // FIXME initialize and use this tool
+    CP::TPileupReweighting* purw = new CP::TPileupReweighting( "purw" );
     if(jet_type=="TrackZJPsiJets"){
       setup_pt_eta_phi_e(Forest["TrackZFilteredJPsiJets"], jet_filt_pt, jet_filt_eta, jet_filt_phi, jet_filt_E, "JET");
       setup_pt_eta_phi_e(Forest["TrackZSmearedJPsiJets"], jet_smear_pt, jet_smear_eta, jet_smear_phi, jet_smear_E, "JET");
@@ -148,12 +154,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     Forest[t_jet_type]->SetBranchAddress("JET_tau1",&t_jet_tau1);
     Forest[t_jet_type]->SetBranchAddress("JET_tau2",&t_jet_tau2);
     Forest[t_jet_type]->SetBranchAddress("JET_tau3",&t_jet_tau3);
-  }
-
-  setup_four_vector_output(OutTree,cand_jet_pt, cand_jet_eta, 
-			   cand_jet_phi, cand_jet_E, "jet");
-  
-  if(is_MC){
     setup_four_vector_output(OutTree,cand_jet_filt_pt, cand_jet_filt_eta,cand_jet_filt_phi, cand_jet_filt_E, "jet_filt");
     setup_four_vector_output(OutTree,cand_jet_smear_pt, cand_jet_smear_eta,cand_jet_smear_phi, cand_jet_smear_E, "jet_smear");
     setup_four_vector_output(OutTree,cand_jet_sup_pt, cand_jet_sup_eta,cand_jet_sup_phi, cand_jet_sup_E, "jet_sup");
@@ -218,6 +218,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   OutTree.Branch("jet_pt_p",&has_jet_pt);
 #endif
   double SF(1.),SFSystErr(1.),SFStatErr(1.),SFTotalErr(1.);
+  double puw(-1);
   double w=weight;
   OutTree.Branch("weight", &w);
   OutTree.Branch("SF", &SF);
@@ -314,6 +315,9 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     if(mu2_idx >= int(mu_pt->size())){
       MSG_DEBUG("WARNING: Muon 2 index from J/\\psi is out of bounds "<<mu2_idx<<" vs "<<mu_pt->size()<<" !");
       continue;
+    }
+    if(mu_pt->at(mu2_idx) > mu_pt->at(mu1_idx)){
+      std::swap(mu2_idx,mu1_idx);
     }
     double mu_max_eta=std::max(fabs(mu_eta->at(mu1_idx)),fabs(mu_eta->at(mu2_idx)));
     has_mumu_eta = CutDefReal["mumu_eta"].pass(mu_max_eta,w);
