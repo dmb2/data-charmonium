@@ -109,7 +109,7 @@ int main(const int argc, char* const argv[]){
   TFile* file = TFile::Open(inFName);
   TTree* tree = retrieve<TTree>(file,tree_name);
   MSG_DEBUG("Fit result is stored in: "<<outFName);
-  RooRealVar *mass = new RooRealVar("jpsi_m","jpsi_m",JPSIMASS, JPSIMASS-0.6, JPSIMASS+0.4); // stay away from the psi(2S)
+  RooRealVar *mass = new RooRealVar("jpsi_m","jpsi_m",JPSIMASS, JPSIMASS-0.4, JPSIMASS+0.4); // stay away from the psi(2S)
   RooRealVar *tau = new RooRealVar("jpsi_tau","Lifetime",-2.,5);
   jpsi_fit(tree,mass,tau,lumi,outFName,do_syst);
   return 0;
