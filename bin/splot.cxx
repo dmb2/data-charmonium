@@ -113,15 +113,20 @@ int main(const int argc, char* const argv[]){
 	   tau->getMin(),tau->getMax());
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
-  // const char* variables[] = {"delta_r","jet_z" ,
-  // 			     "tau1","tau2","tau3","tau21","tau32"
-  // };
-  std::vector<std::string> variables = map_keys(HistBook);
+  const char* var_names[] = {//"delta_r","jet_z" ,
+  			     // "tau1","tau2","tau3","tau21","tau32",
+			     "mu1_pt", "mu2_pt",
+			     "mu1_eta", "mu2_eta",
+			     "vtx_ntrk","vtx_chi2",
+			     "vtx_n"//,"jpsi_pt","jpsi_eta",
+			     // "jet_pt","jet_eta","pileup"
+  };
+  std::vector<std::string> variables(var_names,var_names+LEN(var_names));
+  // std::vector<std::string> variables = map_keys(HistBook);
   std::vector<TH1*> to_write;
-  //Not using an iterator so I can switch between variables as an
-  //char* array and variables as a std::vector without much effort
-  for(size_t i = 0; i < variables.size(); i++){
-    const std::string var(variables[i]);
+  for(std::vector<std::string>::const_iterator itr=variables.begin();
+      itr!=variables.end(); ++itr){
+    const std::string var(*itr);
     TH1* base_hist = HistBook[var];
     std::pair<TH1*,TH1*> final_hists=make_splot(tree,base_hist,&wkspc);
     TH1* sig_final = final_hists.first;

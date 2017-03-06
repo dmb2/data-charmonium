@@ -27,37 +27,37 @@ void fix_axis_labels(TH1* hist){
 }
 
 void init_hist_book(std::map<std::string,TH1D*>& HistBook){
-  HistBook["jet_pt"]=new TH1D("jet_pt","Jet p_{T};p_{T} [GeV];evts/binwidth",50,0,400);
-  HistBook["jet_eta"]=new TH1D("jet_eta","Jet #eta;#eta;evts/binwidth",50,-2.6,2.6);
-  HistBook["jet_e"]=new TH1D("jet_e","Jet E;E [GeV]; evts/binwidth",50,0,500);
-  HistBook["jet_m"]=new TH1D("jet_m","Jet Mass; M [GeV]; evts/binwidth",50,0,45);
-  HistBook["jet_z"]=new TH1D("jet_z","Jet Z;z;evts/binwidth",50,0,1.1);
+  HistBook["jet_pt"]=new TH1D("jet_pt","Jet p_{T};Jet p_{T} [GeV];evts/binwidth",50,0,400);
+  HistBook["jet_eta"]=new TH1D("jet_eta","Jet #eta;Jet #eta;evts/binwidth",50,-2.6,2.6);
+  HistBook["jet_e"]=new TH1D("jet_e","Jet E;Jet E [GeV]; evts/binwidth",50,0,500);
+  HistBook["jet_m"]=new TH1D("jet_m","Jet Mass;Jet  M [GeV]; evts/binwidth",50,0,45);
+  HistBook["jet_z"]=new TH1D("jet_z","Jet Z;Jet z;evts/binwidth",50,0,1.1);
 
   HistBook["tau1"]=new TH1D("tau1","N Subjettiness #tau_{1};#tau_{1};evts/binwidth",50,0,1.2);
   HistBook["tau2"]=new TH1D("tau2","N Subjettiness #tau_{2};#tau_{2};evts/binwidth",50,0,0.5);
   HistBook["tau3"]=new TH1D("tau3","N Subjettiness #tau_{3};#tau_{3};evts/binwidth",50,0,0.5);
   HistBook["tau32"]=new TH1D("tau32","N Subjettiness #tau_{32};#tau_{32};evts/binwidth",50,0,1.2);
   HistBook["tau21"]=new TH1D("tau21","N Subjettiness #tau_{21};#tau_{21};evts/binwidth",50,0,1.2);
-  HistBook["delta_r"]=new TH1D("delta_r","#Delta R(J/#psi,Jet); #Delta R; evts/binwidth",50,0,.08);
+  HistBook["delta_r"]=new TH1D("delta_r","#Delta R(J/#psi,Jet);#Delta R(J/#psi,Jet); evts/binwidth",50,0,.08);
 
-  HistBook["mu1_pt"]=new TH1D("mu1_pt","#mu_1 p_{T};p_{T} [GeV];evts/binwidth",50,0,140);
-  HistBook["mu2_pt"]=new TH1D("mu2_pt","#mu_2 p_{T};p_{T} [GeV];evts/binwidth",50,0,140);
-  HistBook["mu1_eta"]=new TH1D("mu1_eta","#mu_1 #eta;#eta;evts/binwidth",50,-2.6,2.6);
-  HistBook["mu2_eta"]=new TH1D("mu2_eta","#mu_2 #eta;#eta;evts/binwidth",50,-2.6,2.6);
+  HistBook["mu1_pt"]=new TH1D("mu1_pt","#mu_1 p_{T};#mu_1 p_{T} [GeV];evts/binwidth",50,0,140);
+  HistBook["mu2_pt"]=new TH1D("mu2_pt","#mu_2 p_{T};#mu_2 p_{T} [GeV];evts/binwidth",50,0,140);
+  HistBook["mu1_eta"]=new TH1D("mu1_eta","#mu_1 #eta;#mu_1 #eta;evts/binwidth",50,-2.6,2.6);
+  HistBook["mu2_eta"]=new TH1D("mu2_eta","#mu_2 #eta;#mu_2 #eta;evts/binwidth",50,-2.6,2.6);
   
   HistBook["vtx_ntrk"] = new TH1D("vtx_ntrk","Track Multiplicity in PV;n_{trk};evts/binwidth",50,0,200);
-  HistBook["vtx_chi2"] = new TH1D("vtx_chi2","#chi^2 of PV fit;#chi^2;evts/binwidth",50,0,350);
+  HistBook["vtx_chi2"] = new TH1D("vtx_chi2","#chi^2 of PV fit;PV #chi^2;evts/binwidth",50,0,350);
   HistBook["vtx_n"] = new TH1D("vtx_n","PV multiplicity;Number of PV;evts/binwidth",41,0,40);
   
 
-  HistBook["jpsi_pt"]=new TH1D("jpsi_pt","J/#psi p_{T};p_{T} [GeV];evts/binwidth",50,0,200);
-  HistBook["jpsi_eta"]=new TH1D("jpsi_eta","J/#psi #eta;#eta;evts/binwidth",50,-2.6,2.6);
-  HistBook["jpsi_e"]=new TH1D("jpsi_e","J/#psi E;E [GeV]; evts/binwidth",50,0,600);
-  HistBook["jpsi_m"]=new TH1D("jpsi_m","J/#psi Mass; M(#mu#mu) [GeV]; evts/binwidth",50,2.,4.);
+  HistBook["jpsi_pt"]=new TH1D("jpsi_pt","J/#psi p_{T};J/#psi p_{T} [GeV];evts/binwidth",50,0,200);
+  HistBook["jpsi_eta"]=new TH1D("jpsi_eta","J/#psi #eta;J/#psi #eta;evts/binwidth",50,-2.6,2.6);
+  HistBook["jpsi_e"]=new TH1D("jpsi_e","J/#psi E;J/#psi E [GeV]; evts/binwidth",50,0,600);
+  HistBook["jpsi_m"]=new TH1D("jpsi_m","J/#psi Mass;J/#psi E M(#mu#mu) [GeV]; evts/binwidth",50,2.,4.);
   HistBook["jpsi_lxy"]=new TH1D("jpsi_lxy","J/#psi L_{xy}; L_{xy} [mm]; evts/binwidth",50,-4,10);
   HistBook["jpsi_tau"]= new TH1D("jpsi_tau","J/#psi c#tau; c#tau [mm]; evts/binwidth",50,-1,5);
 
-  HistBook["pileup"]= new TH1D("pileup","Average interactions per bunch crossing; Avg. Interactions <#mu>; evts/binwidth",41,0,40);
+  HistBook["pileup"]= new TH1D("pileup","Average interactions per bunch crossing; Avg. Interactions <#mu>; evts/binwidth",41,-0.5,40.5);
   
   HistBook["delta_r"]->GetXaxis()->SetNdivisions(505);
   // Doctor the y axis titles for binwidth
