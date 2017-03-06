@@ -36,9 +36,10 @@ install-roounfold:
 	cp RooUnfold/src/*.h ./include
 	cp RooUnfold/*RooUnfold* ./src/
 install-pileuprw:
-	svn co svn+ssh://davidb@svn.cern.ch/reps/atlasoff/PhysicsAnalysis/AnalysisCommon/PileupReweighting/tags/PileupReweighting-00-04-03 PileupReweighting
+	svn co svn+ssh://davidb@svn.cern.ch/reps/atlasoff/PhysicsAnalysis/AnalysisCommon/PileupReweighting/tags/PileupReweighting-00-02-18 PileupReweighting
 	@$(MAKE) -C PileupReweighting/cmt -f Makefile.Standalone
 	cp PileupReweighting/StandAlone/* src/
+	cp PileupReweighting/Root/*.pcm src/
 	cp PileupReweighting/PileupReweighting/* include/
 src/dict.cxx: $(INCDIR)/LinkDef.h
 	rootcint -f $@ -c -I$(INCDIR) -p $^

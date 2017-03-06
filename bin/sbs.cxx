@@ -117,7 +117,7 @@ int main(const int argc, char* const argv[]){
     + " && " + make_cut_expr(tau->getBinningNames(),"Sig");
   char cut_expr[1024];
   snprintf(cut_expr,sizeof(cut_expr)/sizeof(*cut_expr),
-	   "(%s)*weight*%.4g*SF",
+	   "(%s)*weight*%.4g*SF*pileup_weight",
 	   jpsi_sig_region.c_str(),
 	   lumi);
 

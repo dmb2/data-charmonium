@@ -136,9 +136,15 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   // Forest[jet_type]->SetBranchAddress("JET_emfrac",&jet_emfrac);
   setup_four_vector_output(OutTree,cand_jet_pt, cand_jet_eta, 
 			   cand_jet_phi, cand_jet_E, "jet");
+  Root::TPileupReweighting* purw=nullptr;
   if(is_MC){
     // FIXME initialize and use this tool
-    CP::TPileupReweighting* purw = new CP::TPileupReweighting( "purw" );
+    purw = new Root::TPileupReweighting( "purw" );
+    if(purw->initialize("pileup_files/data2012_lumi.root","avgintperbx",
+			"pileup_files/MC12Pileup.root","pileup")!=0){
+      MSG_ERR("Could not initialize pileup reweighting! Are the files in pileup_files/ and named correctly?");
+      exit(-1);
+    }
     if(jet_type=="TrackZJPsiJets"){
       setup_pt_eta_phi_e(Forest["TrackZFilteredJPsiJets"], jet_filt_pt, jet_filt_eta, jet_filt_phi, jet_filt_E, "JET");
       setup_pt_eta_phi_e(Forest["TrackZSmearedJPsiJets"], jet_smear_pt, jet_smear_eta, jet_smear_phi, jet_smear_E, "JET");
@@ -221,6 +227,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double puw(-1);
   double w=weight;
   OutTree.Branch("weight", &w);
+  OutTree.Branch("pileup_weight", &puw);
   OutTree.Branch("SF", &SF);
   OutTree.Branch("SFSystErr", &SFSystErr);
   OutTree.Branch("SFStatErr", &SFStatErr);
@@ -247,6 +254,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   MSG("Weight: "<<weight);
   for(Long64_t entry=0; entry < nEntries; entry++){
     retrieve_values(Forest,entry);
+    CutDefCat["nominal"].pass();
     
     if(entry%squawk_every==0 && verbose){
       MSG("Processing entry "<<entry);
@@ -254,6 +262,17 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     trigger_cat=0;
     idx=0; delta_r=-1.; z=-1.; jpsi_idx=0;
     // SF=1; SFSystErr=0.; SFStatErr=0.; SFTotalErr=0.;
+    if(purw!=nullptr && is_MC){
+      puw=purw->GetCombinedWeight(0,0,pileup);
+      // MSG_DEBUG("Good Weight: "<<puw);
+      if(puw < 0 ){
+	MSG_DEBUG("Negative pileup re-weight, skipping event!");
+	continue;
+      }
+    }
+    else{
+      puw=1;
+    }
     if(mu_pt->size()==0){
       continue;
     }
@@ -263,7 +282,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     SFTotalErr=total_scale_factor(MuSFTotalErr);
     
     jets.clear(); jets.reserve(jet_pt->size());
-    CutDefCat["nominal"].pass();
     has_trigger = CutDefCat["trigger"].pass(is_MC || passed_trigger(*EF_trigger_names),w);
     has_num_jets = CutDefCat["num_jets"].pass(int(jet_pt->size()),w);
     CUT_CONTINUE(has_trigger);

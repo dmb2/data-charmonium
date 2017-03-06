@@ -60,7 +60,7 @@ THStack* make_stack(TH1* base_hist, std::map<std::string,TTree*>& samples,
     TH1* hist =(TH1*)base_hist->Clone((name+plot+"_"+ suffix).c_str());
     // MSG_DEBUG(hist->GetName());
     hist_list[i]=hist;
-    cut_expr=((cut_index == 0) ? "SF*weight" : "SF*weight*" 
+    cut_expr=((cut_index == 0) ? "pileup_weight*SF*weight" : "pileup_weight*SF*weight*" 
 	      + str_join("*",cut_branches,0,cut_index+1));
     cut_expr+="*%.4g";
     snprintf(cut_str,sizeof(cut_str)/sizeof(*cut_str),cut_expr.c_str(),target_lumi);
@@ -100,7 +100,7 @@ void print_2D_stack(std::map<std::string,TTree*> samples,const std::string& plot
   canv.Divide(n_col,n_row);
   // canv.cd(1);
   char weight_expr[256];
-  snprintf(weight_expr,256,"SF*weight*%.4g",target_lumi);
+  snprintf(weight_expr,256,"pileup_weight*SF*weight*%.4g",target_lumi);
   for(size_t i=0; i < n_samp; i++){
     TVirtualPad* pad = canv.cd(i+1);
     // set_pad_margins(pad,i+1,n_samp,n_col,n_row,false);
@@ -219,7 +219,7 @@ void print_2D_slices(std::map<std::string,TTree*> samples,const std::string& plo
   decorator.SetTextSize(0.07);
   canv.Divide(n_col,n_row);
   char weight_expr[256];
-  snprintf(weight_expr,256,"SF*weight*%.4g",target_lumi);
+  snprintf(weight_expr,256,"pileup_weight*SF*weight*%.4g",target_lumi);
   std::vector<double> max_vals(n_bins_y,0.);
 
   for(std::vector<std::string>::const_iterator n=sample_names.begin();

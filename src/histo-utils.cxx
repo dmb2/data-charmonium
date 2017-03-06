@@ -147,8 +147,8 @@ TH1* make_normal_hist(TH1* base_hist, TTree* tree,
   if(uniq_suffix.find("&&")!=std::string::npos){
     uniq_suffix="signal_region";
   }
-  const std::string weight_expr=cut_branches.size()==0 ? "SF*weight" :
-    "SF*weight*"+str_join("*",cut_branches,0,cut_index+1);
+  const std::string weight_expr=cut_branches.size()==0 ? "pileup_weight*SF*weight" :
+    "pileup_weight*SF*weight*"+str_join("*",cut_branches,0,cut_index+1);
   // MSG_DEBUG(weight_expr);
   return make_normal_hist(base_hist,tree,plot,
 			  weight_expr.c_str(),"_NRM_"+std::string(count_str)+uniq_suffix);
@@ -319,7 +319,7 @@ void print_hist(TTree* tree, const std::string& plot,
   TLatex decorator;
   decorator.SetTextSize(0.04);
   MSG_DEBUG("Warning: using truth_jet_pt cut!");
-  const std::string weight_expr="SF*weight*(" +
+  const std::string weight_expr="pileup_weight*SF*weight*(" +
     str_join("*",cut_branches, 0,cut_branches.size())+" && truth_jet_pt > 45)";
   // MSG_DEBUG(weight_expr);
   TH1* hist = make_hist(base_hist,tree,plot,weight_expr.c_str(),"_nom");

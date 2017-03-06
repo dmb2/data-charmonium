@@ -103,7 +103,7 @@ int main(const int argc, char* const argv[]){
   char cut_expr[1024];
   char data_cut_expr[1024];
   snprintf(cut_expr,sizeof(cut_expr)/sizeof(*cut_expr),
-	   "((jpsi_m > %g && jpsi_m < %g) && (jpsi_tau > %g && jpsi_tau < %g))*weight*%.4g*SF",
+	   "((jpsi_m > %g && jpsi_m < %g) && (jpsi_tau > %g && jpsi_tau < %g))*weight*%.4g*SF*pileup_weight",
 	   mass->getMin(),mass->getMax(),
 	   tau->getMin(),tau->getMax(),
 	   lumi);

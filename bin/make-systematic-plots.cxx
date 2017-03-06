@@ -50,11 +50,11 @@ int main(const int argc, const char* argv[]){
     MSG_DEBUG("Processing: "<<plot);
     TH1* syst_up_hist = make_normal_hist(base_hist, syst_up_tree,plot,
 					 std::string(syst_up_fname).find("EfficiencyUp")!=std::string::npos ? 
-					 "weight*SF*(1+SFTotalErr)": "weight*SF","_syst_up");
+					 "pileup_weight*weight*SF*(1+SFTotalErr)": "pileup_weight*weight*SF","_syst_up");
     TH1* syst_down_hist = make_normal_hist(base_hist,syst_down_tree,plot,
 					   std::string(syst_down_fname).find("EfficiencyDown")!=std::string::npos ? 
-					   "weight*SF*(1-SFTotalErr)":"weight*SF","_syst_down");
-    TH1* nominal_hist = make_normal_hist(base_hist,nominal_tree,plot,"weight*SF","_syst");
+					   "pileup_weight*weight*SF*(1-SFTotalErr)":"pileup_weight*weight*SF","_syst_down");
+    TH1* nominal_hist = make_normal_hist(base_hist,nominal_tree,plot,"pileup_weight*weight*SF","_syst");
     TH1D* result = dynamic_cast<TH1D*>(base_hist->Clone((plot + "_tmp").c_str()));
     // (up - down)/2
     ensure_sumw2(syst_up_hist);
