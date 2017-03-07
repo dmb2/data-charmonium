@@ -235,3 +235,18 @@ skim_data(){
 }
 export -f skim_data
 # Usage: parallel skim_data ::: [list of ntuple.root files]
+
+make_ctrl_data(){
+    DSID=$(echo $1 | grep -o "user.davidb.*$" | awk -F '.' '{print $3}')
+    OUTDIR=$(dirname $1)
+    ID=$(echo $1 | grep -o [0-9]*.ntuple.root | awk -F '.' '{print $1}')
+    command_name=macros\/make_controls.C\(\"$1\",\"$OUTDIR/$DSID.$ID.ctrl.root\"\)
+    root -l -q -b "$command_name"
+}
+export -f make_ctrl_data
+make_ctrl_mc(){
+    for dsid in 20802{4..8}
+    do
+	root -l -q -b macros\/make_controls.C\(\"$dsid.*.root,$dsid.ctrl.root\"\)
+    done
+}

@@ -1,4 +1,4 @@
-void make_controls(std::string fname,std::string suffix){
+void make_controls(std::string fname,std::string out_fname){
   TTree* Mu=NULL;
   TTree* JPsi=NULL;
   TTree* Jets=NULL;
@@ -11,7 +11,7 @@ void make_controls(std::string fname,std::string suffix){
   std::cout<<"Mu: "<<Mu<<" JPsi: "<<JPsi<<" Jets: "<<Jets<<std::endl;
   JPsi->AddFriend("Mu");
   JPsi->AddFriend("TrackZJPsiJets");
-  TFile* output = TFile::Open(("ctrl_hists_"+suffix+".root").c_str(),"RECREATE");
+  TFile* output = TFile::Open(out_fname.c_str(),"RECREATE");
   TH1D* jet_pt = new TH1D("jet_pt","Jet p_T;Control Jet p_T; events",50,0,400);
   TH1D* jpsi_pt = new TH1D("jpsi_pt","Jpsi p_T;Control J/#psi p_T; events",50,0,200);
   TH1D* mu_pt = new TH1D("mu_pt","Mu p_T;Control #mu p_T; events",50,0,140);
