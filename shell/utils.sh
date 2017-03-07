@@ -100,6 +100,31 @@ summarize_systematics(){
 	make-systematic-plots "${DSID}-systematics/${DSID}.$syst.mini.root" "${SYST_PAIRS[$syst]}" "${INFILE}" "${DSID}-systematics/${DSID}.${syst}.hist.root"
     done
 }
+print_mean_syst(){
+    local INFILE=$1;
+    local DSID=$(echo ${INFILE} | awk -F '.' '{print $1}');
+    local MUON_SYST=$(echo MuonSmeared{IDUp,MSUp,Up,});
+    local JET_SYST=$(echo TrackZ{Filtered,Smeared,ScaledUp,RadialScaledUp}JPsiJets)
+    declare -A SYST_PAIRS;
+    
+    for syst in $MUON_SYST $JET_SYST;
+    do
+	SYST_PAIRS["$syst"]="${INFILE}"
+    done
+    SYST_PAIRS["MuonEfficiencyUp"]="${DSID}-systematics/${DSID}.MuonEfficiencyDown.mini.root"
+    SYST_PAIRS["MuonSmearedUp"]="${DSID}-systematics/${DSID}.MuonSmearedLow.mini.root"
+    SYST_PAIRS["TrackZScaledUpJPsiJets"]="${DSID}-systematics/${DSID}.TrackZScaledDownJPsiJets.mini.root"
+    SYST_PAIRS["TrackZRadialScaledUpJPsiJets"]="${DSID}-systematics/${DSID}.TrackZRadialScaledDownJPsiJets.mini.root"
+    for syst in "${!SYST_PAIRS[@]}"
+    do
+	# echo "$syst ${SYST_PAIRS[$syst]}" 
+	up="${DSID}-systematics/${DSID}.$syst.mini.root"
+	down="${SYST_PAIRS[$syst]}"
+	nom="${INFILE}"
+	root -l -q -b macros\/summarize_syst_var.C\(\"$up\",\"$down\",\"$nom\"\)
+    done
+
+}
 process_systematics(){
     local FILE=$1
     local DSID=$(echo $(basename $FILE) | awk -F '.' '{print $1}')
