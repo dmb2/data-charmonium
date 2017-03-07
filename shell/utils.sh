@@ -245,8 +245,9 @@ make_ctrl_data(){
 }
 export -f make_ctrl_data
 make_ctrl_mc(){
-    for dsid in 20802{4..8}
+    for file in $@
     do
-	root -l -q -b macros\/make_controls.C\(\"$dsid.*.root\",\"$dsid.ctrl.root\"\)
+	DSID=$(echo $file | grep -o '[0-9]\{6\}')
+	root -l -q -b macros\/make_controls.C\(\"$file\",\"$DSID.ctrl.root\"\)
     done
 }
