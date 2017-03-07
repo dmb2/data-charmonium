@@ -247,6 +247,6 @@ export -f make_ctrl_data
 make_ctrl_mc(){
     for dsid in 20802{4..8}
     do
-	root -l -q -b macros\/make_controls.C\(\"$dsid.*.root,$dsid.ctrl.root\"\)
+	root -l -q -b macros\/make_controls.C\(\"$dsid.*.root\",\"$dsid.ctrl.root\"\)
     done
 }
