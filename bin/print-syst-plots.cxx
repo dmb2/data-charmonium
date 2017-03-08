@@ -68,12 +68,15 @@ int main(const int argc, const char* argv[]){
   
   for(std::vector<std::string>::const_iterator p=plots.begin(); p!=plots.end(); ++p){
     const std::string& plot = *p;
+    // if(plot!="jet_z"){
+    //   continue;
+    // }
     MSG_DEBUG(plot);
     TH1D* tot_err=dynamic_cast<TH1D*>(HistBook[plot]->Clone((plot+"_tot_err").c_str()));
     tot_err->Rebin(5);
     TCanvas canv("canv","canv",1200,600);
     canv.Divide(2,1);
-    // canv.SetLogy();
+    canv.SetLogy();
     double max(10);
     TLegend *leg = init_legend(0.1,0.1,0.9,0.9);
     leg->SetTextSize(0.05);
@@ -91,25 +94,12 @@ int main(const int argc, const char* argv[]){
       }
       add_err(tot_err,hist);
       style_hist(hist,styles[syst_name]);
-      // hist->SetLineWidth(0);
-      TH1D* nom = dynamic_cast<TH1D*>(hist->Clone("tmp"));
-      nom->SetFillStyle(0);
-      nom->SetLineColor(kBlack);
-      // nom->Draw("HIST same");
-      // if(has_non_zero_error(hist)){
-      // 	hist->Draw("e2 same");
-      // }
-      // canv.cd(2);
-      // pad->SetLogy();
       TH1D* rel_err = dynamic_cast<TH1D*>(hist->Clone((std::string(hist->GetName())+"_rel_err").c_str()));
+      MSG_DEBUG(syst_name);
       scale_errors(rel_err);
-      
-      // rel_err->Add(nom,-1);
-      // rel_err->Divide(nom);
-      rel_err->Scale(100);
       for(int i=0; i < rel_err->GetNbinsX(); i++){
 	double err=rel_err->GetBinContent(i);
-	rel_err->SetBinError(i,err);
+	rel_err->SetBinError(i,100*err);
 	rel_err->SetBinContent(i,0);
       }
       style_err_hist(rel_err,styles[syst_name].color);
@@ -133,8 +123,6 @@ int main(const int argc, const char* argv[]){
     rel_err->Scale(-1);
     rel_err->DrawCopy("e2 same");
     style_hist(tot_err,tot_aes);
-    // canv.cd(1);
-    // tot_err->Draw("e2 same");
     canv.cd(2);
     leg->Draw();
     canv.SaveAs((plot+"_syst.pdf").c_str());

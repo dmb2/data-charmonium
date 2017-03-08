@@ -113,13 +113,13 @@ int main(const int argc, char* const argv[]){
 	   tau->getMin(),tau->getMax());
   std::map<std::string,TH1D*> HistBook;
   init_hist_book(HistBook);
-  const char* var_names[] = {//"delta_r","jet_z" ,
+  const char* var_names[] = {"delta_r","jet_z" ,
   			     // "tau1","tau2","tau3","tau21","tau32",
-			     "mu1_pt", "mu2_pt",
-			     "mu1_eta", "mu2_eta",
+			     // "mu1_pt", "mu2_pt",
+			     // "mu1_eta", "mu2_eta",
 			     "vtx_ntrk","vtx_chi2",
-			     "vtx_n"//,"jpsi_pt","jpsi_eta",
-			     // "jet_pt","jet_eta","pileup"
+			     "vtx_n","jpsi_pt","jpsi_eta",
+			     "jet_pt","jet_eta","pileup"
   };
   std::vector<std::string> variables(var_names,var_names+LEN(var_names));
   // std::vector<std::string> variables = map_keys(HistBook);
@@ -146,8 +146,6 @@ int main(const int argc, char* const argv[]){
       add_err(bkg_tot_err,bkg_syst_hist);
       add_err(sig_tot_err,sig_syst_hist);
     }
-    add_err(sig_final,sig_tot_err);
-    add_err(bkg_final,bkg_tot_err);
     if(print_validation_plots){
       print_corr_plot(base_hist,"jpsi_tau",
       		      HistBook["jpsi_tau"]->GetNbinsX(),
@@ -158,8 +156,12 @@ int main(const int argc, char* const argv[]){
       		      tree,"_m_corr.pdf",lumi,cut_expr);
       print_bkg_splot(tree,(TH1*)bkg_final->Clone(),".pdf",lumi,&wkspc);
     }
-    print_splot_stack(tree,base_hist,sig_final,bkg_final,data_cut_expr,lumi,".pdf");
-    print_pythia_stack(base_hist,sig_final,lumi,cut_expr,".pdf");
+    TH1* sig_print_hist = dynamic_cast<TH1*>(sig_final->Clone((var+"_sig_splot_print").c_str()));
+    TH1* bkg_print_hist = dynamic_cast<TH1*>(bkg_final->Clone((var+"_bkg_splot_print").c_str()));
+    add_err(sig_print_hist,sig_tot_err);
+    add_err(bkg_print_hist,bkg_tot_err);
+    print_splot_stack(tree,base_hist,sig_print_hist,bkg_print_hist,data_cut_expr,lumi,".pdf");
+    print_pythia_stack(base_hist,sig_print_hist,lumi,cut_expr,".pdf");
     sig_final->SetName(var.c_str());
     to_write.push_back(sig_tot_err);
     to_write.push_back(sig_final);

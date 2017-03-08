@@ -12,6 +12,7 @@ void summarize_syst_var(std::string nom_fname, std::string up_fname, std::string
   nom->Draw("jet_z>>hnom");
   up->Draw("jet_z>>hup");
   down->Draw("jet_z>>hdown");
+  std::cout<<"| z | ";
   std::cout<<(hup->GetMean()-hdown->GetMean())/hnom->GetMean()*100<<std::endl;
   delete hnom;
   delete hup;
@@ -22,5 +23,6 @@ void summarize_syst_var(std::string nom_fname, std::string up_fname, std::string
   nom->Draw("delta_r>>hnom");
   up->Draw("delta_r>>hup");
   down->Draw("delta_r>>hdown");
+  std::cout<<"| $\\Delta R$ | ";
   std::cout<<(hup->GetMean()-hdown->GetMean())/hnom->GetMean()*100<<std::endl;
 }

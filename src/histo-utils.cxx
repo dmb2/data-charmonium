@@ -438,8 +438,14 @@ void scale_errors(TH1* hist){
     err=hist->GetBinError(i);
     content=hist->GetBinContent(i);
     // MSG_DEBUG("err: "<<err<< " content: "<<content);
+    // if(content > 0 && err/content > 1.2 && content < 1){
+    //   MSG_ERR("Error greater than content, truncating to 0");
+    //   MSG_DEBUG("err: "<<err<< " content: "<<content);
+    //   content=0;
+    // }
     hist->SetBinError(i,0);
     hist->SetBinContent(i,content > 0 ? err/content : 0);
+    // MSG_DEBUG("new content: "<<hist->GetBinContent(i));
   }
 }
 void add_bc(TH1* hista, TH1* histb){

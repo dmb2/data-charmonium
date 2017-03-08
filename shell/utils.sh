@@ -115,13 +115,14 @@ print_mean_syst(){
     SYST_PAIRS["MuonSmearedUp"]="${DSID}-systematics/${DSID}.MuonSmearedLow.mini.root"
     SYST_PAIRS["TrackZScaledUpJPsiJets"]="${DSID}-systematics/${DSID}.TrackZScaledDownJPsiJets.mini.root"
     SYST_PAIRS["TrackZRadialScaledUpJPsiJets"]="${DSID}-systematics/${DSID}.TrackZRadialScaledDownJPsiJets.mini.root"
+    echo $DSID
     for syst in "${!SYST_PAIRS[@]}"
     do
-	# echo "$syst ${SYST_PAIRS[$syst]}" 
+	echo "$syst" 
 	up="${DSID}-systematics/${DSID}.$syst.mini.root"
 	down="${SYST_PAIRS[$syst]}"
 	nom="${INFILE}"
-	root -l -q -b macros\/summarize_syst_var.C\(\"$up\",\"$down\",\"$nom\"\)
+	root -l -q -b macros\/summarize_syst_var.C\(\"$up\",\"$down\",\"$nom\"\) 2>/dev/null| grep "|"
     done
 
 }
