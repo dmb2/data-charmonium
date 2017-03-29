@@ -210,7 +210,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   setup_four_vector_output(OutTree,jpsi_pt, jpsi_eta, jpsi_phi, jpsi_E, "jpsi");
 
   int has_trigger=0, has_num_jets=0, has_jpsi_pt=0, /*has_jpsi_eta=0,*/
-    has_mumu_eta,has_jpsi_rap,has_jet_eta=0, has_delta_r=0, has_jet_pt=0;
+    has_mumu_eta,has_mumu_pt,has_jpsi_rap,has_jet_eta=0, has_delta_r=0, has_jet_pt=0;
 
 #ifdef __ANALYZE_TREE_CUTFLOW__  
   OutTree.Branch("mu_trigger_p",&has_trigger);
@@ -218,6 +218,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   OutTree.Branch("jpsi_pt_p",&has_jpsi_pt);
   OutTree.Branch("jpsi_rap_p",&has_jpsi_rap);
   OutTree.Branch("mumu_eta_p",&has_mumu_eta);
+  OutTree.Branch("mumu_pt_p",&has_mumu_pt);
   // OutTree.Branch("jpsi_eta_p",&has_jpsi_eta);
   OutTree.Branch("delta_r_p", &has_delta_r);
   OutTree.Branch("jet_eta_p",&has_jet_eta);
@@ -340,6 +341,9 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     double mu_max_eta=std::max(fabs(mu_eta->at(mu1_idx)),fabs(mu_eta->at(mu2_idx)));
     has_mumu_eta = CutDefReal["mumu_eta"].pass(mu_max_eta,w);
     CUT_CONTINUE(has_mumu_eta);
+    double mu_min_pt = std::min(mu_pt->at(mu1_idx),mu_pt->at(mu2_idx));
+    has_mumu_pt = CutDefReal[ "mumu_pt" ].pass(mu_min_pt,w);
+    CUT_CONTINUE(has_mumu_pt);
     mu1.SetPtEtaPhiM(mu_pt->at(mu1_idx),mu_eta->at(mu1_idx),mu_phi->at(mu1_idx),0.105658);
     mu2.SetPtEtaPhiM(mu_pt->at(mu2_idx),mu_eta->at(mu2_idx),mu_phi->at(mu2_idx),0.105658);
     mu1_pt=mu1.Pt()*GeV;
