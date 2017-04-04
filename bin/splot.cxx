@@ -115,11 +115,11 @@ int main(const int argc, char* const argv[]){
   init_hist_book(HistBook);
   const char* var_names[] = {"delta_r","jet_z" ,
   			     // "tau1","tau2","tau3","tau21","tau32",
-			     // "mu1_pt", "mu2_pt",
-			     // "mu1_eta", "mu2_eta",
+			     "mu1_pt", "mu2_pt",
+			     "mu1_eta", "mu2_eta",
 			     "vtx_ntrk","vtx_chi2",
 			     "vtx_n","jpsi_pt","jpsi_eta",
-			     "jet_pt","jet_eta","pileup"
+			     "jet_pt","jet_eta","pileup","jet_n"
   };
   std::vector<std::string> variables(var_names,var_names+LEN(var_names));
   // std::vector<std::string> variables = map_keys(HistBook);
