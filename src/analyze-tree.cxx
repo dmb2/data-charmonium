@@ -42,6 +42,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double jpsi_m(0.), jpsi_rap(0.);
   double jpsi_pt(0.), jpsi_eta(0.), jpsi_phi(0.), jpsi_E(0.);
   // double cand_psi_m(0.);
+  int jet_n(0);
   double cand_jet_m(0.);//, emfrac(0.);
   double cand_jet_pt(0.), cand_jet_eta(0.),cand_jet_phi(0.), cand_jet_E(0.);
   double mu1_pt(0.), mu1_eta(0.0);
@@ -82,6 +83,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   double t_z(0.), t_delta_r(0.);
   double t_jpsi_m(0.), t_jpsi_rap(0.);
   double t_jpsi_pt(0.), t_jpsi_eta(0.),t_jpsi_phi(0.), t_jpsi_E(0.);
+  
   double cand_t_jet_m(0.);
   double cand_t_jet_pt(0.), cand_t_jet_eta(0.), cand_t_jet_phi(0.), cand_t_jet_E(0.);
 
@@ -99,7 +101,6 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     snprintf(muon_prefix,50,"Mu_MU_pt%s",muon_variation);
     Forest["Mu"]->SetBranchAddress(muon_prefix,&mu_pt);
   }
-    
   
   std::vector<double> *MuSF(NULL),*MuSFSystErr(NULL),*MuSFStatErr(NULL),*MuSFTotalErr(NULL);
   Forest["Mu"]->SetBranchAddress("Mu_MU_charge",&mu_charge);
@@ -203,6 +204,7 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
   OutTree.Branch("tau3",&tau3);
   OutTree.Branch("tau21",&tau21);
   OutTree.Branch("tau32",&tau32);
+  OutTree.Branch("jet_n",&jet_n);
   OutTree.Branch("jet_z",&z);
   // OutTree.Branch("jet_emfrac",&emfrac);
   OutTree.Branch("jet_m",&cand_jet_m);
@@ -284,7 +286,8 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     
     jets.clear(); jets.reserve(jet_pt->size());
     has_trigger = CutDefCat["trigger"].pass(is_MC || passed_trigger(*EF_trigger_names),w);
-    has_num_jets = CutDefCat["num_jets"].pass(int(jet_pt->size()),w);
+    jet_n = int(jet_pt->size());
+    has_num_jets = CutDefCat["num_jets"].pass(jet_n,w);
     CUT_CONTINUE(has_trigger);
     CUT_CONTINUE(has_num_jets);
     for(std::vector<std::string>::const_iterator name=EF_trigger_names->begin();
