@@ -344,15 +344,14 @@ int process_tree(tree_collection& Forest, real_cuts& CutDefReal,
     double mu_max_eta=std::max(fabs(mu_eta->at(mu1_idx)),fabs(mu_eta->at(mu2_idx)));
     has_mumu_eta = CutDefReal["mumu_eta"].pass(mu_max_eta,w);
     CUT_CONTINUE(has_mumu_eta);
-    double mu_min_pt = std::min(mu_pt->at(mu1_idx),mu_pt->at(mu2_idx));
-    has_mumu_pt = CutDefReal[ "mumu_pt" ].pass(mu_min_pt,w);
-    CUT_CONTINUE(has_mumu_pt);
     mu1.SetPtEtaPhiM(mu_pt->at(mu1_idx),mu_eta->at(mu1_idx),mu_phi->at(mu1_idx),0.105658);
     mu2.SetPtEtaPhiM(mu_pt->at(mu2_idx),mu_eta->at(mu2_idx),mu_phi->at(mu2_idx),0.105658);
     mu1_pt=mu1.Pt()*GeV;
     mu1_eta=mu1.Eta();
     mu2_pt=mu2.Pt()*GeV;
     mu2_eta=mu2.Eta();
+    has_mumu_pt = CutDefReal[ "mumu_pt" ].pass(mu2_pt,w);
+    CUT_CONTINUE(has_mumu_pt);
     if(std::string(muon_variation)!="" && std::string(muon_variation).find("Efficiency")==std::string::npos){
       nom_mu1.SetPtEtaPhiM(mu_nom_pt->at(mu1_idx),mu_eta->at(mu1_idx),mu_phi->at(mu1_idx),0.105658);
       nom_mu2.SetPtEtaPhiM(mu_nom_pt->at(mu2_idx),mu_eta->at(mu2_idx),mu_phi->at(mu2_idx),0.105658);
