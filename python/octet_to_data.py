@@ -32,13 +32,13 @@ def main():
         files+=[tfile]
         trees[fname.split('.')[1]]= tfile.Get("mini")
     octet_blues={}
-    octet_blues["Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8"]=ROOT.TColor.GetColor(0,0x5a,0xc8);
-    octet_blues["Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"]=ROOT.TColor.GetColor(0,0x0a0,0xfa);
-    octet_blues["Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8"]=ROOT.TColor.GetColor(0x14,0xd2,0xdc);
+    octet_blues["Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu0_1S0_8"]=ROOT.TColor.GetColor(0,0x5a,0xc8);
+    octet_blues["Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu0_3S1_8"]=ROOT.TColor.GetColor(0,0x0a0,0xfa);
+    octet_blues["Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu0_3PJ_8"]=ROOT.TColor.GetColor(0x14,0xd2,0xdc);
     leg_names ={} 
-    leg_names["Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8"]="^{1}S^{(8)}_{0} Octet"
-    leg_names["Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"]="^{3}S^{(8)}_{1} Octet"
-    leg_names["Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8"]="^{3}P^{(8)}_{J} Octet"
+    leg_names["Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu0_1S0_8"]="^{1}S^{(8)}_{0} Octet"
+    leg_names["Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu0_3S1_8"]="^{3}S^{(8)}_{1} Octet"
+    leg_names["Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu0_3PJ_8"]="^{3}P^{(8)}_{J} Octet"
     for plot in pub_vars:
         print "Processing plot: "+plot
         hist = data_file.Get(plot)

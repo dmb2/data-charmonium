@@ -31,9 +31,9 @@ RooAbsPdf* mass_signal_pdf(RooRealVar* mass, const int alpha=10,const int n =1){
   RooRealVar* mean_m = new RooRealVar("mean_m","Mean Mass",JPSIMASS,JPSIMASS-0.02,JPSIMASS+0.02);
   RooRealVar* sigma_m = new RooRealVar("sigma_m","Width of Mass",0.09543,0.0,0.5);
   RooGaussian* gauss = new RooGaussian("gauss","Mass Gaussian",*mass,*mean_m,*sigma_m);
-
-  RooRealVar* cb_alpha = new RooRealVar("cb_alpha","Alpha of Crystal Ball",alpha);
-  RooRealVar* cb_n = new RooRealVar("cb_n","N of Crystal Ball",n);
+  // 5+/- 12
+  RooRealVar* cb_alpha = new RooRealVar("cb_alpha","Alpha of Crystal Ball",5);
+  RooRealVar* cb_n = new RooRealVar("cb_n","N of Crystal Ball",1,0,10);
   RooRealVar* cb_sf = new RooRealVar("cb_sf","Scaling factor for CB Width",0.52762,0,1);
   RooProduct* cb_sigma = new RooProduct("cb_sigma","Crystal Ball Width",RooArgList(*sigma_m,*cb_sf));
 

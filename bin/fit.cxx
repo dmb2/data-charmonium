@@ -45,9 +45,9 @@ void jpsi_fit(TTree* tree, RooRealVar* mass, RooRealVar* tau,
     syst_pdfs["mass2"]=build_model(mass,tau,data.numEntries(),2);
     syst_pdfs["mass3"]=build_model(mass,tau,data.numEntries(),3);
     syst_pdfs["mass_exp"]=build_model(mass,tau,data.numEntries(),1,false,true);
-    syst_pdfs["crystal_ball_alpha10_n1"]=build_model(mass,tau,data.numEntries(),1,false,false,false,10,1);
-    syst_pdfs["crystal_ball_alpha10_n5"]=build_model(mass,tau,data.numEntries(),1,false,false,false,10,5);
-    syst_pdfs["crystal_ball_alpha1_n1"]=build_model(mass,tau,data.numEntries(),1,false,false,false,1,1);
+    //syst_pdfs["crystal_ball_alpha10_n1"]=build_model(mass,tau,data.numEntries(),1,false,false,false,10,1);
+    //syst_pdfs["crystal_ball_alpha10_n5"]=build_model(mass,tau,data.numEntries(),1,false,false,false,10,5);
+    //syst_pdfs["crystal_ball_alpha1_n1"]=build_model(mass,tau,data.numEntries(),1,false,false,false,1,1);
     for(std::map<std::string,RooAbsPdf*>::iterator it=syst_pdfs.begin(); it !=syst_pdfs.end(); ++it){
       const std::string& syst_name = it->first;
       RooAbsPdf* syst_pdf = it->second;

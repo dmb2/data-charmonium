@@ -252,7 +252,6 @@ void add_atlas_badge(TVirtualPad& canv,const double x, const double y,
   else{
     const char* fmt_str = "#sqrt{s} = 8 TeV";
     snprintf(data_cond,sizeof(data_cond)/sizeof(*data_cond),fmt_str);
-    MSG_DEBUG(data_cond);
   }
   l.DrawLatex(x,y-dely,data_cond);
 }
@@ -418,6 +417,8 @@ TH1* build_syst_err_hist(TH1* base_hist, const std::string& samp_name,
 					down_cut_expr,
 					samp_name+"_syst_down");
     syst_down_hist->SetName((base_hist->GetName()+var_down).c_str());
+    // dump_hist(syst_down_hist);
+    // dump_hist(syst_up_hist);
     syst_up_hist->Add(syst_down_hist,-1.0);
     syst_up_hist->Scale(sf);
     double bc;
@@ -434,7 +435,7 @@ TH1* build_syst_err_hist(TH1* base_hist, const std::string& samp_name,
 void scale_errors(TH1* hist){
   double err(0);
   double content(0);
-  for(int i=0; i < hist->GetNbinsX(); ++i){
+  for(int i=0; i <= hist->GetNbinsX(); ++i){
     err=hist->GetBinError(i);
     content=hist->GetBinContent(i);
     // MSG_DEBUG("err: "<<err<< " content: "<<content);
@@ -466,7 +467,7 @@ void add_err(TH1* hista, TH1* histb){
     return;
   }
   num_err a; num_err b;
-  for(int i=0; i < hista->GetNbinsX(); i++){
+  for(int i=0; i <= hista->GetNbinsX(); i++){
     a.val=0; a.err=hista->GetBinError(i);
     b.val=0; b.err=histb->GetBinError(i);
     // MSG_DEBUG("a: "<<str_rep(a)<< " b: "<<str_rep(b)<<" a+b: "<<str_rep(add(a,b)));
@@ -474,7 +475,7 @@ void add_err(TH1* hista, TH1* histb){
   }
 }
 bool has_non_zero_error(TH1* hist){
-  // double tot_err=0;
+  // ignore overflow/underflow intentionally
   for(int i=1; i < hist->GetNbinsX(); i++){
     if(hist->GetBinError(i) != 0){
       return true;

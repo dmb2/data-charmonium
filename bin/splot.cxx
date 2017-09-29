@@ -22,7 +22,7 @@
 
 
 void usage(const char* name){
-  MSG("Usage: "<<name<<" -i input.root -t tree_name -l lumi -r fitresult.root -o out.root");
+  MSG("Usage: "<<name<<" [-v for validation plots] -i input.root -t tree_name -l lumi -r fitresult.root -o out.root");
 }
 
 int main(const int argc, char* const argv[]){

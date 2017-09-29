@@ -19,7 +19,7 @@
 #include "RooUnfoldSvd.h"
 
 void usage(const char* prog_name){
-  MSG("Usage: "<<prog_name<< " -t truth_file.root -i in_file.root ");
+  MSG("Usage: "<<prog_name<< " -l lumi [fb] -t truth_file.root -i in_file.root -s (to include systematics)");
 }
 
 int main(const int argc, char* const argv[]){
@@ -53,13 +53,15 @@ int main(const int argc, char* const argv[]){
   }
 
   setup_global_style();
+  std::map<std::string,aesthetic> hist_styles;
+  init_hist_styles(hist_styles);
   MSG("Input File: "<<in_fname);
   MSG("Truth File: "<<truth_fname);
   TTree* tree = retrieve<TTree>(truth_fname,"mini");
   TFile* reco_file = TFile::Open(in_fname);
   
   const char* variables[] = {"delta_r","jet_pt","jet_z",
-			     // "jpsi_pt","jpsi_eta"//,"tau1","tau2","tau3","tau32","tau21"
+			     //"jpsi_pt","jpsi_eta","tau1","tau2","tau3","tau32","tau21"
   };
   int n_evts = tree->GetEntries();
   for(size_t i=0; i < LEN(variables); i++){
@@ -70,11 +72,13 @@ int main(const int argc, char* const argv[]){
       exit(1);
     }
     std::string name(reco_hist->GetName());
-    // reco_hist->SetName((name+"_reco").c_str());
     TH1* base_hist = dynamic_cast<TH1D*>(reco_hist->Clone(name.c_str()));
     TH2* response_hist = mc_response(base_hist,tree,n_evts);
     num_iter = get_iterations(base_hist,response_hist,int(reco_hist->Integral()));
     TH1* unfolded = unfold(response_hist,reco_hist,num_iter,name);
+    TH1* truth = make_normal_hist(base_hist,tree,"truth_"+name);
+    style_hist(truth,hist_styles["signal"]);
+    //dump_hist(truth);
     unfolded->GetYaxis()->SetTitle();
     fix_axis_labels(unfolded);
     if(std::string(base_hist->GetName())=="delta_r"){
@@ -88,13 +92,13 @@ int main(const int argc, char* const argv[]){
       delete leg;
       leg = init_legend(0.2,0.5,0.6,0.75);
     } 
-    int width=4;
+    int width=7;
     unfolded->SetLineWidth(width);
     unfolded->SetMarkerSize(0);
     unfolded->SetFillColor(TColor::GetColorTransparent(kBlack,0.4));
     unfolded->SetLineColor(TColor::GetColorTransparent(kBlack,0.4));
     unfolded->SetMarkerColor(TColor::GetColorTransparent(kBlack,0.4));
-    unfolded->SetLineWidth(15);
+    // unfolded->SetLineWidth(15);
     TH1* draw_hist =unfolded->DrawCopy("e2");
     leg->AddEntry(draw_hist,"Stat + Syst  Error","lf");
     if(do_syst){
@@ -106,17 +110,19 @@ int main(const int argc, char* const argv[]){
       reco_file->GetObject((std::string(variables[i])+"_sig_tot_err").c_str(),splot_err_hist);
       if(splot_err_hist!=nullptr){
 	MSG_DEBUG("Adding splot syst hist");
-	width-=1;
+	//dump_hist(splot_err_hist);
+	width-=2;
 	unfolded->SetLineWidth(width);
 	unfolded->Add(splot_err_hist);
 	unfolded->DrawCopy("e2 same");
       }
-      width-=1;
+      width-=2;
       TH1* unfold_err_hist = build_unfold_err_hist(unfolded,response_hist,num_iter,name);
-      // dump_hist(unfold_err_hist);
+      //dump_hist(unfold_err_hist);
       unfolded->Add(unfold_err_hist);
       unfolded->Add(syst_err_hist);
       unfolded->SetLineWidth(width);
+      // unfolded->DrawCopy("e2 same");
     }
     unfolded->SetFillColor(kBlack);
     unfolded->SetLineColor(kBlack);
@@ -124,12 +130,19 @@ int main(const int argc, char* const argv[]){
     unfolded->SetMarkerStyle(kFullDotLarge);
     unfolded->SetMarkerSize(0.75);
     
+    truth->SetFillColor(0);
+    truth->SetLineWidth(2);
+    truth->Scale(unfolded->Integral()/truth->Integral());
+    truth->DrawCopy("H same");
+    leg->AddEntry(truth,"MC Truth","l");
     leg->AddEntry(unfolded,"Unfolded Data","lp");
     unfolded->DrawCopy("e0 x0 same");
-    int max_bin=unfolded->GetMaximumBin();
-    double draw_max = unfolded->GetBinContent(max_bin)
-      + unfolded->GetBinError(max_bin);
-    draw_hist->SetMaximum(1.2*draw_max);
+    
+    double udraw_max = unfolded->GetBinContent(unfolded->GetMaximumBin())
+      + unfolded->GetBinError(unfolded->GetMaximumBin());
+    double tdraw_max = truth->GetBinContent(truth->GetMaximumBin())
+      + truth->GetBinError(truth->GetMaximumBin());
+    draw_hist->SetMaximum(1.2*std::max(udraw_max,tdraw_max));
     leg->Draw();
     add_atlas_badge(canv,0.2,0.88,lumi);
     canv.SaveAs((std::string(variables[i])+"_unfolded.pdf").c_str());

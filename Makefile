@@ -49,7 +49,7 @@ src/libDict.so: src/dict.cxx
 src/shared_dict.cxx: $(filter-out $(INCDIR)/math.hh,$(wildcard $(INCDIR)/*.hh)) $(INCDIR)/shared_LinkDef.h 
 	rootcint -f $@ -c $(CXXFLAGS) -I$(INCDIR) $^
 src/libUtils.so: src/shared_dict.cxx $(wildcard ./src/*.cxx)
-	$(CC) -shared -fPIC -o$@ $(CXXFLAGS) $(LDFLAGS) -lRooFit -lRooFitCore -L./src -lRooUnfold $^
+	$(CC) -shared -fPIC -o$@ $(CXXFLAGS) $(LDFLAGS) -lRooFit -lRooFitCore -L./src -lRooUnfold -lUnfold $^
 src/analyze-cut-tree.o: src/analyze-tree.cxx
 	$(CC) $(CXXFLAGS) -D__ANALYZE_TREE_CUTFLOW__ -c $< -o $@ 
 bin/skim-tree:  $(SKIM_DEPS) bin/skim-tree.o src/analyze-tree.o src/libDict.so
@@ -66,9 +66,9 @@ bin/sbs: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) bin/sbs.o
 bin/splot: src/sbs-utils.o src/fit-utils.o $(HISTO_DEPS) src/tree-utils.o bin/splot.o 
 	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats
 bin/unfold: src/unfolding-utils.o $(HISTO_DEPS) src/tree-utils.o bin/unfold.o 
-	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats -lRooUnfold -L./RooUnfold
+	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats -lRooUnfold -L./RooUnfold -lUnfold
 bin/unfolding-closure: src/unfolding-utils.o $(HISTO_DEPS) src/tree-utils.o bin/unfolding-closure.o 
-	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats -lRooUnfold -L./RooUnfold
+	$(CC) $^ -o $@ -lRooFit -lRooFitCore $(LDFLAGS) -lRooStats -lRooUnfold -L./RooUnfold -lUnfold
 bin/test-err-prop: bin/test-err-prop.o src/math.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 bin/make-closure-sample: $(COMMON_DEPS) bin/make-closure-sample.o src/simple-parser.o src/Cut.o

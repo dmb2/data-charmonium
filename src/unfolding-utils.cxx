@@ -212,7 +212,9 @@ TH1* unfold_syst_err(TH1* reco_hist,TTree* tree,
   TH1* unfolded;
   TDirectory *staging = gROOT->mkdir("staging");
   {
-    TDirectory::TContext ctxt(staging); // Set staging to be the current directory, return to the previous current directory at the end of the scope
+    // Set staging to be the current directory, return to the previous
+    // current directory at the end of the scope
+    TDirectory::TContext ctxt(staging); 
     TH1* base_hist = dynamic_cast<TH1*>(reco_hist->Clone(name.c_str()));
     base_hist->Reset();
     TH2* response_hist = mc_response(base_hist,tree,tree->GetEntries());

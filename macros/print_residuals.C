@@ -2,7 +2,7 @@
   gROOT->ProcessLine(".L ./macros/AtlasStyle.C++ ");
   gROOT->ProcessLine("AtlasStyle style;");
   gROOT->ProcessLine("style.SetAtlasStyle();");
-  TFile *_file0 = TFile::Open("fitresult.muon_cut.root");
+  TFile *_file0 = TFile::Open("fitresult.root");
   RooWorkspace* wkspc;
   _file0->GetObject("workspace",wkspc);
   RooAbsPdf* pdf = wkspc->pdf("model");

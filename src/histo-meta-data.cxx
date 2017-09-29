@@ -45,11 +45,11 @@ void init_hist_book(std::map<std::string,TH1D*>& HistBook){
   HistBook["mu2_pt"]=new TH1D("mu2_pt","#mu_2 p_{T};#mu_2 p_{T} [GeV];evts/binwidth",50,0,140);
   HistBook["mu1_eta"]=new TH1D("mu1_eta","#mu_1 #eta;#mu_1 #eta;evts/binwidth",50,-2.6,2.6);
   HistBook["mu2_eta"]=new TH1D("mu2_eta","#mu_2 #eta;#mu_2 #eta;evts/binwidth",50,-2.6,2.6);
-  
+
   HistBook["vtx_ntrk"] = new TH1D("vtx_ntrk","Track Multiplicity in PV;n_{trk};evts/binwidth",50,0,200);
   HistBook["vtx_chi2"] = new TH1D("vtx_chi2","#chi^2 of PV fit;PV #chi^2;evts/binwidth",50,0,350);
   HistBook["vtx_n"] = new TH1D("vtx_n","PV multiplicity;Number of PV;evts/binwidth",41,0,40);
-  
+
 
   HistBook["jpsi_pt"]=new TH1D("jpsi_pt","J/#psi p_{T};J/#psi p_{T} [GeV];evts/binwidth",50,0,200);
   HistBook["jpsi_eta"]=new TH1D("jpsi_eta","J/#psi #eta;J/#psi #eta;evts/binwidth",50,-2.6,2.6);
@@ -59,7 +59,7 @@ void init_hist_book(std::map<std::string,TH1D*>& HistBook){
   HistBook["jpsi_tau"]= new TH1D("jpsi_tau","J/#psi c#tau; c#tau [mm]; evts/binwidth",50,-1,5);
 
   HistBook["pileup"]= new TH1D("pileup","Average interactions per bunch crossing; Avg. Interactions <#mu>; evts/binwidth",41,-0.5,40.5);
-  
+
   HistBook["delta_r"]->GetXaxis()->SetNdivisions(505);
   // Doctor the y axis titles for binwidth
   for(std::map<std::string,TH1D*>::iterator it=HistBook.begin();
@@ -69,13 +69,13 @@ void init_hist_book(std::map<std::string,TH1D*>& HistBook){
 }
 void init_cut_names(std::map<std::string,std::string>& cut_names){
   cut_names["mu_trigger_p"]="Trigger";
-  cut_names["num_jets_p"]="N_{j} #geq 1"; 
-  cut_names["jpsi_pt_p"]="p_{T}(J/#psi) > 45 GeV";    
+  cut_names["num_jets_p"]="N_{j} #geq 1";
+  cut_names["jpsi_pt_p"]="p_{T}(J/#psi) > 45 GeV";
   cut_names["jpsi_eta_p"]="|#eta(J/#psi)| < 2.5";
   cut_names["jpsi_rap_p"]="|y(J/#psi)| < 2.0";
   cut_names["mumu_eta_p"]="|#eta(#mu)| < 2.3";
-  cut_names["jet_eta_p"]="|#eta(jet)| < 2.5"; 
-  cut_names["delta_r_p"]="#Delta R(Jet;J/#psi) < 0.4";    
+  cut_names["jet_eta_p"]="|#eta(jet)| < 2.5";
+  cut_names["delta_r_p"]="#Delta R(Jet;J/#psi) < 0.4";
   cut_names["jet_pt_p"]="p_{T}(jet) > 45 GeV";
 }
 
@@ -91,18 +91,26 @@ void init_hist_styles(std::map<std::string,aesthetic>& styles){
   styles["1S0_8"]=hist_aes("^{1}S^{(8)}_{0} Octet",octet_blues[0],1001,kSolid);
   styles["3S1_8"]=hist_aes("^{3}S^{(8)}_{1} Octet",octet_blues[1],1001,kSolid);
   styles["3PJ_8"]=hist_aes("^{3}P^{(8)}_{J} Octet",octet_blues[2],1001,kSolid);
-  // Singlet styles	                    
+  // Singlet styles
   styles["3S1_1"]=hist_aes("^{3}S^{(1)}_{1} Singlet",singlet_reds[0],1001,kSolid);
-  styles["3PJ_1"]=hist_aes("^{3}P^{(1)}_{J} Singlet",singlet_reds[1],1001,kSolid);  
+  styles["3PJ_1"]=hist_aes("^{3}P^{(1)}_{J} Singlet",singlet_reds[1],1001,kSolid);
+
+  // Octet styles
+  styles["208051.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu0_1S0_8"]=hist_aes("^{1}S^{(8)}_{0} Octet",octet_blues[0],1001,kSolid);
+  styles["208055.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu0_3S1_8"]=hist_aes("^{3}S^{(8)}_{1} Octet",octet_blues[1],1001,kSolid);
+  styles["208053.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu0_3PJ_8"]=hist_aes("^{3}P^{(8)}_{J} Octet",octet_blues[2],1001,kSolid);
+  // Singlet styles
+  styles["208054.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu0_3S1_1"]=hist_aes("^{3}S^{(1)}_{1} Singlet",singlet_reds[0],1001,kSolid);
+  styles["208052.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu0_3PJ_1"]=hist_aes("^{3}P^{(1)}_{J} Singlet",singlet_reds[1],1001,kSolid);
+
 
   // Octet styles
   styles["208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8"]=hist_aes("^{1}S^{(8)}_{0} Octet",octet_blues[0],1001,kSolid);
   styles["208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"]=hist_aes("^{3}S^{(8)}_{1} Octet",octet_blues[1],1001,kSolid);
-  styles["208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8"]=hist_aes("^{3}P^{(8)}_{J} Octet",octet_blues[2],1001,kSolid); 
-  // Singlet styles						                        
+  styles["208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8"]=hist_aes("^{3}P^{(8)}_{J} Octet",octet_blues[2],1001,kSolid);
+  // Singlet styles
   styles["208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1"]=hist_aes("^{3}S^{(1)}_{1} Singlet",singlet_reds[0],1001,kSolid);
-  styles["208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1"]=hist_aes("^{3}P^{(1)}_{J} Singlet",singlet_reds[1],1001,kSolid);  
-
+  styles["208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1"]=hist_aes("^{3}P^{(1)}_{J} Singlet",singlet_reds[1],1001,kSolid);
   // non-prompt BKG Styles
   styles["108601.PythiaBc_Bc_JPsi_mu2p5mu2p5_Pi"]=hist_aes("B_{c}#rightarrow J/#psi #pi",TColor::GetColor(186,228,179),1001,kSolid);
   styles["108606.PythiaBc_Bc_JPsi_mu2p5mu2p5_3Pi"]=hist_aes("B_{c}#rightarrow J/#psi 3#pi",TColor::GetColor(116,196,118),1001,kSolid);
@@ -124,13 +132,13 @@ void init_hist_styles(std::map<std::string,aesthetic>& styles){
 
   styles["208202.Pythia8B_AU2_CTEQ6L1_bb_Jpsimu6mu6"]=hist_aes("bb Non Prompt Background",TColor::GetColor(120,198,121),1001,kSolid);
   styles["208207.Pythia8B_AU2_CTEQ6L1_anti_bb_Jpsimu6mu6"]=hist_aes(" #bar{bb} Non Prompt Background",TColor::GetColor(120,198,121),1001,kSolid);
-  
+
   //Oranges
   styles["208004.trkComb.LCTopoJets"]=hist_aes("#mu Comb, Jet LCTopo",TColor::GetColor(254,204,92),1001,kSolid);
   styles["208004.trkInnerExtr.LCTopoJets"]=hist_aes("#mu ID Extr., Jet LCTopo",TColor::GetColor(253,141,60),1001,kSolid);
   styles["208004.trkMS.LCTopoJets"]=hist_aes("#mu MS, Jet LCTopo",TColor::GetColor(240,59,32),1001,kSolid);
   styles["208004.trkMuonExtr.LCTopoJets"]=hist_aes("#mu MS Extr., Jet LCTopo",TColor::GetColor(189,0,38),1001,kSolid);
-  //Greens 
+  //Greens
   styles["208004.trkComb.TopoEMJets"]=hist_aes("#mu Comb, Jet TopoEM",TColor::GetColor(194,230,153),1001,kSolid);
   styles["208004.trkInnerExtr.TopoEMJets"]=hist_aes("#mu ID Extr., Jet TopoEM",TColor::GetColor(120,198,121),1001,kSolid);
   styles["208004.trkMS.TopoEMJets"]=hist_aes("#mu MS, Jet Topoem",TColor::GetColor(49,163,84),1001,kSolid);
@@ -145,25 +153,25 @@ void init_hist_styles(std::map<std::string,aesthetic>& styles){
   styles["208004..TopoEMJets"]=hist_aes("#mu, Jet TopoEM",TColor::GetColor(120,198,121),1001,kSolid);
   styles["208004..TrackZJets"]=hist_aes("#mu, Jet TrackZ",TColor::GetColor(223,101,176),1001,kSolid);
 
-  styles["non_prompt.mu24i_tight"]=hist_aes("MC Isolated",TColor::GetColor(240,59,32),1001,kSolid); 
-  styles["non_prompt.mu36_tight"]=hist_aes("MC Non-isolated",TColor::GetColor(152,0,67),1001,kSolid); 
+  styles["non_prompt.mu24i_tight"]=hist_aes("MC Isolated",TColor::GetColor(240,59,32),1001,kSolid);
+  styles["non_prompt.mu36_tight"]=hist_aes("MC Non-isolated",TColor::GetColor(152,0,67),1001,kSolid);
   styles["non_prompt.tau_sb"]=hist_aes("Non-Prompt SB",TColor::GetColor(253,141,60),1001,kSolid);
 
   styles["non_prompt.signal_region"]=hist_aes("Non-prompt Signal",TColor::GetColor(120,198,121),1001,kSolid);
 
 
   styles["full2012.mass_sb_1"]=hist_aes("Data Low Mass SB",TColor::GetColor(215,181,216),1001,kSolid);
-  styles["full2012.mass_sb_2"]=hist_aes("Data High Mass SB ",TColor::GetColor(223,101,176),1001,kSolid); 
+  styles["full2012.mass_sb_2"]=hist_aes("Data High Mass SB ",TColor::GetColor(223,101,176),1001,kSolid);
 
-  styles["full2012.tau_sb"]=hist_aes("Data Tau SB",TColor::GetColor(221,28,119),1001,kSolid); 
-  styles["full2012.mu24i_tight"]=hist_aes("Isolated",TColor::GetColor(240,59,32),1001,kSolid); 
-  styles["full2012.mu36_tight"]=hist_aes("Non-Isolated",TColor::GetColor(49,163,84),1001,kSolid); 
+  styles["full2012.tau_sb"]=hist_aes("Data Tau SB",TColor::GetColor(221,28,119),1001,kSolid);
+  styles["full2012.mu24i_tight"]=hist_aes("Isolated",TColor::GetColor(240,59,32),1001,kSolid);
+  styles["full2012.mu36_tight"]=hist_aes("Non-Isolated",TColor::GetColor(49,163,84),1001,kSolid);
 
   styles["LCTopoJets"]=hist_aes("Calo Jets",TColor::GetColor(55,126,184),1001,kSolid);
-  styles["MuonLCTopoJets"]=hist_aes("Muon+Calo Jets ",TColor::GetColor(228,26,28),1001,kSolid); 
-  styles["TrackZJets"]=hist_aes("Track Jets",TColor::GetColor(77,175,74),1001,kSolid); 
+  styles["MuonLCTopoJets"]=hist_aes("Muon+Calo Jets ",TColor::GetColor(228,26,28),1001,kSolid);
+  styles["TrackZJets"]=hist_aes("Track Jets",TColor::GetColor(77,175,74),1001,kSolid);
 
-  styles["singlet"]=hist_aes("Singlet",TColor::GetColor(228,26,28),1001,kSolid); 
+  styles["singlet"]=hist_aes("Singlet",TColor::GetColor(228,26,28),1001,kSolid);
   styles["octet"]=hist_aes("Octet",TColor::GetColor(55,126,184),1001,kSolid);
 
   styles["periodA"]=data_aes("Period A Data",TColor::GetColor(0,0,0),kFullCircle,kSolid);

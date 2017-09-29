@@ -87,7 +87,7 @@ int main(const int argc, const char* argv[]){
       TH1D* hist = retrieve<TH1D>(f->second,(plot+"_syst").c_str());
       hist->Rebin(5);
       if(tot_err->GetEntries()==0){
-      	for(int i=0; i < hist->GetNbinsX(); i++){
+      	for(int i=0; i <= hist->GetNbinsX(); i++){
       	  tot_err->SetBinContent(i,hist->GetBinContent(i));
       	  tot_err->SetBinError(i,0);
       	}
@@ -97,7 +97,7 @@ int main(const int argc, const char* argv[]){
       TH1D* rel_err = dynamic_cast<TH1D*>(hist->Clone((std::string(hist->GetName())+"_rel_err").c_str()));
       MSG_DEBUG(syst_name);
       scale_errors(rel_err);
-      for(int i=0; i < rel_err->GetNbinsX(); i++){
+      for(int i=0; i <= rel_err->GetNbinsX(); i++){
 	double err=rel_err->GetBinContent(i);
 	rel_err->SetBinError(i,100*err);
 	rel_err->SetBinContent(i,0);

@@ -476,11 +476,16 @@ THStack* build_stack(TH1* base_hist, TLegend* leg, std::map<std::string,aestheti
 		     const char* cut_expr){
   THStack* stack = new THStack(("pythia_stk_"+std::string(base_hist->GetName())).c_str(),"Stack");
   const char* samp_names[]={
+    //"208051.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu0_1S0_8",
+    "208052.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu0_3PJ_1",
+    //"208053.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu0_3PJ_8",
+    //"208054.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu0_3S1_1",
+    "208055.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu0_3S1_8"
     // "208024.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_1S0_8",
     // "208026.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_8",
-    "208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1",
+    // "208025.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3PJ_1",
     // "208027.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_1",
-    "208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"
+    // "208028.Pythia8B_AU2_CTEQ6L1_pp_Jpsimu20mu20_3S1_8"
   };
   TH1* tot_syst_err = dynamic_cast<TH1*>(base_hist->Clone((std::string(base_hist->GetName())+"_global_syst_err").c_str()));
   // tot_syst_err->Reset("ICES");
